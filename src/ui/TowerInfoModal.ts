@@ -44,10 +44,10 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
 
     const bg = scene.add.graphics();
     bg.fillStyle(PALETTE.uiBgDark, 0.98);
-    bg.fillRoundedRect(0, 0, 325, 360, 8);
+    bg.fillRoundedRect(0, 0, 325, 388, 8);
     bg.lineStyle(2, PALETTE.uiBorderHighlight, 1);
-    bg.strokeRoundedRect(0, 0, 325, 360, 8);
-    bg.setInteractive(new Phaser.Geom.Rectangle(0, 0, 325, 360), Phaser.Geom.Rectangle.Contains);
+    bg.strokeRoundedRect(0, 0, 325, 388, 8);
+    bg.setInteractive(new Phaser.Geom.Rectangle(0, 0, 325, 388), Phaser.Geom.Rectangle.Contains);
     bg.on('pointerdown', (p: Phaser.Input.Pointer) => p.event.stopPropagation());
     this.add(bg);
 
@@ -80,23 +80,23 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     });
     this.add(closeBtn);
 
-    // Gut lesbare Stats
-    this.statsText = scene.add.text(16, 46, '', {
+    // Gut lesbare Stats mit sauberem Spacing (kein Überlaufen)
+    this.statsText = scene.add.text(16, 44, '', {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
+      fontSize: '12px',
       fontStyle: '500',
-      lineSpacing: 5,
+      lineSpacing: 3,
       color: '#f5f0e6',
       stroke: '#000000',
       strokeThickness: 1
     });
     this.add(this.statsText);
 
-    this.upgradeInfoText = scene.add.text(16, 150, '', {
+    this.upgradeInfoText = scene.add.text(16, 156, '', {
       fontFamily: GAME_FONT,
-      fontSize: '12px',
+      fontSize: '11.5px',
       fontStyle: '500',
-      lineSpacing: 4,
+      lineSpacing: 3,
       color: '#5cd670',
       stroke: '#000000',
       strokeThickness: 1,
@@ -105,7 +105,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(this.upgradeInfoText);
 
     // Zielprioritäts-Umschalter
-    this.priorityBtn = this.createActionButton(16, 210, 293, 28, '🎯 ZIEL: ERSTER', 0x221f2d, 0x4d4263, () => {
+    this.priorityBtn = this.createActionButton(16, 226, 293, 26, '🎯 ZIEL: ERSTER', 0x221f2d, 0x4d4263, () => {
       if (this.currentTower) {
         SoundManager.playClick();
         this.currentTower.cycleTargetPriority();
@@ -116,7 +116,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(this.priorityBtn);
 
     // Standard Upgrade-Button (Stufe 1 -> 2 -> 3)
-    this.upgradeBtn = this.createActionButton(16, 244, 293, 34, 'UPGRADE', 0x2d6323, 0x518233, () => {
+    this.upgradeBtn = this.createActionButton(16, 258, 293, 32, 'UPGRADE', 0x2d6323, 0x518233, () => {
       if (this.currentTower) {
         this.onUpgradeCallback(this.currentTower);
         this.refresh();
@@ -126,7 +126,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(this.upgradeBtn);
 
     // Spezialisierung A
-    this.specBtnA = this.createActionButton(16, 244, 293, 32, '✦ PFAD A', 0x133833, 0x16a085, () => {
+    this.specBtnA = this.createActionButton(16, 258, 293, 32, '✦ PFAD A', 0x133833, 0x16a085, () => {
       if (this.currentTower) {
         const success = this.currentTower.specialize('path_a');
         if (success) {
@@ -140,7 +140,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(this.specBtnA);
 
     // Spezialisierung B
-    this.specBtnB = this.createActionButton(16, 280, 293, 32, '✦ PFAD B', 0x301934, 0x8e44ad, () => {
+    this.specBtnB = this.createActionButton(16, 296, 293, 32, '✦ PFAD B', 0x301934, 0x8e44ad, () => {
       if (this.currentTower) {
         const success = this.currentTower.specialize('path_b');
         if (success) {
@@ -154,7 +154,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(this.specBtnB);
 
     // Verkaufen-Button
-    this.sellBtn = this.createActionButton(16, 318, 293, 28, 'VERKAUFEN', 0x7a2828, 0xa33b3b, () => {
+    this.sellBtn = this.createActionButton(16, 338, 293, 28, 'VERKAUFEN', 0x7a2828, 0xa33b3b, () => {
       if (this.currentTower) {
         this.onSellCallback(this.currentTower);
         this.hide();
@@ -162,6 +162,41 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     });
     this.sellBtnText = this.sellBtn.getAt(1) as Phaser.GameObjects.Text;
     this.add(this.sellBtn);
+
+    // Hover-Vorschau für Spezialisierungen
+    this.specBtnA.on('pointerover', () => {
+      if (this.currentTower?.canSpecialize()) {
+        const def = this.currentTower.getDefinition();
+        const specA = def.specializations.path_a;
+        const curStats = this.currentTower.getStats();
+        this.upgradeInfoText.setText(`✦ ${specA.name.toUpperCase()} (${specA.cost}G):\n${specA.description}\n+${specA.damage - curStats.damage} Dmg, +${specA.range - curStats.range}px Reichweite`);
+        this.upgradeInfoText.setColor('#55efc4');
+      }
+    });
+    this.specBtnA.on('pointerout', () => {
+      if (this.currentTower?.canSpecialize()) {
+        const def = this.currentTower.getDefinition();
+        this.upgradeInfoText.setText(`★ MEISTER-SPEZIALISIERUNG WÄHLEN:\n${def.specializations.path_a.name} ODER ${def.specializations.path_b.name}!`);
+        this.upgradeInfoText.setColor('#ffd13b');
+      }
+    });
+
+    this.specBtnB.on('pointerover', () => {
+      if (this.currentTower?.canSpecialize()) {
+        const def = this.currentTower.getDefinition();
+        const specB = def.specializations.path_b;
+        const curStats = this.currentTower.getStats();
+        this.upgradeInfoText.setText(`✦ ${specB.name.toUpperCase()} (${specB.cost}G):\n${specB.description}\n+${specB.damage - curStats.damage} Dmg, +${specB.range - curStats.range}px Reichweite`);
+        this.upgradeInfoText.setColor('#e056fd');
+      }
+    });
+    this.specBtnB.on('pointerout', () => {
+      if (this.currentTower?.canSpecialize()) {
+        const def = this.currentTower.getDefinition();
+        this.upgradeInfoText.setText(`★ MEISTER-SPEZIALISIERUNG WÄHLEN:\n${def.specializations.path_a.name} ODER ${def.specializations.path_b.name}!`);
+        this.upgradeInfoText.setColor('#ffd13b');
+      }
+    });
 
     this.setDepth(150);
     this.setVisible(false);
@@ -285,12 +320,13 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       this.upgradeBtn.setVisible(false);
       this.specBtnA.setVisible(true);
       this.specBtnB.setVisible(true);
-      this.sellBtn.setPosition(16, 318);
+      this.sellBtn.setPosition(16, 338);
 
       const specA = def.specializations.path_a;
       const specB = def.specializations.path_b;
 
       this.upgradeInfoText.setText(`★ MEISTER-SPEZIALISIERUNG WÄHLEN:\n${specA.name} ODER ${specB.name}!`);
+      this.upgradeInfoText.setColor('#ffd13b');
 
       // Button A
       const canAffordA = this.economy.canAfford(specA.cost);
@@ -320,8 +356,9 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       this.upgradeBtn.setVisible(false);
       this.specBtnA.setVisible(false);
       this.specBtnB.setVisible(false);
-      this.sellBtn.setPosition(16, 252);
+      this.sellBtn.setPosition(16, 268);
       this.upgradeInfoText.setText(`★ MEISTER-SPEZIALISIERUNG AKTIV:\n${tower.specializationDef?.description}`);
+      this.upgradeInfoText.setColor('#c084fc');
     }
 
     this.sellBtnText.setText(`VERKAUFEN (+${sellValue} G)`);

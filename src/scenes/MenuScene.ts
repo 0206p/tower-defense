@@ -137,7 +137,7 @@ export class MenuScene extends Phaser.Scene {
         if (!SaveSystem.isDungeonUnlocked()) {
           SoundManager.playDeny();
           logger.info('MenuScene', 'Dungeon versucht, aber noch gesperrt');
-          hint.setText('🔒 Das Dungeon öffnet sich erst nach Beendigung aller 3 Welten (je 30 Missionen)!');
+          hint.setText('🔒 Das Dungeon öffnet sich erst nach Beendigung aller 3 Welten (je 15 Missionen)!');
           hint.setColor('#ff7675');
           this.tweens.add({
             targets: hint,
@@ -168,15 +168,15 @@ export class MenuScene extends Phaser.Scene {
       });
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 - 105, 435, '💎 TURM-SCHMIEDE', 200, 42, 0x512b7a, 0x8e44ad, () => {
+    this.createMenuButton(GAME_WIDTH / 2 - 105, 435, '⚙️ SCHMIEDE', 200, 42, 0x432368, 0x7b3fa8, () => {
       SoundManager.playClick();
-      logger.info('MenuScene', 'Turm-Schmiede gewählt');
+      logger.info('MenuScene', 'Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 + 105, 435, '🎨 TURM-SKINS', 200, 42, 0x1e3a8a, 0x3b82f6, () => {
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 435, '🎨 SKINS', 200, 42, 0x1e3a8a, 0x3b82f6, () => {
       SoundManager.playClick();
-      logger.info('MenuScene', 'Turm-Skins Arsenal gewählt');
+      logger.info('MenuScene', 'Skins gewählt');
       this.scene.start('SkinShopScene');
     });
 

@@ -52,6 +52,11 @@ export interface WaveBalancingSummary {
   recommendations: string[];
 }
 
+export const ALL_TOWER_TYPES: TowerType[] = [
+  'archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper',
+  'flamethrower', 'plasma_pylon', 'orbital_laser', 'chrono_disruptor', 'bio_hive'
+];
+
 export class BalancingTelemetry {
   private static instance: BalancingTelemetry;
 
@@ -67,7 +72,12 @@ export class BalancingTelemetry {
     ice: 0,
     poison: 0,
     tesla: 0,
-    sniper: 0
+    sniper: 0,
+    flamethrower: 0,
+    plasma_pylon: 0,
+    orbital_laser: 0,
+    chrono_disruptor: 0,
+    bio_hive: 0
   };
   private countByTower: Record<TowerType, number> = {
     archer: 0,
@@ -75,7 +85,12 @@ export class BalancingTelemetry {
     ice: 0,
     poison: 0,
     tesla: 0,
-    sniper: 0
+    sniper: 0,
+    flamethrower: 0,
+    plasma_pylon: 0,
+    orbital_laser: 0,
+    chrono_disruptor: 0,
+    bio_hive: 0
   };
 
   // Aktuelle Welle
@@ -85,7 +100,12 @@ export class BalancingTelemetry {
     ice: 0,
     poison: 0,
     tesla: 0,
-    sniper: 0
+    sniper: 0,
+    flamethrower: 0,
+    plasma_pylon: 0,
+    orbital_laser: 0,
+    chrono_disruptor: 0,
+    bio_hive: 0
   };
   private waveHitsByTower: Record<TowerType, number> = {
     archer: 0,
@@ -93,7 +113,12 @@ export class BalancingTelemetry {
     ice: 0,
     poison: 0,
     tesla: 0,
-    sniper: 0
+    sniper: 0,
+    flamethrower: 0,
+    plasma_pylon: 0,
+    orbital_laser: 0,
+    chrono_disruptor: 0,
+    bio_hive: 0
   };
   private waveCritsByTower: Record<TowerType, number> = {
     archer: 0,
@@ -101,7 +126,12 @@ export class BalancingTelemetry {
     ice: 0,
     poison: 0,
     tesla: 0,
-    sniper: 0
+    sniper: 0,
+    flamethrower: 0,
+    plasma_pylon: 0,
+    orbital_laser: 0,
+    chrono_disruptor: 0,
+    bio_hive: 0
   };
   private waveKillsByTower: Record<TowerType, number> = {
     archer: 0,
@@ -109,7 +139,12 @@ export class BalancingTelemetry {
     ice: 0,
     poison: 0,
     tesla: 0,
-    sniper: 0
+    sniper: 0,
+    flamethrower: 0,
+    plasma_pylon: 0,
+    orbital_laser: 0,
+    chrono_disruptor: 0,
+    bio_hive: 0
   };
 
   private waveEnemyData: Map<string, {
@@ -136,8 +171,7 @@ export class BalancingTelemetry {
   }
 
   public resetAll(): void {
-    const types: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    types.forEach((t) => {
+    ALL_TOWER_TYPES.forEach((t) => {
       this.investedGoldByTower[t] = 0;
       this.countByTower[t] = 0;
       this.waveDamageByTower[t] = 0;
@@ -175,8 +209,7 @@ export class BalancingTelemetry {
     this.currentIsEndless = isEndless;
     this.waveStartTime = Date.now();
 
-    const types: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    types.forEach((t) => {
+    ALL_TOWER_TYPES.forEach((t) => {
       this.waveDamageByTower[t] = 0;
       this.waveHitsByTower[t] = 0;
       this.waveCritsByTower[t] = 0;
@@ -240,13 +273,12 @@ export class BalancingTelemetry {
     const durationMs = Math.max(1000, endTime - this.waveStartTime);
 
     let totalWaveDamage = 0;
-    const types: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    types.forEach((t) => {
+    ALL_TOWER_TYPES.forEach((t) => {
       totalWaveDamage += this.waveDamageByTower[t];
     });
 
     let totalInvestedGold = 0;
-    types.forEach((t) => {
+    ALL_TOWER_TYPES.forEach((t) => {
       totalInvestedGold += this.investedGoldByTower[t];
     });
 
@@ -255,7 +287,7 @@ export class BalancingTelemetry {
     const recommendations: string[] = [];
 
     // Turm-Analyse
-    types.forEach((t) => {
+    ALL_TOWER_TYPES.forEach((t) => {
       const dmg = Math.round(this.waveDamageByTower[t]);
       const invested = this.investedGoldByTower[t];
       const count = this.countByTower[t];
@@ -388,14 +420,10 @@ export class BalancingTelemetry {
     out += `========================================================================================\n\n`;
 
     // Gesamtschaden über alle Wellen aggregieren
-    const totalDmgByTower: Record<TowerType, number> = {
-      archer: 0,
-      cannon: 0,
-      ice: 0,
-      poison: 0,
-      tesla: 0,
-      sniper: 0
-    };
+    const totalDmgByTower: Record<TowerType, number> = {} as Record<TowerType, number>;
+    ALL_TOWER_TYPES.forEach((t) => {
+      totalDmgByTower[t] = 0;
+    });
     let grandTotalDmg = 0;
 
     waves.forEach((w) => {
@@ -412,8 +440,7 @@ export class BalancingTelemetry {
     out += ` Turm      | Gesamtschaden | Anteil % | Inv. Gold | Dmg / Gold | Kills | Status\n`;
     out += `----------------------------------------------------------------------------------------\n`;
 
-    const types: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    types.forEach((t) => {
+    ALL_TOWER_TYPES.forEach((t) => {
       const dmg = totalDmgByTower[t];
       const share = grandTotalDmg > 0 ? (dmg / grandTotalDmg) * 100 : 0;
       const inv = this.investedGoldByTower[t];

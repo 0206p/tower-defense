@@ -16,18 +16,30 @@ export class MapManager {
   public runeTiles: GridPoint[] = [];
   public curvePath!: Phaser.Curves.Path;
   public curvePath2: Phaser.Curves.Path | null = null;
+  public curvePath3: Phaser.Curves.Path | null = null;
+  public curvePath4: Phaser.Curves.Path | null = null;
   public isEndless: boolean = false;
   public pathPoints2: GridPoint[] = [];
+  public pathPoints3: GridPoint[] = [];
+  public pathPoints4: GridPoint[] = [];
   public isSecondPortalUnlocked: boolean = false;
+  public isThirdPortalManifested: boolean = false;
+  public isThirdPortalUnlocked: boolean = false;
+  public isFourthPortalManifested: boolean = false;
+  public isFourthPortalUnlocked: boolean = false;
   private secondPortalContainer?: Phaser.GameObjects.Container;
   private secondPortalLabel?: Phaser.GameObjects.Text;
+  private thirdPortalContainer?: Phaser.GameObjects.Container;
+  private thirdPortalLabel?: Phaser.GameObjects.Text;
+  private fourthPortalContainer?: Phaser.GameObjects.Container;
+  private fourthPortalLabel?: Phaser.GameObjects.Text;
   private worldId: WorldId;
   private missionNumber: number;
   private grassTufts: Map<string, Phaser.GameObjects.Image> = new Map();
   private ambientParticles: Phaser.GameObjects.GameObject[] = [];
   private streamTiles: GridPoint[] = [];
   private bridgeTiles: GridPoint[] = [];
-  private fortressObjects: Phaser.GameObjects.GameObject[] = [];
+  public fortressObjects: Phaser.GameObjects.Image[] = [];
   private treeTiles: { col: number; row: number; type: 'oak' | 'pine' | 'dead' | 'stalagmite' | 'dungeon_pillar' }[] = [];
   private rockTiles: { col: number; row: number; type: 'granite' | 'ore' | 'volcanic' | 'dungeon_torch' }[] = [];
   private critters: Phaser.GameObjects.GameObject[] = [];
@@ -220,24 +232,45 @@ export class MapManager {
     this.pathPoints = currentVariants[variantIndex];
 
     if (this.isEndless) {
-      // Zweiter Pfad im Endlosmodus durch den Süden (öffnet ab Welle 20)
+      const endPt = this.pathPoints[this.pathPoints.length - 1];
+
+      // Tor II (Süd-Flanke, öffnet ab Welle 20, führt exakt ins Festungstor)
       this.pathPoints2 = [
         { col: 0, row: 15 },
-        { col: 12, row: 15 },
-        { col: 12, row: 9 },
-        { col: 21, row: 9 },
-        { col: 21, row: 15 },
-        { col: 28, row: 15 },
-        { col: 28, row: 10 },
-        { col: 31, row: 10 }
+        { col: 10, row: 15 },
+        { col: 10, row: 11 },
+        { col: 22, row: 11 },
+        { col: 22, row: endPt.row },
+        { col: endPt.col, row: endPt.row }
+      ];
+
+      // Tor III (Nord-Flanke, manifestiert Welle 25, öffnet Welle 30)
+      this.pathPoints3 = [
+        { col: 0, row: 2 },
+        { col: 13, row: 2 },
+        { col: 13, row: Math.max(1, endPt.row - 3) },
+        { col: 25, row: Math.max(1, endPt.row - 3) },
+        { col: 25, row: endPt.row },
+        { col: endPt.col, row: endPt.row }
+      ];
+
+      // Tor IV (Zentral-Ost-Flanke, manifestiert Welle 45, öffnet Welle 50)
+      this.pathPoints4 = [
+        { col: 16, row: 0 },
+        { col: 16, row: 4 },
+        { col: 27, row: 4 },
+        { col: 27, row: endPt.row },
+        { col: endPt.col, row: endPt.row }
       ];
     }
 
     logger.info('MapManager', `Karte geladen: Welt=${this.worldId}, Mission=${missionNumber}, Pfad-Variante=${variantIndex + 1}, Endlos=${this.isEndless}`);
 
     this.markPathListOnGrid(this.pathPoints);
-    if (this.isEndless && this.pathPoints2.length > 0) {
-      this.markPathListOnGrid(this.pathPoints2);
+    if (this.isEndless) {
+      if (this.pathPoints2.length > 0) this.markPathListOnGrid(this.pathPoints2);
+      if (this.pathPoints3.length > 0) this.markPathListOnGrid(this.pathPoints3);
+      if (this.pathPoints4.length > 0) this.markPathListOnGrid(this.pathPoints4);
     }
     this.spawnRuneTiles(variantIndex);
     this.generateNaturalLandscape(variantIndex);
@@ -382,8 +415,16 @@ export class MapManager {
 
   private buildCurvePath(): void {
     this.curvePath = this.createCurvePathFromPoints(this.pathPoints);
-    if (this.isEndless && this.pathPoints2 && this.pathPoints2.length > 0) {
-      this.curvePath2 = this.createCurvePathFromPoints(this.pathPoints2);
+    if (this.isEndless) {
+      if (this.pathPoints2 && this.pathPoints2.length > 0) {
+        this.curvePath2 = this.createCurvePathFromPoints(this.pathPoints2);
+      }
+      if (this.pathPoints3 && this.pathPoints3.length > 0) {
+        this.curvePath3 = this.createCurvePathFromPoints(this.pathPoints3);
+      }
+      if (this.pathPoints4 && this.pathPoints4.length > 0) {
+        this.curvePath4 = this.createCurvePathFromPoints(this.pathPoints4);
+      }
     }
   }
 
@@ -406,10 +447,14 @@ export class MapManager {
         const dy2 = Math.sign(next.y - cur.y);
 
         if (dx1 !== dx2 || dy1 !== dy2) {
-          const startX = cur.x - dx1 * cornerRadius;
-          const startY = cur.y - dy1 * cornerRadius;
-          const endX = cur.x + dx2 * cornerRadius;
-          const endY = cur.y + dy2 * cornerRadius;
+          const seg1Len = Math.hypot(cur.x - prev.x, cur.y - prev.y);
+          const seg2Len = Math.hypot(next.x - cur.x, next.y - cur.y);
+          const r = Math.min(cornerRadius, seg1Len / 2, seg2Len / 2);
+
+          const startX = cur.x - dx1 * r;
+          const startY = cur.y - dy1 * r;
+          const endX = cur.x + dx2 * r;
+          const endY = cur.y + dy2 * r;
 
           path.lineTo(startX, startY);
           path.quadraticBezierTo(endX, endY, cur.x, cur.y);
@@ -950,12 +995,7 @@ export class MapManager {
       });
     });
 
-    // 5. STEINBRÜCKEN ÜBER FLUSSÜBERQUERUNGEN
-    this.bridgeTiles.forEach((pt) => {
-      const { x, y } = this.gridToPixel(pt.col, pt.row);
-      const bridge = this.scene.add.image(x, y, 'decor_bridge_arch').setOrigin(0.5).setDepth(2);
-      this.fortressObjects.push(bridge);
-    });
+    // 5. NAHTLOSE WEGE (Brücken-Hindernisbalken entfernt für sauberen Wegverlauf)
 
     // 6. ENERGIE-PYLONEN, KRISTALLE & INDUSTRIE-GEBILDE
     this.treeTiles.forEach((tree) => {
@@ -999,6 +1039,55 @@ export class MapManager {
         });
       }
     });
+
+    // 7b. MONUMENTALE SCI-FI LANDMARKEN (Spice up the Maps!)
+    const landmarkCandidates: { col: number; row: number }[] = [
+      { col: 3, row: 2 },
+      { col: 28, row: 2 },
+      { col: 4, row: 14 },
+      { col: 26, row: 14 },
+      { col: 16, row: 2 }
+    ];
+
+    let landmarksPlaced = 0;
+    const landmarkKeys = this.worldId === 'witch_forest'
+      ? ['landmark_alien_obelisk', 'landmark_radar_relay']
+      : (this.worldId === 'goblin_caves'
+        ? ['landmark_power_generator', 'landmark_mech_hangar']
+        : (this.worldId === 'dead_mountain'
+          ? ['landmark_mech_hangar', 'landmark_power_generator']
+          : ['landmark_alien_obelisk', 'landmark_power_generator']));
+
+    for (const pos of landmarkCandidates) {
+      if (landmarksPlaced >= 2) break;
+      if (this.canBuildAt(pos.col, pos.row) || this.grid[pos.row][pos.col] === 2) {
+        const hasPathNeighbor = [
+          [-1, 0], [1, 0], [0, -1], [0, 1]
+        ].some(([dr, dc]) => {
+          const nr = pos.row + dr;
+          const nc = pos.col + dc;
+          return nr >= 0 && nr < GRID_ROWS && nc >= 0 && nc < GRID_COLS && (this.grid[nr][nc] === 1 || this.grid[nr][nc] === 4);
+        });
+
+        if (!hasPathNeighbor) {
+          const { x, y } = this.gridToPixel(pos.col, pos.row);
+          const key = landmarkKeys[landmarksPlaced % landmarkKeys.length];
+          const landmarkImg = this.scene.add.image(x, y - 6, key).setOrigin(0.5, 0.7).setDepth(4);
+
+          this.scene.tweens.add({
+            targets: landmarkImg,
+            alpha: { from: 0.92, to: 1.0 },
+            duration: 1500 + landmarksPlaced * 400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+          });
+
+          this.grid[pos.row][pos.col] = 2; // Belegt als Szenerie
+          landmarksPlaced++;
+        }
+      }
+    }
 
     // 8. MONUMENTALES FESTUNGSTOR & ABYSSISCHER SPAWN-RISS (Der Weg führt direkt ins Schloss!)
     const startPos = this.gridToPixel(this.pathPoints[0].col, this.pathPoints[0].row);
@@ -1046,12 +1135,17 @@ export class MapManager {
     this.secondPortalContainer.add(portalGlow);
 
     if (!this.isSecondPortalUnlocked) {
-      // 2. Ketten / Siegel
+      // 2. Kosmisches Schutzsiegel (Runic Lock statt eckigem Kasten)
       const sealGraphics = this.scene.add.graphics();
-      sealGraphics.lineStyle(2, 0xf59e0b, 0.95);
-      sealGraphics.strokeRect(-16, -16, 32, 32);
-      sealGraphics.lineBetween(-16, -16, 16, 16);
-      sealGraphics.lineBetween(-16, 16, 16, -16);
+      sealGraphics.lineStyle(2, 0x38bdf8, 0.95);
+      sealGraphics.strokeCircle(0, 0, 16);
+      sealGraphics.lineStyle(1.5, 0xf59e0b, 0.9);
+      sealGraphics.strokeCircle(0, 0, 10);
+      sealGraphics.fillStyle(0xf59e0b, 0.25);
+      sealGraphics.fillCircle(0, 0, 10);
+      sealGraphics.fillStyle(0xffffff, 0.9);
+      sealGraphics.fillRect(-2, -5, 4, 10);
+      sealGraphics.fillRect(-5, -2, 10, 4);
       this.secondPortalContainer.add(sealGraphics);
 
       // 3. Status-Label über dem Portal
@@ -1078,6 +1172,192 @@ export class MapManager {
       repeat: -1,
       ease: 'Sine.easeInOut'
     });
+  }
+
+  public manifestThirdPortal(): void {
+    if (this.isThirdPortalManifested || !this.isEndless || this.pathPoints3.length === 0) return;
+    this.isThirdPortalManifested = true;
+
+    const start3 = this.pathPoints3[0];
+    const { x, y } = this.gridToPixel(start3.col, start3.row);
+
+    this.thirdPortalContainer = this.scene.add.container(x, y).setDepth(8);
+
+    const glow = this.scene.add.graphics();
+    glow.fillStyle(0xd97706, 0.45);
+    glow.fillCircle(0, 0, 22);
+    glow.lineStyle(2, 0xfbbf24, 0.9);
+    glow.strokeCircle(0, 0, 22);
+    this.thirdPortalContainer.add(glow);
+
+    const sealGraphics = this.scene.add.graphics();
+    sealGraphics.lineStyle(2, 0xf59e0b, 0.95);
+    sealGraphics.strokeCircle(0, 0, 16);
+    sealGraphics.lineStyle(1.5, 0xef4444, 0.9);
+    sealGraphics.strokeCircle(0, 0, 10);
+    this.thirdPortalContainer.add(sealGraphics);
+
+    this.thirdPortalLabel = this.scene.add.text(0, -30, '🔒 TOR III (ÖFFNET WELLE 30)', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#fed7aa',
+      stroke: '#000000',
+      strokeThickness: 2.5
+    }).setOrigin(0.5);
+    this.thirdPortalContainer.add(this.thirdPortalLabel);
+
+    this.thirdPortalContainer.setScale(0);
+    this.scene.tweens.add({
+      targets: this.thirdPortalContainer,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 800,
+      ease: 'Back.easeOut'
+    });
+  }
+
+  public unlockThirdPortal(): void {
+    if (this.isThirdPortalUnlocked || !this.thirdPortalContainer) return;
+    this.isThirdPortalUnlocked = true;
+
+    this.scene.cameras.main.flash(350, 245, 158, 11, false);
+    this.scene.cameras.main.shake(400, 0.008);
+    SoundManager.playUpgrade();
+
+    const children = this.thirdPortalContainer.list;
+    if (children[1]) {
+      this.scene.tweens.add({
+        targets: children[1],
+        alpha: 0,
+        scaleX: 2.2,
+        scaleY: 2.2,
+        duration: 400,
+        onComplete: () => (children[1] as any)?.destroy()
+      });
+    }
+
+    const vortex = this.scene.add.graphics();
+    vortex.fillStyle(0xb45309, 0.85);
+    vortex.fillCircle(0, 0, 20);
+    vortex.lineStyle(2, 0xfde047, 1);
+    vortex.strokeCircle(0, 0, 20);
+    this.thirdPortalContainer.addAt(vortex, 0);
+
+    this.scene.tweens.add({
+      targets: vortex,
+      angle: 360,
+      duration: 2000,
+      repeat: -1,
+      ease: 'Linear'
+    });
+
+    if (this.thirdPortalLabel) {
+      this.thirdPortalLabel.setText('🌀 TOR III (AKTIV)');
+      this.thirdPortalLabel.setColor('#facc15');
+    }
+  }
+
+  public manifestFourthPortal(): void {
+    if (this.isFourthPortalManifested || !this.isEndless || this.pathPoints4.length === 0) return;
+    this.isFourthPortalManifested = true;
+
+    const start4 = this.pathPoints4[0];
+    const { x, y } = this.gridToPixel(start4.col, start4.row);
+
+    this.fourthPortalContainer = this.scene.add.container(x, y).setDepth(8);
+
+    const glow = this.scene.add.graphics();
+    glow.fillStyle(0x991b1b, 0.45);
+    glow.fillCircle(0, 0, 22);
+    glow.lineStyle(2, 0xef4444, 0.9);
+    glow.strokeCircle(0, 0, 22);
+    this.fourthPortalContainer.add(glow);
+
+    const sealGraphics = this.scene.add.graphics();
+    sealGraphics.lineStyle(2, 0xef4444, 0.95);
+    sealGraphics.strokeCircle(0, 0, 16);
+    this.fourthPortalContainer.add(sealGraphics);
+
+    this.fourthPortalLabel = this.scene.add.text(0, -30, '🔒 TOR IV (ÖFFNET WELLE 50)', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#fca5a5',
+      stroke: '#000000',
+      strokeThickness: 2.5
+    }).setOrigin(0.5);
+    this.fourthPortalContainer.add(this.fourthPortalLabel);
+
+    this.fourthPortalContainer.setScale(0);
+    this.scene.tweens.add({
+      targets: this.fourthPortalContainer,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 800,
+      ease: 'Back.easeOut'
+    });
+  }
+
+  public unlockFourthPortal(): void {
+    if (this.isFourthPortalUnlocked || !this.fourthPortalContainer) return;
+    this.isFourthPortalUnlocked = true;
+
+    this.scene.cameras.main.flash(350, 239, 68, 68, false);
+    this.scene.cameras.main.shake(400, 0.008);
+    SoundManager.playUpgrade();
+
+    const children = this.fourthPortalContainer.list;
+    if (children[1]) {
+      this.scene.tweens.add({
+        targets: children[1],
+        alpha: 0,
+        scaleX: 2.2,
+        scaleY: 2.2,
+        duration: 400,
+        onComplete: () => (children[1] as any)?.destroy()
+      });
+    }
+
+    const vortex = this.scene.add.graphics();
+    vortex.fillStyle(0x7f1d1d, 0.85);
+    vortex.fillCircle(0, 0, 20);
+    vortex.lineStyle(2, 0xf87171, 1);
+    vortex.strokeCircle(0, 0, 20);
+    this.fourthPortalContainer.addAt(vortex, 0);
+
+    this.scene.tweens.add({
+      targets: vortex,
+      angle: 360,
+      duration: 1800,
+      repeat: -1,
+      ease: 'Linear'
+    });
+
+    if (this.fourthPortalLabel) {
+      this.fourthPortalLabel.setText('🌀 TOR IV (AKTIV)');
+      this.fourthPortalLabel.setColor('#f87171');
+    }
+  }
+
+  public checkEndlessPortals(currentWave: number): void {
+    if (!this.isEndless) return;
+
+    if (currentWave >= 20 && !this.isSecondPortalUnlocked) {
+      this.unlockSecondPortal();
+    }
+    if (currentWave >= 25 && !this.isThirdPortalManifested) {
+      this.manifestThirdPortal();
+    }
+    if (currentWave >= 30 && !this.isThirdPortalUnlocked) {
+      this.unlockThirdPortal();
+    }
+    if (currentWave >= 45 && !this.isFourthPortalManifested) {
+      this.manifestFourthPortal();
+    }
+    if (currentWave >= 50 && !this.isFourthPortalUnlocked) {
+      this.unlockFourthPortal();
+    }
   }
 
   private renderActivePortalVortex(): void {

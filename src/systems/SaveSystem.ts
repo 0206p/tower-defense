@@ -1,3 +1,5 @@
+import { TowerType } from '../config/TowerConfig';
+
 export type WorldId = 'witch_forest' | 'goblin_caves' | 'dead_mountain' | 'dungeon';
 
 export type TowerSkinId = 'default' | 'void' | 'zerg' | 'gold';
@@ -81,9 +83,21 @@ export interface SaveData {
   dungeonUnlocked?: boolean;
   activeSkin?: TowerSkinId;
   unlockedSkins?: TowerSkinId[];
+  unlockedTowers?: string[];
+  activeTowerDeck?: TowerType[];
   worlds: Record<WorldId, WorldProgress>;
   towerUpgrades: Record<string, TowerMetaUpgrade>;
 }
+
+export const DEFAULT_UNLOCKED_TOWERS: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
+
+export const TOWER_UNLOCK_COSTS: Record<string, number> = {
+  flamethrower: 350,
+  plasma_pylon: 500,
+  orbital_laser: 650,
+  chrono_disruptor: 800,
+  bio_hive: 950
+};
 
 const DEFAULT_SAVE: SaveData = {
   crystals: 150,
@@ -97,6 +111,8 @@ const DEFAULT_SAVE: SaveData = {
   dungeonUnlocked: false,
   activeSkin: 'default',
   unlockedSkins: ['default'],
+  unlockedTowers: [...DEFAULT_UNLOCKED_TOWERS],
+  activeTowerDeck: [...DEFAULT_UNLOCKED_TOWERS],
   worlds: {
     witch_forest: {
       unlocked: true,
@@ -125,7 +141,12 @@ const DEFAULT_SAVE: SaveData = {
     ice: { damage: 0, frequency: 0, range: 0, speed: 0 },
     poison: { damage: 0, frequency: 0, range: 0, speed: 0 },
     tesla: { damage: 0, frequency: 0, range: 0, speed: 0 },
-    sniper: { damage: 0, frequency: 0, range: 0, speed: 0 }
+    sniper: { damage: 0, frequency: 0, range: 0, speed: 0 },
+    flamethrower: { damage: 0, frequency: 0, range: 0, speed: 0 },
+    plasma_pylon: { damage: 0, frequency: 0, range: 0, speed: 0 },
+    orbital_laser: { damage: 0, frequency: 0, range: 0, speed: 0 },
+    chrono_disruptor: { damage: 0, frequency: 0, range: 0, speed: 0 },
+    bio_hive: { damage: 0, frequency: 0, range: 0, speed: 0 }
   }
 };
 
@@ -169,6 +190,10 @@ export class SaveSystem {
           ...parsed,
           activeSkin: parsed.activeSkin || 'default',
           unlockedSkins: parsed.unlockedSkins && parsed.unlockedSkins.length > 0 ? parsed.unlockedSkins : ['default'],
+          unlockedTowers: parsed.unlockedTowers && parsed.unlockedTowers.length > 0 ? Array.from(new Set([...DEFAULT_UNLOCKED_TOWERS, ...parsed.unlockedTowers])) : [...DEFAULT_UNLOCKED_TOWERS],
+          activeTowerDeck: (parsed.activeTowerDeck && Array.isArray(parsed.activeTowerDeck) && parsed.activeTowerDeck.length > 0)
+            ? parsed.activeTowerDeck.slice(0, 6)
+            : [...DEFAULT_UNLOCKED_TOWERS],
           worlds: {
             ...DEFAULT_SAVE.worlds,
             ...(parsed.worlds || {})
@@ -261,14 +286,109 @@ export class SaveSystem {
     return false;
   }
 
+  public static isTowerUnlocked(towerType: TowerType): boolean {
+    if (this.adminMode) return true;
+    if (DEFAULT_UNLOCKED_TOWERS.includes(towerType)) return true;
+    const list = (this.data.unlockedTowers || DEFAULT_UNLOCKED_TOWERS) as TowerType[];
+    return list.includes(towerType);
+  }
+
+  public static unlockTower(towerType: TowerType, cost: number): boolean {
+    if (this.isTowerUnlocked(towerType)) return true;
+    if (this.spendCrystals(cost)) {
+      if (!this.data.unlockedTowers) {
+        this.data.unlockedTowers = [...DEFAULT_UNLOCKED_TOWERS];
+      }
+      if (!this.data.unlockedTowers.includes(towerType)) {
+        this.data.unlockedTowers.push(towerType);
+      }
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  public static getUnlockedTowers(): TowerType[] {
+    if (this.adminMode) {
+      return [...DEFAULT_UNLOCKED_TOWERS, ...(Object.keys(TOWER_UNLOCK_COSTS) as TowerType[])];
+    }
+    return (this.data.unlockedTowers || [...DEFAULT_UNLOCKED_TOWERS]) as TowerType[];
+  }
+
+  // =========================================================================
+  // 6ER-TURM-DECK (EINSATZ-LOADOUT FÜR GEFECHTE)
+  // =========================================================================
+  public static getActiveTowerDeck(): TowerType[] {
+    if (!this.data.activeTowerDeck || !Array.isArray(this.data.activeTowerDeck) || this.data.activeTowerDeck.length === 0) {
+      this.data.activeTowerDeck = [...DEFAULT_UNLOCKED_TOWERS];
+    }
+    const unlocked = this.getUnlockedTowers();
+    const valid = this.data.activeTowerDeck.filter((t) => unlocked.includes(t));
+    if (valid.length === 0) {
+      this.data.activeTowerDeck = [...DEFAULT_UNLOCKED_TOWERS];
+    } else {
+      this.data.activeTowerDeck = valid.slice(0, 6);
+    }
+    return this.data.activeTowerDeck;
+  }
+
+  public static isTowerInDeck(towerType: TowerType): boolean {
+    return this.getActiveTowerDeck().includes(towerType);
+  }
+
+  public static toggleTowerInDeck(towerType: TowerType): { success: boolean; action: 'added' | 'removed' | 'full' } {
+    const deck = [...this.getActiveTowerDeck()];
+    const index = deck.indexOf(towerType);
+    if (index >= 0) {
+      if (deck.length <= 1) {
+        return { success: false, action: 'removed' };
+      }
+      deck.splice(index, 1);
+      this.data.activeTowerDeck = deck;
+      this.save();
+      return { success: true, action: 'removed' };
+    } else {
+      if (deck.length >= 6) {
+        return { success: false, action: 'full' };
+      }
+      deck.push(towerType);
+      this.data.activeTowerDeck = deck;
+      this.save();
+      return { success: true, action: 'added' };
+    }
+  }
+
+  public static swapTowerInDeck(slotIndex: number, newType: TowerType): boolean {
+    const deck = [...this.getActiveTowerDeck()];
+    if (slotIndex >= 0 && slotIndex < 6 && this.isTowerUnlocked(newType)) {
+      // Wenn der Turm schon an anderer Stelle im Deck ist, tauschen
+      const existingIdx = deck.indexOf(newType);
+      if (existingIdx >= 0) {
+        deck[existingIdx] = deck[slotIndex];
+      }
+      deck[slotIndex] = newType;
+      this.data.activeTowerDeck = deck;
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  public static setTowerDeck(deck: TowerType[]): void {
+    if (deck.length > 0 && deck.length <= 6) {
+      this.data.activeTowerDeck = [...deck];
+      this.save();
+    }
+  }
+
   public static isWorldUnlocked(worldId: WorldId): boolean {
     if (this.adminMode) return true;
     if (worldId === 'witch_forest') return true;
     if (worldId === 'goblin_caves') {
-      return (this.data.worlds.witch_forest.completedMissions || 0) >= 30;
+      return (this.data.worlds.witch_forest.completedMissions || 0) >= 15;
     }
     if (worldId === 'dead_mountain') {
-      return (this.data.worlds.goblin_caves.completedMissions || 0) >= 30;
+      return (this.data.worlds.goblin_caves.completedMissions || 0) >= 15;
     }
     if (worldId === 'dungeon') {
       return this.isDungeonUnlocked();
@@ -280,7 +400,7 @@ export class SaveSystem {
     if (this.adminMode) return true;
     if (this.data.dungeonUnlocked) return true;
     const dm = this.data.worlds.dead_mountain;
-    return !!dm && Number(dm.completedMissions || 0) >= 30;
+    return !!dm && Number(dm.completedMissions || 0) >= 15;
   }
 
   public static isMissionUnlocked(worldId: WorldId, missionNum: number): boolean {
@@ -315,12 +435,12 @@ export class SaveSystem {
 
     this.data.totalScore += scoreEarned;
 
-    // Nach 30 Missionen jeweils die nächste Welt oder Dungeon freischalten
-    if (worldId === 'witch_forest' && world.completedMissions >= 30) {
+    // Nach 15 Missionen jeweils die nächste Welt oder Dungeon freischalten
+    if (worldId === 'witch_forest' && world.completedMissions >= 15) {
       this.data.worlds.goblin_caves.unlocked = true;
-    } else if (worldId === 'goblin_caves' && world.completedMissions >= 30) {
+    } else if (worldId === 'goblin_caves' && world.completedMissions >= 15) {
       this.data.worlds.dead_mountain.unlocked = true;
-    } else if (worldId === 'dead_mountain' && world.completedMissions >= 30) {
+    } else if (worldId === 'dead_mountain' && world.completedMissions >= 15) {
       this.data.dungeonUnlocked = true;
     }
 

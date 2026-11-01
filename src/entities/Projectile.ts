@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { Enemy } from './Enemy';
 import { TowerType } from '../config/TowerConfig';
 
-export type ProjectileType = 'arrow' | 'cannonball' | 'ice' | 'poison' | 'tesla' | 'sniper' | 'archer' | 'cannon';
+export type ProjectileType = 'arrow' | 'cannonball' | 'ice' | 'poison' | 'tesla' | 'sniper' | 'archer' | 'cannon' | 'flamethrower' | 'plasma_pylon' | 'orbital_laser' | 'chrono_disruptor' | 'bio_hive';
 
 export interface ProjectileParams {
   type: ProjectileType;
@@ -77,6 +77,26 @@ export class Projectile extends Phaser.GameObjects.Sprite {
         textureKey = 'proj_sniper';
         baseSpeed = 1600;
         break;
+      case 'flamethrower':
+        textureKey = 'proj_flame';
+        baseSpeed = 800;
+        break;
+      case 'plasma_pylon':
+        textureKey = 'proj_plasma';
+        baseSpeed = 1050;
+        break;
+      case 'orbital_laser':
+        textureKey = 'proj_orbital';
+        baseSpeed = 1800;
+        break;
+      case 'chrono_disruptor':
+        textureKey = 'proj_chrono';
+        baseSpeed = 950;
+        break;
+      case 'bio_hive':
+        textureKey = 'proj_spore';
+        baseSpeed = 850;
+        break;
     }
 
     super(scene, params.startX, params.startY, textureKey);
@@ -93,6 +113,16 @@ export class Projectile extends Phaser.GameObjects.Sprite {
       this.sourceTowerType = 'tesla';
     } else if (params.type === 'sniper') {
       this.sourceTowerType = 'sniper';
+    } else if (params.type === 'flamethrower') {
+      this.sourceTowerType = 'flamethrower';
+    } else if (params.type === 'plasma_pylon') {
+      this.sourceTowerType = 'plasma_pylon';
+    } else if (params.type === 'orbital_laser') {
+      this.sourceTowerType = 'orbital_laser';
+    } else if (params.type === 'chrono_disruptor') {
+      this.sourceTowerType = 'chrono_disruptor';
+    } else if (params.type === 'bio_hive') {
+      this.sourceTowerType = 'bio_hive';
     } else {
       this.sourceTowerType = 'archer';
     }
@@ -258,6 +288,81 @@ export class Projectile extends Phaser.GameObjects.Sprite {
 
       case 'tesla': {
         this.chainLightningHit();
+        break;
+      }
+
+      case 'flamethrower': {
+        this.spawnExplosionEffect(this.x, this.y);
+        this.allEnemies.forEach((e) => {
+          if (!e.isDead) {
+            const dist = Math.hypot(e.x - this.x, e.y - this.y);
+            const radius = this.splashRadius || 55;
+            if (dist <= radius) {
+              e.takeDamage(finalDamage, isCrit, false, this.sourceTowerType);
+              if (this.dotDamage > 0) e.applyPoison(this.dotDamage, this.dotDuration || 3500);
+            }
+          }
+        });
+        break;
+      }
+
+      case 'plasma_pylon': {
+        this.spawnHitEffect(this.x, this.y);
+        this.allEnemies.forEach((e) => {
+          if (!e.isDead) {
+            const dist = Math.hypot(e.x - this.x, e.y - this.y);
+            const radius = this.splashRadius || 65;
+            if (dist <= radius) {
+              e.takeDamage(finalDamage, isCrit, true, this.sourceTowerType);
+            }
+          }
+        });
+        break;
+      }
+
+      case 'orbital_laser': {
+        this.spawnHitEffect(this.x, this.y);
+        if (this.target && !this.target.isDead) {
+          if (this.executeThreshold > 0 && this.target.currentHp <= this.target.maxHp * this.executeThreshold) {
+            this.target.takeDamage(this.target.currentHp + 999, true, true, this.sourceTowerType);
+          } else {
+            this.target.takeDamage(finalDamage, isCrit, true, this.sourceTowerType);
+          }
+          if (this.stunDuration > 0) {
+            this.target.applyStun(this.stunDuration);
+          }
+        }
+        break;
+      }
+
+      case 'chrono_disruptor': {
+        this.spawnFrostEffect(this.x, this.y);
+        this.allEnemies.forEach((e) => {
+          if (!e.isDead) {
+            const dist = Math.hypot(e.x - this.x, e.y - this.y);
+            const radius = this.splashRadius || 75;
+            if (dist <= radius) {
+              e.takeDamage(finalDamage, isCrit, false, this.sourceTowerType);
+              if (this.slowFactor > 0) e.applySlow(this.slowFactor, this.slowDuration || 2800);
+              if (this.stunDuration > 0) e.applyStun(this.stunDuration);
+            }
+          }
+        });
+        break;
+      }
+
+      case 'bio_hive': {
+        this.spawnPoisonEffect(this.x, this.y);
+        this.allEnemies.forEach((e) => {
+          if (!e.isDead) {
+            const dist = Math.hypot(e.x - this.x, e.y - this.y);
+            const radius = this.splashRadius || 50;
+            if (dist <= radius) {
+              e.takeDamage(finalDamage, false, false, this.sourceTowerType);
+              if (this.dotDamage > 0) e.applyPoison(this.dotDamage, this.dotDuration || 4000);
+            }
+          }
+        });
         break;
       }
     }

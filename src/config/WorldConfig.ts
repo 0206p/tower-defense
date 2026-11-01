@@ -27,7 +27,7 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     textColor: '#86efac',
     bgHex: '#052e16',
     description: 'Dichter Xeno-Dschungel auf Exoplanet Zerus. Heimat agiler Zergling-Horden, Säurespucker und fliegender Mutalisken.',
-    totalMissions: 30,
+    totalMissions: 15,
     unlockedByDefault: true,
     enemyPool: ['goblin', 'bat', 'witch', 'slime', 'swamp_troll'],
     bossKey: 'boss_witch'
@@ -42,7 +42,7 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     textColor: '#60a5fa',
     bgHex: '#0c1d37',
     description: 'Tiefste Erzstollen im Asteroidengürtel von Korhal. Maschinelle Mech-Krieger, Baneling-Sprengdrohnen und schwer gepanzerte Goliaths.',
-    totalMissions: 30,
+    totalMissions: 15,
     unlockedByDefault: false,
     enemyPool: ['cave_goblin', 'bomber', 'orc', 'armored_troll', 'golem'],
     bossKey: 'boss_goblin_king'
@@ -57,7 +57,7 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     textColor: '#fda4af',
     bgHex: '#260711',
     description: 'Glühende Schluchten auf dem feindlichen Vulkanplaneten Char. Brutstätte brennender Xeno-Hunde und gigantischer Obsidian-Ultralisken.',
-    totalMissions: 30,
+    totalMissions: 15,
     unlockedByDefault: false,
     enemyPool: ['fire_imp', 'magma_orc', 'lava_golem', 'hellhound'],
     bossKey: 'boss_mountain_titan'
@@ -71,8 +71,8 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     themeColor: 0x4c1d95,
     textColor: '#e9d5ff',
     bgHex: '#130826',
-    description: 'Vergessene Tempelruinen im Herz der Leere. 30 gnadenlose Kammern voller psionischer Archons, Schattenläufer und des Void-Overlords.',
-    totalMissions: 30,
+    description: 'Vergessene Tempelruinen im Herz der Leere. 15 gnadenlose Kammern voller psionischer Archons, Schattenläufer und des Void-Overlords.',
+    totalMissions: 15,
     unlockedByDefault: false,
     enemyPool: ['cave_goblin', 'bomber', 'orc', 'witch', 'armored_troll', 'golem', 'magma_orc', 'lava_golem', 'boss'],
     bossKey: 'boss_dungeon_overlord'

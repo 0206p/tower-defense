@@ -34,7 +34,7 @@ export class MissionSelectScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const progress = SaveSystem.getData().worlds[this.worldId] || { completedMissions: 0, stars: {} };
-    this.add.text(GAME_WIDTH / 2, 72, `Abgeschlossen: ${progress.completedMissions} / 30 Missionen. Jede Mission dauert 10 Wellen.`, {
+    this.add.text(GAME_WIDTH / 2, 72, `Abgeschlossen: ${progress.completedMissions} / 15 Missionen. Jede Mission dauert 10 Wellen.`, {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#dcdde1',
@@ -42,7 +42,7 @@ export class MissionSelectScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0.5);
 
-    // Alle 30 Missionen auf einer übersichtlichen Seite rendern
+    // Alle 15 Missionen auf einer übersichtlichen Seite rendern
     this.renderMissionGrid();
 
     // Zurück-Button
@@ -65,16 +65,16 @@ export class MissionSelectScene extends Phaser.Scene {
   private renderMissionGrid(): void {
     const progress = SaveSystem.getData().worlds[this.worldId] || { completedMissions: 0, stars: {} };
 
-    const cols = 6;
-    const tileW = 168;
-    const tileH = 74;
-    const spacingX = 26;
-    const spacingY = 16;
+    const cols = 5;
+    const tileW = 208;
+    const tileH = 100;
+    const spacingX = 24;
+    const spacingY = 24;
     const totalW = cols * tileW + (cols - 1) * spacingX;
     const startX = (GAME_WIDTH - totalW) / 2;
-    const startY = 108;
+    const startY = 130;
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 15; i++) {
       const missionNum = i + 1;
       const c = i % cols;
       const r = Math.floor(i / cols);

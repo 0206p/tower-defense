@@ -966,6 +966,146 @@ export class PixelTextureGenerator {
       ctx.fill();
     });
 
+    // ==========================================
+    // MONUMENTALE SCI-FI LANDMARKEN
+    // ==========================================
+    create('landmark_radar_relay', 56, 56, (ctx) => {
+      // 1. Bodenschatten
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(28, 48, 24, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Beton-Verstärkter Sockel
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(16, 36, 24, 14);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(18, 38, 20, 10);
+
+      // 3. Dreibein-Stützgerüst
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(18, 38); ctx.lineTo(28, 20); ctx.lineTo(38, 38);
+      ctx.stroke();
+
+      // 4. Parabol-Radarantenne
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(28, 16, 15, Math.PI * 0.8, Math.PI * 2.2);
+      ctx.stroke();
+
+      // 5. Signallinse & Emitter
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(28, 16, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(28, 16, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    create('landmark_power_generator', 56, 56, (ctx) => {
+      // Fusion Plasma Generator mit Reaktor-Kühlern
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(28, 48, 22, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Panzer-Chassis mit Warnstreifen
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(12, 22, 32, 26);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(12, 44, 32, 4);
+
+      // Kühltürme links und rechts
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(8, 18, 7, 28);
+      ctx.fillRect(41, 18, 7, 28);
+
+      // Glühender Fusions-Plasmakern
+      const coreGrad = ctx.createRadialGradient(28, 32, 2, 28, 32, 10);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.4, '#38bdf8');
+      coreGrad.addColorStop(0.8, '#0369a1');
+      coreGrad.addColorStop(1, '#0c4a6e');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(28, 32, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Reaktorgitter
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(20, 24, 16, 16);
+    });
+
+    create('landmark_alien_obelisk', 48, 64, (ctx) => {
+      // Schwebender Xeno-Monolith mit astralen Runen
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.beginPath();
+      ctx.ellipse(24, 58, 16, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Obsidian-Monolith
+      const obGrad = ctx.createLinearGradient(12, 6, 36, 52);
+      obGrad.addColorStop(0, '#1e1b4b');
+      obGrad.addColorStop(0.5, '#0f172a');
+      obGrad.addColorStop(1, '#020617');
+      ctx.fillStyle = obGrad;
+      ctx.beginPath();
+      ctx.moveTo(24, 4); ctx.lineTo(36, 16); ctx.lineTo(34, 52); ctx.lineTo(24, 56); ctx.lineTo(14, 52); ctx.lineTo(12, 16);
+      ctx.closePath();
+      ctx.fill();
+
+      // Psionisch leuchtende Runenfugen
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(24, 8); ctx.lineTo(24, 50);
+      ctx.moveTo(18, 24); ctx.lineTo(30, 24);
+      ctx.moveTo(16, 36); ctx.lineTo(32, 36);
+      ctx.stroke();
+
+      // Schwebende Kristallsphäre
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath();
+      ctx.arc(24, 24, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    create('landmark_mech_hangar', 64, 52, (ctx) => {
+      // Schwerer Terran Mech Bunker & Reparaturhangar
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.beginPath();
+      ctx.ellipse(32, 46, 28, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Titan-Bunkerkörper
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(8, 14, 48, 32);
+
+      // Panzertor mit Warnstreifen
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(18, 22, 28, 24);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(18, 20, 28, 2.5);
+
+      // Hydraulikkran / Dach-Uplink
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(14, 14); ctx.lineTo(24, 4); ctx.lineTo(40, 4); ctx.lineTo(50, 14);
+      ctx.stroke();
+
+      // Statusleuchten
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(14, 24, 2.5, 2.5);
+      ctx.fillRect(47, 24, 2.5, 2.5);
+    });
+
     // Taktische Aufklärungs-Drohne (SC2 Scout Drone - ersetzt altes Wald-Kaninchen)
     create('critter_rabbit', 24, 22, (ctx) => {
       // Schwebeschatten am Boden
@@ -1978,73 +2118,237 @@ export class PixelTextureGenerator {
     });
 
     create('enemy_armored_troll', 38, 38, (ctx) => {
-      // Schwerer Panzer-Behemoth mit Stahlschilden
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath(); ctx.arc(19, 19, 16, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#64748b';
-      ctx.fillRect(8, 11, 22, 5); ctx.fillRect(10, 18, 18, 5);
+      // Schwerer Titan-Juggernaut (Segmentierter Panzerrumpf, massive Schulterplatten, Cyber-Visier)
+      // 1. Chitin-Unterbauch & Extremitäten
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.moveTo(19, 4); ctx.lineTo(32, 12); ctx.lineTo(35, 26); ctx.lineTo(26, 36); ctx.lineTo(12, 36); ctx.lineTo(3, 26); ctx.lineTo(6, 12);
+      ctx.closePath();
+      ctx.fill();
+
+      // 2. Titan-Frontal-Panzerplatten
+      const armorGrad = ctx.createLinearGradient(6, 6, 32, 32);
+      armorGrad.addColorStop(0, '#64748b');
+      armorGrad.addColorStop(0.5, '#334155');
+      armorGrad.addColorStop(1, '#1e293b');
+      ctx.fillStyle = armorGrad;
+      ctx.fillRect(8, 10, 22, 7);
+      ctx.fillRect(10, 19, 18, 6);
+      ctx.fillRect(13, 27, 12, 5);
+
+      // 3. Stachelbewehrte Schulteraufsätze
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(6, 10); ctx.lineTo(0, 4); ctx.lineTo(8, 7); ctx.closePath();
+      ctx.moveTo(32, 10); ctx.lineTo(38, 4); ctx.lineTo(30, 7); ctx.closePath();
+      ctx.fill();
+
+      // 4. Glühendes kybernetisches Visier (Gift-Resistenz Cyan-Rot)
       ctx.fillStyle = '#ef4444';
-      ctx.fillRect(14, 25, 3, 2.5); ctx.fillRect(21, 25, 3, 2.5);
+      ctx.fillRect(13, 14, 12, 2.5);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(17, 14, 4, 2.5);
     });
 
     create('enemy_golem', 38, 38, (ctx) => {
-      // Kristall-Golem mit Obsidian-Splittern
-      ctx.fillStyle = '#0f172a';
-      ctx.beginPath(); ctx.arc(19, 19, 15, 0, Math.PI * 2); ctx.fill();
+      // Kristall-Obsidian Geomancer (Schwebende Kristallmonolithen & pulsierender Frostkern)
+      // 1. Dunkler Obsidian-Monolith
+      ctx.fillStyle = '#090d16';
+      ctx.beginPath();
+      ctx.moveTo(19, 3); ctx.lineTo(30, 10); ctx.lineTo(34, 26); ctx.lineTo(24, 35); ctx.lineTo(14, 35); ctx.lineTo(4, 26); ctx.lineTo(8, 10);
+      ctx.closePath();
+      ctx.fill();
+
+      // 2. Schwebende eisblaue Kristallkanten
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.moveTo(19, 5); ctx.lineTo(27, 14); ctx.lineTo(20, 20); ctx.lineTo(11, 14); ctx.closePath();
+      ctx.moveTo(6, 15); ctx.lineTo(13, 27); ctx.lineTo(5, 29); ctx.closePath();
+      ctx.moveTo(32, 15); ctx.lineTo(33, 29); ctx.lineTo(25, 27); ctx.closePath();
+      ctx.fill();
+
+      // 3. Glühende Kristall-Fokus-Linse (Frost-Immun Aura)
       ctx.fillStyle = '#38bdf8';
       ctx.beginPath();
-      ctx.moveTo(19, 6); ctx.lineTo(24, 15); ctx.lineTo(14, 15); ctx.closePath();
-      ctx.moveTo(11, 16); ctx.lineTo(16, 26); ctx.lineTo(7, 24); ctx.closePath();
-      ctx.moveTo(27, 16); ctx.lineTo(31, 24); ctx.lineTo(22, 26); ctx.closePath();
+      ctx.arc(19, 19, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(19, 19, 2, 0, Math.PI * 2);
       ctx.fill();
     });
 
     create('enemy_fire_imp', 36, 36, (ctx) => {
-      // Feuer-Imp mit Flammenaura
-      ctx.fillStyle = '#ea580c';
-      ctx.beginPath(); ctx.arc(18, 18, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#fde047';
+      // Flug-Dämon / Flammen-Fiend (Gezackte Schwingen, glühender Flammen-Kamm & Reißzähne)
+      // 1. Fledermaus-Schwingen mit feurigen Spitzen
+      const wingGrad = ctx.createLinearGradient(0, 0, 36, 36);
+      wingGrad.addColorStop(0, '#ea580c');
+      wingGrad.addColorStop(0.5, '#7c2d12');
+      wingGrad.addColorStop(1, '#290b02');
+      ctx.fillStyle = wingGrad;
       ctx.beginPath();
-      ctx.moveTo(18, 2); ctx.lineTo(23, 12); ctx.lineTo(13, 12); ctx.closePath();
+      ctx.moveTo(18, 16); ctx.lineTo(3, 4); ctx.lineTo(6, 18); ctx.lineTo(0, 26); ctx.lineTo(14, 22);
+      ctx.moveTo(18, 16); ctx.lineTo(33, 4); ctx.lineTo(30, 18); ctx.lineTo(36, 26); ctx.lineTo(22, 22);
       ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(15, 18, 2, 2); ctx.fillRect(19, 18, 2, 2);
+
+      // 2. Dämonischer Rumpf mit glühendem Hornkamm
+      ctx.fillStyle = '#c2410c';
+      ctx.beginPath();
+      ctx.ellipse(18, 19, 7.5, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hörner
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(14, 11); ctx.lineTo(11, 2); ctx.lineTo(16, 9); ctx.closePath();
+      ctx.moveTo(22, 11); ctx.lineTo(25, 2); ctx.lineTo(20, 9); ctx.closePath();
+      ctx.fill();
+
+      // Glühende Augen
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(14, 16, 2.5, 2.5);
+      ctx.fillRect(19.5, 16, 2.5, 2.5);
     });
 
     create('enemy_magma_orc', 40, 40, (ctx) => {
-      ctx.fillStyle = '#7c2d12';
-      ctx.beginPath(); ctx.arc(20, 20, 15, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#f97316';
-      ctx.fillRect(14, 18, 12, 3);
-      ctx.fillStyle = '#fef08a';
-      ctx.fillRect(16, 23, 2.5, 2.5); ctx.fillRect(22, 23, 2.5, 2.5);
+      // Vulkanischer Magma-Berserker (Tektonischer Basaltpanzer mit flüssiger Lava-Ader)
+      ctx.fillStyle = '#1c1917';
+      ctx.beginPath();
+      ctx.moveTo(20, 4); ctx.lineTo(32, 10); ctx.lineTo(37, 24); ctx.lineTo(28, 36); ctx.lineTo(12, 36); ctx.lineTo(3, 24); ctx.lineTo(8, 10);
+      ctx.closePath();
+      ctx.fill();
+
+      // Glühende Magmaströme in den tektonischen Fugen
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(12, 14); ctx.lineTo(20, 22); ctx.lineTo(16, 32);
+      ctx.moveTo(28, 14); ctx.lineTo(20, 22); ctx.lineTo(24, 32);
+      ctx.stroke();
+
+      // Oberflächen-Lavamündungen & Schlote
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(13, 9, 4, 3);
+      ctx.fillRect(23, 9, 4, 3);
+
+      // Glühendes Visier & Zähne
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(16, 18, 2.5, 2.5);
+      ctx.fillRect(21.5, 18, 2.5, 2.5);
     });
 
     create('enemy_hellhound', 38, 38, (ctx) => {
-      ctx.fillStyle = '#450a0a';
-      ctx.beginPath(); ctx.ellipse(19, 19, 9, 13, 0, 0, Math.PI * 2); ctx.fill();
+      // Höllen-Raubtier / Cyber-Wolf (Schnittiger, muskulöser Alien-Prädator mit Rücken-Stacheln)
+      ctx.fillStyle = '#3f0b0b';
+      ctx.beginPath();
+      ctx.ellipse(19, 21, 8.5, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Prädator-Schädel & Kiefer
+      ctx.fillStyle = '#1f0404';
+      ctx.beginPath();
+      ctx.moveTo(19, 7); ctx.lineTo(26, 18); ctx.lineTo(19, 23); ctx.lineTo(12, 18); ctx.closePath();
+      ctx.fill();
+
+      // Rückenstacheln & Nackenkamm
       ctx.fillStyle = '#ef4444';
       ctx.beginPath();
-      ctx.moveTo(12, 10); ctx.lineTo(8, 2); ctx.lineTo(15, 7);
-      ctx.moveTo(26, 10); ctx.lineTo(30, 2); ctx.lineTo(23, 7);
+      ctx.moveTo(19, 4); ctx.lineTo(17, 10); ctx.lineTo(21, 10); ctx.closePath();
+      ctx.moveTo(19, 14); ctx.lineTo(15, 20); ctx.lineTo(23, 20); ctx.closePath();
+      ctx.moveTo(19, 24); ctx.lineTo(16, 30); ctx.lineTo(22, 30); ctx.closePath();
       ctx.fill();
+
+      // Gezackte Raubtier-Ohren
+      ctx.fillStyle = '#b91c1c';
+      ctx.beginPath();
+      ctx.moveTo(13, 11); ctx.lineTo(7, 3); ctx.lineTo(15, 8); ctx.closePath();
+      ctx.moveTo(25, 11); ctx.lineTo(31, 3); ctx.lineTo(23, 8); ctx.closePath();
+      ctx.fill();
+
+      // Glühende Raubtieraugen
       ctx.fillStyle = '#facc15';
-      ctx.fillRect(14, 21, 2, 2); ctx.fillRect(22, 21, 2, 2);
+      ctx.fillRect(14, 15, 2, 2); ctx.fillRect(22, 15, 2, 2);
     });
 
     create('enemy_lava_golem', 46, 46, (ctx) => {
-      const baseImg = tm.get('enemy_boss').getSourceImage() as CanvasImageSource;
-      if (baseImg) ctx.drawImage(baseImg, 0, 0, 46, 46);
+      // Eruptierender Magma-Koloss (46x46 Monumental-Gestein mit fließender Lava)
+      ctx.fillStyle = '#180702';
+      ctx.beginPath();
+      ctx.moveTo(23, 3); ctx.lineTo(39, 12); ctx.lineTo(44, 30); ctx.lineTo(34, 43); ctx.lineTo(12, 43); ctx.lineTo(2, 30); ctx.lineTo(7, 12);
+      ctx.closePath();
+      ctx.fill();
+
+      // Magma-Brustkern (Infrarot-Hitze)
+      const coreGrad = ctx.createRadialGradient(23, 23, 2, 23, 23, 16);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.3, '#facc15');
+      coreGrad.addColorStop(0.7, '#ea580c');
+      coreGrad.addColorStop(1, '#7c2d12');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(23, 23, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Obsidian-Schulterpanzer
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(6, 12, 9, 14);
+      ctx.fillRect(31, 12, 9, 14);
     });
 
     create('enemy_colossus', 46, 46, (ctx) => {
-      const baseImg = tm.get('enemy_boss').getSourceImage() as CanvasImageSource;
-      if (baseImg) ctx.drawImage(baseImg, 0, 0, 46, 46);
+      // Void-Kriegs-Koloss (Psionischer Vierbein-Strider mit Spaltkern)
+      ctx.fillStyle = '#1e1b4b';
+      ctx.beginPath();
+      ctx.moveTo(23, 4); ctx.lineTo(40, 15); ctx.lineTo(38, 38); ctx.lineTo(23, 43); ctx.lineTo(8, 38); ctx.lineTo(6, 15);
+      ctx.closePath();
+      ctx.fill();
+
+      // Psionischer Reaktor
+      const reactorGrad = ctx.createRadialGradient(23, 23, 2, 23, 23, 14);
+      reactorGrad.addColorStop(0, '#f0abfc');
+      reactorGrad.addColorStop(0.5, '#a855f7');
+      reactorGrad.addColorStop(1, '#3b0764');
+      ctx.fillStyle = reactorGrad;
+      ctx.beginPath();
+      ctx.arc(23, 23, 11, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Flankierende Energie-Spreizer
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(9, 13, 28, 20);
     });
 
     create('enemy_titan', 48, 48, (ctx) => {
-      const baseImg = tm.get('enemy_boss').getSourceImage() as CanvasImageSource;
-      if (baseImg) ctx.drawImage(baseImg, 0, 0, 48, 48);
+      // Kosmischer Überlord / Weltenzerstörer (48x48 Eldritch Titan mit 6 Augen & Sensenkrallen)
+      ctx.fillStyle = '#0a0512';
+      ctx.beginPath();
+      ctx.moveTo(24, 2); ctx.lineTo(43, 12); ctx.lineTo(46, 34); ctx.lineTo(36, 46); ctx.lineTo(12, 46); ctx.lineTo(2, 34); ctx.lineTo(5, 12);
+      ctx.closePath();
+      ctx.fill();
+
+      // Monströse Sensenkrallen
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.moveTo(5, 12); ctx.lineTo(0, 0); ctx.lineTo(12, 6); ctx.closePath();
+      ctx.moveTo(43, 12); ctx.lineTo(48, 0); ctx.lineTo(36, 6); ctx.closePath();
+      ctx.fill();
+
+      // Dunkle Materie-Strudel im Abdomen
+      const voidGrad = ctx.createRadialGradient(24, 25, 2, 24, 25, 16);
+      voidGrad.addColorStop(0, '#f43f5e');
+      voidGrad.addColorStop(0.5, '#881337');
+      voidGrad.addColorStop(1, '#1e0538');
+      ctx.fillStyle = voidGrad;
+      ctx.beginPath();
+      ctx.arc(24, 25, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 6 Glühende Augen des Abgrunds
+      ctx.fillStyle = '#fde047';
+      [ {x: 18, y: 16}, {x: 24, y: 14}, {x: 30, y: 16}, {x: 19, y: 20}, {x: 24, y: 22}, {x: 29, y: 20} ].forEach(eye => {
+        ctx.beginPath(); ctx.arc(eye.x, eye.y, 1.8, 0, Math.PI * 2); ctx.fill();
+      });
     });
 
     // ==========================================
@@ -2143,6 +2447,76 @@ export class PixelTextureGenerator {
       ctx.fillRect(0, 2, 26, 4);
     });
 
+    create('proj_flame', 24, 16, (ctx) => {
+      // Flammenstoß-Projektil (Feuriger Tropfen mit leuchtendem Kern)
+      const grad = ctx.createRadialGradient(16, 8, 2, 16, 8, 10);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.3, '#facc15');
+      grad.addColorStop(0.7, '#ea580c');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(24, 8); ctx.lineTo(12, 1); ctx.lineTo(0, 8); ctx.lineTo(12, 15); ctx.closePath();
+      ctx.fill();
+    });
+
+    create('proj_plasma', 20, 20, (ctx) => {
+      // Hochenergetischer Plasma-Orb
+      const grad = ctx.createRadialGradient(10, 10, 2, 10, 10, 9);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.4, '#38bdf8');
+      grad.addColorStop(0.8, '#0284c7');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(10, 10, 9, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    create('proj_orbital', 28, 8, (ctx) => {
+      // Orbitale Laser-Lanze (Rubinroter Laserstrahl mit weißem Kern)
+      const grad = ctx.createLinearGradient(0, 4, 28, 4);
+      grad.addColorStop(0, 'transparent');
+      grad.addColorStop(0.3, '#ef4444');
+      grad.addColorStop(0.7, '#ffffff');
+      grad.addColorStop(1, '#fca5a5');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 2, 28, 4);
+    });
+
+    create('proj_chrono', 22, 22, (ctx) => {
+      // Temporale Raumverzerrungs-Welle
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(11, 11, 8, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const coreGrad = ctx.createRadialGradient(11, 11, 1, 11, 11, 5);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.6, '#38bdf8');
+      coreGrad.addColorStop(1, '#0e7490');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(11, 11, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    create('proj_spore', 18, 18, (ctx) => {
+      // Ätzende Zerg-Bio-Spore
+      const grad = ctx.createRadialGradient(9, 9, 2, 9, 9, 8);
+      grad.addColorStop(0, '#facc15');
+      grad.addColorStop(0.5, '#84cc16');
+      grad.addColorStop(0.9, '#15803d');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(9, 9, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(7, 7, 2, 2);
+    });
+
     // Effekte
     create('effect_hit', 20, 20, (ctx) => {
       ctx.fillStyle = '#ffffff';
@@ -2229,7 +2603,7 @@ export class PixelTextureGenerator {
     // ==========================================
     // 8. HOCHWERTIGE 2.5D RTS-TÜRME (REALISTISCHES MILITÄR-DESIGN)
     // ==========================================
-    const towerTypes = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
+    const towerTypes = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper', 'flamethrower', 'plasma_pylon', 'orbital_laser', 'chrono_disruptor', 'bio_hive'];
 
     const modernTierThemes: Record<number, { ring: string; trim: string; glow: string; armor: string; dark: string }> = {
       1: { ring: '#38bdf8', trim: '#7dd3fc', glow: 'rgba(56, 189, 248, 0.45)', armor: '#334155', dark: '#0f172a' },
@@ -2671,6 +3045,92 @@ export class PixelTextureGenerator {
               ctx.arc(22, 14, 1.8, 0, Math.PI * 2);
               ctx.fill();
             }
+          } else if (type === 'flamethrower') {
+            // SCHWERER FEUERSTURM-WERFER
+            if (lvl === 1) {
+              ctx.fillStyle = '#b45309';
+              ctx.fillRect(19, 5, 6, 18);
+              ctx.fillStyle = '#f97316';
+              ctx.fillRect(18, 3, 8, 3);
+              ctx.fillStyle = '#ef4444';
+              ctx.fillRect(9, 20, 6, 7);
+            } else if (lvl === 2) {
+              ctx.fillStyle = '#7c2d12';
+              ctx.fillRect(16, 3, 5, 20);
+              ctx.fillRect(23, 3, 5, 20);
+              ctx.fillStyle = '#ea580c';
+              ctx.fillRect(15, 1, 14, 3);
+              ctx.fillStyle = '#fbbf24';
+              ctx.fillRect(8, 18, 6, 9);
+              ctx.fillRect(30, 18, 6, 9);
+            } else {
+              ctx.fillStyle = '#450a0a';
+              ctx.fillRect(14, 1, 6, 22);
+              ctx.fillRect(24, 1, 6, 22);
+              ctx.fillStyle = '#ef4444';
+              ctx.fillRect(13, -1, 18, 3.5);
+              ctx.fillStyle = '#facc15';
+              ctx.beginPath(); ctx.arc(22, 12, 3.5, 0, Math.PI * 2); ctx.fill();
+            }
+          } else if (type === 'plasma_pylon') {
+            // PROTOSS-STIL PLASMA-PYLONE
+            const pylonGrad = ctx.createLinearGradient(16, 2, 28, 24);
+            pylonGrad.addColorStop(0, '#38bdf8');
+            pylonGrad.addColorStop(0.5, '#0284c7');
+            pylonGrad.addColorStop(1, '#0c4a6e');
+            ctx.fillStyle = pylonGrad;
+            ctx.beginPath();
+            ctx.moveTo(22, 0); ctx.lineTo(29, 14); ctx.lineTo(22, 24); ctx.lineTo(15, 14); ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(22, 10, lvl + 1.5, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#00f2fe';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(22, 10, lvl + 4, 0, Math.PI * 2); ctx.stroke();
+          } else if (type === 'orbital_laser') {
+            // ORBITAL-UPLINK & GEODÄTISCHER ZIELRADAR
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath(); ctx.arc(22, 14, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath(); ctx.arc(22, 14, 8, 0, Math.PI * 2); ctx.stroke();
+
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.arc(22, 14, 3 + lvl, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(22, 14, 1.5, 0, Math.PI * 2); ctx.fill();
+          } else if (type === 'chrono_disruptor') {
+            // TEMPORAL-VERZERRUNGS KERN
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.ellipse(22, 14, 11, 6, 0, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(22, 14, 6, 11, 0, 0, Math.PI * 2); ctx.stroke();
+
+            const chronoGrad = ctx.createRadialGradient(22, 14, 1, 22, 14, 6);
+            chronoGrad.addColorStop(0, '#ffffff');
+            chronoGrad.addColorStop(0.5, '#38bdf8');
+            chronoGrad.addColorStop(1, '#1e1b4b');
+            ctx.fillStyle = chronoGrad;
+            ctx.beginPath(); ctx.arc(22, 14, 5, 0, Math.PI * 2); ctx.fill();
+          } else if (type === 'bio_hive') {
+            // ZERG-INSPIRIERTER BIO-ORGANISCHER BRUTTURM
+            const hiveGrad = ctx.createRadialGradient(22, 16, 2, 22, 16, 12);
+            hiveGrad.addColorStop(0, '#84cc16');
+            hiveGrad.addColorStop(0.5, '#4d7c0f');
+            hiveGrad.addColorStop(1, '#1e0538');
+            ctx.fillStyle = hiveGrad;
+            ctx.beginPath(); ctx.arc(22, 16, 10, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#a855f7';
+            ctx.beginPath();
+            ctx.moveTo(14, 10); ctx.lineTo(10, 2); ctx.lineTo(18, 7); ctx.closePath();
+            ctx.moveTo(30, 10); ctx.lineTo(34, 2); ctx.lineTo(26, 7); ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#bef264';
+            ctx.fillRect(19, 13, 3, 3);
+            ctx.fillRect(23, 13, 3, 3);
           }
         });
       }

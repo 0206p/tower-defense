@@ -247,6 +247,24 @@ export class Enemy extends Phaser.GameObjects.Container {
 
   public applySlow(factor: number, durationMs: number): void {
     if (this.isDead) return;
+    if (this.config.iceResistant) {
+      factor = factor * 0.25;
+      const resistIcon = this.scene.add.text(this.x, this.y - 18, '❄️ IMMUN', {
+        fontFamily: GAME_FONT,
+        fontSize: '11px',
+        color: '#93c5fd',
+        stroke: '#000000',
+        strokeThickness: 2
+      }).setOrigin(0.5).setDepth(35);
+      this.scene.tweens.add({
+        targets: resistIcon,
+        y: resistIcon.y - 14,
+        alpha: 0,
+        duration: 600,
+        onComplete: () => resistIcon.destroy()
+      });
+      if (factor <= 0.05) return;
+    }
     const newMultiplier = 1.0 - factor;
     if (newMultiplier < this.slowMultiplier || this.slowTimer <= 0) {
       this.slowMultiplier = newMultiplier;
@@ -257,6 +275,24 @@ export class Enemy extends Phaser.GameObjects.Container {
 
   public applyPoison(damagePerTick: number, durationMs: number): void {
     if (this.isDead) return;
+    if (this.config.poisonResistant) {
+      damagePerTick = Math.max(1, Math.round(damagePerTick * 0.25));
+      const resistIcon = this.scene.add.text(this.x, this.y - 18, '☠️ IMMUN', {
+        fontFamily: GAME_FONT,
+        fontSize: '11px',
+        color: '#86efac',
+        stroke: '#000000',
+        strokeThickness: 2
+      }).setOrigin(0.5).setDepth(35);
+      this.scene.tweens.add({
+        targets: resistIcon,
+        y: resistIcon.y - 14,
+        alpha: 0,
+        duration: 600,
+        onComplete: () => resistIcon.destroy()
+      });
+      if (damagePerTick <= 1) return;
+    }
     this.poisonDamageTick = Math.max(this.poisonDamageTick, damagePerTick);
     this.poisonTimer = durationMs;
     this.nextPoisonTick = 400; // alle 400ms Schaden
@@ -307,8 +343,10 @@ export class Enemy extends Phaser.GameObjects.Container {
 
     balancing.recordEnemyLeak(this.config.type);
 
-    this.economy.loseLives(this.config.damageToPlayer);
-    this.scene.cameras.main.flash(150, 200, 30, 30, true);
+    const isBoss = this.config.type === 'boss' || this.config.damageToPlayer >= 5;
+    const damage = isBoss ? 10 : this.config.damageToPlayer;
+    this.economy.loseLives(damage);
+    this.scene.cameras.main.flash(isBoss ? 300 : 150, 220, 20, 20, true);
 
     this.onEnemyReachedEnd(this);
     this.destroy();

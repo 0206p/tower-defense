@@ -25,7 +25,7 @@ export class WorldSelectScene extends Phaser.Scene {
       strokeThickness: 5
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 75, 'Schließe jeweils 30 Missionen einer Welt ab, um die nächste Welt und das Dungeon freizuschalten.', {
+    this.add.text(GAME_WIDTH / 2, 75, 'Schließe jeweils 15 Missionen einer Welt ab, um die nächste Welt und das Dungeon freizuschalten.', {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#dcdde1',
@@ -49,21 +49,21 @@ export class WorldSelectScene extends Phaser.Scene {
     const startX = 60;
 
     worldIds.forEach((wId, idx) => {
-      this.createWorldCard(wId, startX + idx * (cardWidth + gap), 105, cardWidth, 470);
+      this.createWorldCard(wId, startX + idx * (cardWidth + gap), 95, cardWidth, 495);
     });
 
-    // Unten: Skins-Arsenal, Upgrade-Schmiede & Menü mit großzügigem Abstand
-    this.createBottomButton(GAME_WIDTH / 2 - 290, 648, '🎨 TURM-SKINS', 0x1e3a8a, 0x3b82f6, () => {
+    // Unten: Skins, Schmiede & Menü mit großzügigem Abstand
+    this.createBottomButton(GAME_WIDTH / 2 - 290, 650, '🎨 SKINS', 0x1e3a8a, 0x3b82f6, () => {
       SoundManager.playClick();
       this.scene.start('SkinShopScene');
     });
 
-    this.createBottomButton(GAME_WIDTH / 2, 648, '💎 TURM-SCHMIEDE', 0x512b7a, 0x8e44ad, () => {
+    this.createBottomButton(GAME_WIDTH / 2, 650, '⚙️ SCHMIEDE', 0x432368, 0x7b3fa8, () => {
       SoundManager.playClick();
       this.scene.start('UpgradeMenuScene');
     });
 
-    this.createBottomButton(GAME_WIDTH / 2 + 290, 648, 'HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
+    this.createBottomButton(GAME_WIDTH / 2 + 290, 650, 'HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
       SoundManager.playClick();
       this.scene.start('MenuScene');
     });
@@ -79,22 +79,22 @@ export class WorldSelectScene extends Phaser.Scene {
 
     const bg = this.add.graphics();
     if (isUnlocked) {
-      bg.fillStyle(def.themeColor, 0.3);
-      bg.fillRoundedRect(0, 0, w, h, 10);
-      bg.lineStyle(3, def.themeColor, 1);
-      bg.strokeRoundedRect(0, 0, w, h, 10);
+      bg.fillStyle(def.themeColor, 0.22);
+      bg.fillRoundedRect(0, 0, w, h, 12);
+      bg.lineStyle(2, def.themeColor, 0.85);
+      bg.strokeRoundedRect(0, 0, w, h, 12);
     } else {
-      bg.fillStyle(0x1a1a24, 0.75);
-      bg.fillRoundedRect(0, 0, w, h, 10);
-      bg.lineStyle(2, 0x3d354a, 1);
-      bg.strokeRoundedRect(0, 0, w, h, 10);
+      bg.fillStyle(0x13131c, 0.8);
+      bg.fillRoundedRect(0, 0, w, h, 12);
+      bg.lineStyle(1.5, 0x2d2b38, 0.9);
+      bg.strokeRoundedRect(0, 0, w, h, 12);
     }
     card.add(bg);
 
     // Titel (Groß & fett)
-    const title = this.add.text(w / 2, 33, def.name.toUpperCase(), {
+    const title = this.add.text(w / 2, 28, def.name.toUpperCase(), {
       fontFamily: GAME_FONT,
-      fontSize: '15px',
+      fontSize: '14.5px',
       fontStyle: 'bold',
       color: isUnlocked ? def.textColor : '#7f8c8d',
       stroke: '#000000',
@@ -103,9 +103,9 @@ export class WorldSelectScene extends Phaser.Scene {
     card.add(title);
 
     // Schwierigkeit Pill
-    const diffText = this.add.text(w / 2, 64, `SCHWIERIGKEIT: ${def.difficulty}`, {
+    const diffText = this.add.text(w / 2, 50, `SEKTOR-STUFE: ${def.difficulty}`, {
       fontFamily: GAME_FONT,
-      fontSize: '12px',
+      fontSize: '11px',
       fontStyle: 'bold',
       color: isUnlocked ? def.difficultyColor : '#57606f',
       stroke: '#000000',
@@ -113,44 +113,59 @@ export class WorldSelectScene extends Phaser.Scene {
     }).setOrigin(0.5);
     card.add(diffText);
 
-    // Galaxie-Wesen & Xeno-Kreaturen Schaufenster
+    // Nahtloses Hologramm-Schaufenster ohne eckige Umrandung
     this.createCreatureShowcase(card, worldId, isUnlocked, w);
 
-    // Beschreibung (Groß & lesbar)
-    const desc = this.add.text(w / 2, 240, def.description, {
+    // Beschreibung mit angenehmem Abstand
+    const desc = this.add.text(w / 2, 246, def.description, {
       fontFamily: GAME_FONT,
-      fontSize: '12px',
-      lineSpacing: 4,
-      color: isUnlocked ? '#f5f0e6' : '#57606f',
+      fontSize: '11.5px',
+      lineSpacing: 3.5,
+      color: isUnlocked ? '#e2e8f0' : '#64748b',
       align: 'center',
-      wordWrap: { width: w - 30 }
+      wordWrap: { width: w - 24 }
     }).setOrigin(0.5);
     card.add(desc);
 
-    // Fortschritt
+    // Fortschrittsbalken & Zähler
     const isKammer = worldId === 'dungeon';
     const progressLabel = SaveSystem.isAdminMode()
-      ? `FORTSCHRITT:\nALLE 30 FREI (ADMIN)`
-      : `FORTSCHRITT:\n${completed} / 30 ${isKammer ? 'KAMMERN' : 'MISSIONEN'}`;
+      ? `FORTSCHRITT: ALLE FREI (ADMIN)`
+      : `FORTSCHRITT: ${completed} / 15 ${isKammer ? 'KAMMERN' : 'MISSIONEN'}`;
 
-    const progressText = this.add.text(w / 2, 325, progressLabel, {
+    const progressText = this.add.text(w / 2, 350, progressLabel, {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
-      lineSpacing: 4,
-      color: isUnlocked ? '#ffd13b' : '#57606f',
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: isUnlocked ? '#ffd13b' : '#64748b',
       align: 'center',
       stroke: '#000000',
-      strokeThickness: 3
+      strokeThickness: 2.5
     }).setOrigin(0.5);
     card.add(progressText);
 
+    // Fortschrittsbalken-Grafik
+    const barG = this.add.graphics();
+    const barW = 180;
+    const barH = 6;
+    const barX = (w - barW) / 2;
+    const barY = 368;
+    barG.fillStyle(0x0f172a, 0.9);
+    barG.fillRoundedRect(barX, barY, barW, barH, 3);
+    if (isUnlocked) {
+      const fillW = Math.min(barW, Math.round(barW * (completed / 15)));
+      barG.fillStyle(def.themeColor, 1);
+      barG.fillRoundedRect(barX, barY, fillW, barH, 3);
+    }
+    card.add(barG);
+
     // Button / Sperr-Text
     if (isUnlocked) {
-      const playBtn = this.add.container(w / 2, 408);
+      const playBtn = this.add.container(w / 2, 428);
       const btnBg = this.add.graphics();
-      const primaryColor = worldId === 'dungeon' ? 0x6a1b9a : 0x27ae60;
-      const borderColor = worldId === 'dungeon' ? 0xba68c8 : 0x2ecc71;
-      const hoverColor = worldId === 'dungeon' ? 0x8e24aa : 0x2ecc71;
+      const primaryColor = worldId === 'dungeon' ? 0x581c87 : 0x1e3a8a;
+      const borderColor = worldId === 'dungeon' ? 0xa855f7 : 0x38bdf8;
+      const hoverColor = worldId === 'dungeon' ? 0x7e22ce : 0x2563eb;
 
       btnBg.fillStyle(primaryColor, 1);
       btnBg.fillRoundedRect(-100, -20, 200, 40, 6);
@@ -158,9 +173,10 @@ export class WorldSelectScene extends Phaser.Scene {
       btnBg.strokeRoundedRect(-100, -20, 200, 40, 6);
       playBtn.add(btnBg);
 
-      const btnLabel = this.add.text(0, 0, isKammer ? 'KAMMERN ÖFFNEN' : 'MISSIONEN ÖFFNEN', {
+      const btnLabel = this.add.text(0, 0, isKammer ? '⚔️ KAMMERN BETRETEN' : '⚔️ SEKTOR STARTEN', {
         fontFamily: GAME_FONT,
-        fontSize: '13px',
+        fontSize: '12.5px',
+        fontStyle: 'bold',
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 2
@@ -187,7 +203,7 @@ export class WorldSelectScene extends Phaser.Scene {
         btnBg.fillRoundedRect(-100, -20, 200, 40, 6);
         btnBg.lineStyle(2, 0xffffff, 1);
         btnBg.strokeRoundedRect(-100, -20, 200, 40, 6);
-        playBtn.setScale(1.04);
+        playBtn.setScale(1.03);
       });
 
       playBtn.on('pointerout', () => {
@@ -206,11 +222,11 @@ export class WorldSelectScene extends Phaser.Scene {
         : worldId === 'dead_mountain'
         ? WORLDS_CONFIG.goblin_caves.name
         : WORLDS_CONFIG.witch_forest.name;
-      const lockText = this.add.text(w / 2, 408, `🔒 GESPERRT\nErfordert 30 Missionen\nin ${reqWorld}`, {
+      const lockText = this.add.text(w / 2, 424, `🔒 GESPERRT\nErfordert 15 Missionen\nin ${reqWorld}`, {
         fontFamily: GAME_FONT,
-        fontSize: '12px',
+        fontSize: '11.5px',
         lineSpacing: 4,
-        color: '#e74c3c',
+        color: '#f87171',
         align: 'center',
         stroke: '#000000',
         strokeThickness: 2
@@ -220,139 +236,114 @@ export class WorldSelectScene extends Phaser.Scene {
   }
 
   private createCreatureShowcase(card: Phaser.GameObjects.Container, worldId: WorldId, isUnlocked: boolean, w: number): void {
-    const boxW = 236;
-    const boxH = 118;
     const boxX = w / 2;
-    const boxY = 148;
+    const boxY = 126;
 
     const showcase = this.add.container(boxX, boxY);
 
-    // 1. Tiefraum- / Galaxie-Hintergrund
-    const bg = this.add.graphics();
-    bg.fillStyle(0x060814, 0.95);
-    bg.fillRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
-
     // Kosmischer Nebel passend zum Biom
     let nebulaColor = 0x10b981; // Zerus Emerald
-    let techBorder = 0x059669;
-    let badgeText = '🧬 XENO-SPEZIES: ZERGLING';
+    let techBorder = 0x34d399;
+    let badgeText = '🧬 XENO-BRUT';
     let centerSpriteKey = 'enemy_goblin';
     let leftSpriteKey = 'enemy_bat';
     let rightSpriteKey = 'enemy_slime';
 
     if (worldId === 'goblin_caves') {
       nebulaColor = 0x0284c7; // Korhal Neon Blue
-      techBorder = 0x0ea5e9;
-      badgeText = '⚙️ MECH-CYBORG: GOLIATH';
+      techBorder = 0x38bdf8;
+      badgeText = '⚙️ MECH-CYBORGS';
       centerSpriteKey = 'enemy_orc';
       leftSpriteKey = 'enemy_cave_goblin';
       rightSpriteKey = 'enemy_bomber';
     } else if (worldId === 'dead_mountain') {
       nebulaColor = 0xdc2626; // Char Magma Red
-      techBorder = 0xf43f5e;
-      badgeText = '🔥 MAGMA-TITAN: ULTRALISK';
+      techBorder = 0xf87171;
+      badgeText = '🔥 VULKAN-TITANEN';
       centerSpriteKey = 'enemy_magma_orc';
       leftSpriteKey = 'enemy_hellhound';
       rightSpriteKey = 'enemy_lava_golem';
     } else if (worldId === 'dungeon') {
       nebulaColor = 0x8b5cf6; // Void Celestial Purple
-      techBorder = 0xa855f7;
-      badgeText = '⚡ VOID-WESEN: OVERLORD';
+      techBorder = 0xc084fc;
+      badgeText = '⚡ VOID-OVERLORDS';
       centerSpriteKey = 'enemy_boss';
       leftSpriteKey = 'enemy_witch';
       rightSpriteKey = 'enemy_armored_troll';
     }
 
+    const bg = this.add.graphics();
     if (isUnlocked) {
-      bg.fillStyle(nebulaColor, 0.25);
-      bg.fillCircle(0, 0, 52);
-      bg.fillStyle(nebulaColor, 0.15);
-      bg.fillCircle(-40, -10, 36);
-      bg.fillCircle(40, 10, 36);
+      // Fließender kosmischer Nebel
+      bg.fillStyle(nebulaColor, 0.2);
+      bg.fillCircle(0, -4, 48);
+      bg.fillStyle(nebulaColor, 0.1);
+      bg.fillCircle(-35, 0, 32);
+      bg.fillCircle(35, 0, 32);
 
-      // Funkelnde Galaxie-Sterne
-      bg.fillStyle(0xffffff, 0.9);
-      const starOffsets = [
-        [-80, -35], [-45, -42], [-15, -45], [35, -38], [80, -32],
-        [-90, 20], [-60, 35], [20, 38], [75, 25], [95, -10]
-      ];
-      starOffsets.forEach(([sx, sy]) => {
-        bg.fillCircle(sx, sy, 1.2);
+      // Holographischer Projektionssockel (Elliptische Plattform ohne harte Boxgrenzen)
+      bg.lineStyle(1.5, techBorder, 0.7);
+      bg.strokeEllipse(0, 38, 160, 22);
+      bg.fillStyle(techBorder, 0.08);
+      bg.fillEllipse(0, 38, 160, 22);
+
+      // Sanfte Vertikalstrahlen
+      bg.lineStyle(1, techBorder, 0.25);
+      [-60, -30, 0, 30, 60].forEach((lx) => {
+        bg.lineBetween(lx, 38, lx * 0.7, -30);
       });
+    } else {
+      bg.fillStyle(0x1e293b, 0.3);
+      bg.fillCircle(0, 0, 38);
+      bg.lineStyle(1, 0x475569, 0.4);
+      bg.strokeEllipse(0, 38, 120, 18);
     }
-
-    // Rahmen & Tech-Corner-Brackets
-    bg.lineStyle(1.5, isUnlocked ? techBorder : 0x334155, 0.8);
-    bg.strokeRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
-
-    // Eck-Brackets im Sci-Fi-Stil
-    bg.lineStyle(2, isUnlocked ? 0xffffff : 0x64748b, 0.9);
-    const bLen = 10;
-    // Oben-links
-    bg.lineBetween(-boxW / 2, -boxH / 2 + bLen, -boxW / 2, -boxH / 2);
-    bg.lineBetween(-boxW / 2, -boxH / 2, -boxW / 2 + bLen, -boxH / 2);
-    // Oben-rechts
-    bg.lineBetween(boxW / 2 - bLen, -boxH / 2, boxW / 2, -boxH / 2);
-    bg.lineBetween(boxW / 2, -boxH / 2, boxW / 2, -boxH / 2 + bLen);
-    // Unten-links
-    bg.lineBetween(-boxW / 2, boxH / 2 - bLen, -boxW / 2, boxH / 2);
-    bg.lineBetween(-boxW / 2, boxH / 2, -boxW / 2 + bLen, boxH / 2);
-    // Unten-rechts
-    bg.lineBetween(boxW / 2 - bLen, boxH / 2, boxW / 2, boxH / 2);
-    bg.lineBetween(boxW / 2, boxH / 2, boxW / 2, boxH / 2 - bLen);
-
     showcase.add(bg);
 
     if (isUnlocked) {
-      // 2. Galaxie-Wesen Sprites (Flankierende Kreaturen)
-      const leftCreature = this.add.sprite(-62, 4, leftSpriteKey).setScale(1.15);
-      const rightCreature = this.add.sprite(62, 4, rightSpriteKey).setScale(1.15);
-      const centerCreature = this.add.sprite(0, 0, centerSpriteKey).setScale(1.55);
+      // Flankierende Kreaturen
+      const leftCreature = this.add.sprite(-54, 10, leftSpriteKey).setScale(1.1);
+      const rightCreature = this.add.sprite(54, 10, rightSpriteKey).setScale(1.1);
+      const centerCreature = this.add.sprite(0, 4, centerSpriteKey).setScale(1.5);
 
       showcase.add([leftCreature, rightCreature, centerCreature]);
 
       // Lebendige Atmungs-/Schweb-Animation
       this.tweens.add({
         targets: centerCreature,
-        y: -4,
-        scaleY: 1.62,
+        y: -2,
+        scaleY: 1.56,
         duration: 1200,
         yoyo: true,
         repeat: -1,
         ease: 'Sine.easeInOut'
       });
+
       this.tweens.add({
         targets: [leftCreature, rightCreature],
-        y: 8,
-        duration: 1500,
+        y: 6,
+        duration: 1400,
         yoyo: true,
         repeat: -1,
         ease: 'Sine.easeInOut',
         delay: 300
       });
 
-      // Hologramm-Scan-Leiste oben
-      const scanBadge = this.add.text(0, -boxH / 2 + 10, badgeText, {
+      // Hologramm-Spezies-Badge
+      const badge = this.add.text(0, 56, badgeText, {
         fontFamily: GAME_FONT,
         fontSize: '10px',
         fontStyle: 'bold',
-        color: '#ffffff',
+        color: '#f8fafc',
         stroke: '#000000',
         strokeThickness: 2
       }).setOrigin(0.5);
-      showcase.add(scanBadge);
+      showcase.add(badge);
     } else {
-      // Gesperrtes Holo-Display mit Scan-Verzerrung
-      const lockIcon = this.add.text(0, -6, '🔒', { fontSize: '26px' }).setOrigin(0.5);
-      const lockLabel = this.add.text(0, 24, 'BIO-SCAN VERSCHLÜSSELT', {
-        fontFamily: GAME_FONT,
-        fontSize: '10px',
-        fontStyle: 'bold',
-        color: '#ef4444',
-        stroke: '#000000',
-        strokeThickness: 2
-      }).setOrigin(0.5);
-      showcase.add([lockIcon, lockLabel]);
+      const lockIcon = this.add.text(0, 8, '🔒', {
+        fontSize: '32px'
+      }).setOrigin(0.5).setAlpha(0.65);
+      showcase.add(lockIcon);
     }
 
     card.add(showcase);

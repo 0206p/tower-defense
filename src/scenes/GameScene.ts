@@ -49,6 +49,7 @@ export class GameScene extends Phaser.Scene {
   private isRepositionDragging: boolean = false;
   private pointerDownStartPos: { x: number; y: number } | null = null;
   private handleGlobalKeyDown?: (e: KeyboardEvent) => void;
+  private handleGlobalKeyUp?: (e: KeyboardEvent) => void;
 
   private isGameOver: boolean = false;
   private isGamePaused: boolean = false;
@@ -247,17 +248,19 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 7. Echte RTS-Tastaturbefehle (Globale Hotkeys: [1]-[6], [U], [P], [V], [A], [B], [ESC], [LEERTASTE])
-    const hotkeyTowers: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
+    // 7. Echte RTS-Tastaturbefehle (Globale Hotkeys: [1]-[9], [0], [-], [U], [P], [V], [A], [B], [ESC], [LEERTASTE])
+    const hotkeyTowers = SaveSystem.getUnlockedTowers();
+    const hotkeyChars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
+
     this.handleGlobalKeyDown = (e: KeyboardEvent) => {
       const activeTag = (e.target as HTMLElement)?.tagName;
       if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
 
       const key = e.key.toLowerCase();
 
-      // [1] - [6]: Turmauswahl / Bauen
-      if (['1', '2', '3', '4', '5', '6'].includes(key)) {
-        const idx = parseInt(key, 10) - 1;
+      // [1] - [9], [0], [-]: Turmauswahl / Bauen
+      if (hotkeyChars.includes(key)) {
+        const idx = hotkeyChars.indexOf(key);
         const towerType = hotkeyTowers[idx];
         if (towerType) {
           if (this.waveManager.isWaveActive()) {
@@ -371,22 +374,37 @@ export class GameScene extends Phaser.Scene {
         return;
       }
 
-      // [Space]: Nächste Welle starten oder Pause umschalten
-      if (key === ' ' || key === 'space') {
+      // [Space]: Nächste Welle sofort starten
+      if (key === ' ' || key === 'space' || e.code === 'Space') {
         e.preventDefault();
         if (!this.waveManager.isWaveActive() && !this.isGamePaused) {
+          SoundManager.playClick();
           this.waveManager.startNextWave();
-        } else {
-          this.togglePause();
         }
         return;
       }
     };
     window.addEventListener('keydown', this.handleGlobalKeyDown);
 
+    // Shift Keyup: Schnelles Mehrfachbauen beenden sobald Shift losgelassen wird
+    this.handleGlobalKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        if (this.selectedTowerType) {
+          this.rtsConsole.clearSelection();
+          this.selectedTowerType = null;
+          this.placementPreviewContainer.setVisible(false);
+          this.mapManager.showBuildGrid(false);
+        }
+      }
+    };
+    window.addEventListener('keyup', this.handleGlobalKeyUp);
+
     this.events.once('shutdown', () => {
       if (this.handleGlobalKeyDown) {
         window.removeEventListener('keydown', this.handleGlobalKeyDown);
+      }
+      if (this.handleGlobalKeyUp) {
+        window.removeEventListener('keyup', this.handleGlobalKeyUp);
       }
     });
 
@@ -889,38 +907,101 @@ export class GameScene extends Phaser.Scene {
     this.isGameOver = true;
 
     SoundManager.stopMusic();
+    SoundManager.playExplosion();
     this.time.timeScale = 1.0;
-    this.cameras.main.fade(600, 40, 10, 15, false, (cam: any, progress: number) => {
-      if (progress === 1) {
-        const currentWave = this.waveManager.getCurrentWaveNumber();
-        const score = this.economy.getScore();
-        let isNewWaveRecord = false;
-        let isNewScoreRecord = false;
 
-        if (this.isEndless) {
-          const res = SaveSystem.saveEndlessResult(currentWave, score);
-          isNewWaveRecord = res.isNewWaveRecord;
-          isNewScoreRecord = res.isNewScoreRecord;
-          logger.info('EndlessMode', `Endlos-Runde beendet bei Welle ${currentWave}`, res);
-        } else if (this.isDungeon) {
-          const res = SaveSystem.saveDungeonResult(currentWave, score);
-          isNewWaveRecord = res.isNewWaveRecord;
-          isNewScoreRecord = res.isNewScoreRecord;
-          logger.info('DungeonMode', `Dungeon beendet in Kammer ${currentWave}`, res);
-        }
+    // Spektakuläre Festungs-Zerstörung: Brennen, Erschütterung und Einsturz
+    const endPt = this.mapManager.pathPoints[this.mapManager.pathPoints.length - 1];
+    const endPos = this.mapManager.gridToPixel(endPt.col, endPt.row);
+    const fx = endPos.x - 12;
+    const fy = endPos.y - 14;
 
-        this.scene.start('GameOverScene', {
-          worldId: this.worldId,
-          missionNumber: this.missionNumber,
-          wave: currentWave,
-          score,
-          gold: this.economy.getGold(),
-          isEndless: this.isEndless,
-          isDungeon: this.isDungeon,
-          isNewWaveRecord,
-          isNewScoreRecord
+    this.cameras.main.shake(1800, 0.018);
+    this.cameras.main.flash(450, 220, 40, 20, false);
+    this.hud.showAnnouncement('🔥 DIE FESTUNG IST GEFALLEN! DAS REICH BRENNT! 🔥');
+
+    // 1. Feuersbrünste & Explosionen rund um das Festungstor
+    for (let i = 0; i < 14; i++) {
+      this.time.delayedCall(i * 110, () => {
+        if (!this.sys.isActive()) return;
+        const ox = Phaser.Math.Between(-35, 35);
+        const oy = Phaser.Math.Between(-30, 20);
+        const boomColor = i % 2 === 0 ? 0xf97316 : 0xef4444;
+
+        const flame = this.add.circle(fx + ox, fy + oy, Phaser.Math.Between(14, 28), boomColor, 0.9).setDepth(45);
+        this.tweens.add({
+          targets: flame,
+          y: fy + oy - Phaser.Math.Between(30, 70),
+          scaleX: 1.6,
+          scaleY: 1.6,
+          alpha: 0,
+          duration: 650,
+          onComplete: () => flame.destroy()
         });
-      }
+
+        // Splitter und Trümmerteile fallen zu Boden
+        const debris = this.add.rectangle(fx + ox, fy + oy, Phaser.Math.Between(4, 9), Phaser.Math.Between(4, 9), 0x334155).setDepth(44);
+        this.tweens.add({
+          targets: debris,
+          x: fx + ox + Phaser.Math.Between(-60, 60),
+          y: fy + oy + Phaser.Math.Between(20, 80),
+          angle: Phaser.Math.Between(-180, 180),
+          alpha: 0,
+          duration: 900,
+          onComplete: () => debris.destroy()
+        });
+      });
+    }
+
+    // 2. Festungsobjekte neigen sich, verfärben sich schwarz/rot und stürzen ein
+    this.mapManager.fortressObjects.forEach((obj: Phaser.GameObjects.Image) => {
+      this.tweens.add({
+        targets: obj,
+        y: obj.y + 24,
+        scaleY: 0.15,
+        scaleX: 1.2,
+        angle: Phaser.Math.Between(-12, 12),
+        alpha: 0.25,
+        duration: 1400,
+        ease: 'Quad.easeIn'
+      });
+    });
+
+    // 3. Nach 1800ms Feuerinferno sanft in GameOverScene überblenden
+    this.time.delayedCall(1600, () => {
+      if (!this.sys.isActive()) return;
+      this.cameras.main.fade(600, 30, 8, 12, false, (cam: any, progress: number) => {
+        if (progress === 1) {
+          const currentWave = this.waveManager.getCurrentWaveNumber();
+          const score = this.economy.getScore();
+          let isNewWaveRecord = false;
+          let isNewScoreRecord = false;
+
+          if (this.isEndless) {
+            const res = SaveSystem.saveEndlessResult(currentWave, score);
+            isNewWaveRecord = res.isNewWaveRecord;
+            isNewScoreRecord = res.isNewScoreRecord;
+            logger.info('EndlessMode', `Endlos-Runde beendet bei Welle ${currentWave}`, res);
+          } else if (this.isDungeon) {
+            const res = SaveSystem.saveDungeonResult(currentWave, score);
+            isNewWaveRecord = res.isNewWaveRecord;
+            isNewScoreRecord = res.isNewScoreRecord;
+            logger.info('DungeonMode', `Dungeon beendet in Kammer ${currentWave}`, res);
+          }
+
+          this.scene.start('GameOverScene', {
+            worldId: this.worldId,
+            missionNumber: this.missionNumber,
+            wave: currentWave,
+            score,
+            gold: this.economy.getGold(),
+            isEndless: this.isEndless,
+            isDungeon: this.isDungeon,
+            isNewWaveRecord,
+            isNewScoreRecord
+          });
+        }
+      });
     });
   }
 

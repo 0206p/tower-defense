@@ -85,8 +85,8 @@ export class HUD extends Phaser.GameObjects.Container {
     });
     this.add(this.waveText);
 
-    // 4. SCORE (Großzügig ab x=380 positioniert, absolut überschneidungsfrei zu Welle und Pause-Button)
-    this.scoreText = scene.add.text(380, 11, 'Punkte: 0', {
+    // 4. SCORE
+    this.scoreText = scene.add.text(385, 11, 'Punkte: 0', {
       fontFamily: GAME_FONT,
       fontSize: '14px',
       fontStyle: 'bold',
@@ -96,30 +96,30 @@ export class HUD extends Phaser.GameObjects.Container {
     });
     this.add(this.scoreText);
 
-    // 5. PAUSE-BUTTON (Sauber positioniert bei x=535, kein Überlappen)
-    this.btnPause = this.createPauseButton(535, 22);
-    this.add(this.btnPause);
-
-    // 6. SPEED BUTTONS (1x, 2x, 3x, 5x)
+    // 5. SPEED BUTTONS (1x, 2x, 3x, 5x)
     const speeds = [1.0, 2.0, 3.0, 5.0];
     const speedLabels = ['1x', '2x', '3x', '5x'];
     speeds.forEach((sp, i) => {
-      const btn = this.createSpeedButton(595 + i * 38, 22, speedLabels[i], sp, sp === 1.0);
+      const btn = this.createSpeedButton(515 + i * 38, 22, speedLabels[i], sp, sp === 1.0);
       this.speedButtons.set(sp, btn);
       this.add(btn);
     });
 
-    // 7. IN-GAME SOUND TOGGLE BUTTON
-    const btnSound = this.createSoundButton(785, 22);
+    // 6. IN-GAME SOUND TOGGLE BUTTON
+    const btnSound = this.createSoundButton(700, 22);
     this.add(btnSound);
 
-    // 8. VOLLBILD BUTTON
-    const btnFullscreen = this.createFullscreenButton(920, 22);
+    // 7. VOLLBILD BUTTON
+    const btnFullscreen = this.createFullscreenButton(800, 22);
     this.add(btnFullscreen);
 
-    // 9. NÄCHSTE WELLE BUTTON (Bündig und reaktiv rechts)
-    this.btnNextWave = this.createNextWaveButton(1135, 22);
+    // 8. NÄCHSTE WELLE BUTTON
+    this.btnNextWave = this.createNextWaveButton(1005, 22);
     this.add(this.btnNextWave);
+
+    // 9. PAUSE-BUTTON (Ganz oben rechts in der Ecke des Bildschirms)
+    this.btnPause = this.createPauseButton(1244, 22);
+    this.add(this.btnPause);
 
     // 8. ANNOUNCEMENT OVERLAY
     this.announcementBg = scene.add.graphics();
@@ -427,9 +427,9 @@ export class HUD extends Phaser.GameObjects.Container {
     bg.strokeRoundedRect(-95, -15, 190, 30, 4);
     container.add(bg);
 
-    this.nextWaveLabel = this.scene.add.text(0, 0, 'WELLE STARTEN', {
+    this.nextWaveLabel = this.scene.add.text(0, 0, '⚔️ WELLE STARTEN [SPACE]', {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
+      fontSize: '12px',
       fontStyle: 'bold',
       color: '#ffffff',
       stroke: '#000000',
@@ -518,7 +518,7 @@ export class HUD extends Phaser.GameObjects.Container {
     if (total === 30) {
       this.waveText.setText(`Kammer: ${current} / 30`);
     } else if (total === 0 || total > 100) {
-      this.waveText.setText(`Welle: ${current} / ∞`);
+      this.waveText.setText(`Welle: ${current} / \u221e`);
     } else {
       this.waveText.setText(`Welle: ${current} / ${total}`);
     }

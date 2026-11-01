@@ -26,6 +26,8 @@ export interface EnemyDefinition {
   radius: number;
   damageToPlayer: number;
   shield?: number;
+  iceResistant?: boolean;
+  poisonResistant?: boolean;
 }
 
 export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
@@ -130,7 +132,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     spriteKey: 'enemy_armored_troll',
     radius: 20,
     damageToPlayer: 2,
-    shield: 60
+    shield: 60,
+    poisonResistant: true
   },
   golem: {
     type: 'golem',
@@ -142,7 +145,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     spriteKey: 'enemy_golem',
     radius: 20,
     damageToPlayer: 3,
-    shield: 80
+    shield: 80,
+    iceResistant: true
   },
 
   // --- Sektor Char (Vulkan-Invasion) ---
@@ -189,7 +193,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     spriteKey: 'enemy_lava_golem',
     radius: 23,
     damageToPlayer: 4,
-    shield: 100
+    shield: 100,
+    iceResistant: true
   },
 
   // Boss
@@ -202,7 +207,9 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     score: 800,
     spriteKey: 'enemy_boss',
     radius: 24,
-    damageToPlayer: 5,
-    shield: 140
+    damageToPlayer: 10,
+    shield: 140,
+    iceResistant: true,
+    poisonResistant: true
   }
 };

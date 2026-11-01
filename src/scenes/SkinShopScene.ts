@@ -28,7 +28,7 @@ export class SkinShopScene extends Phaser.Scene {
     }
 
     // Header
-    this.add.text(GAME_WIDTH / 2, 40, 'ARSENAL: TURM-SKINS', {
+    this.add.text(GAME_WIDTH / 2, 40, 'ARSENAL: SKINS', {
       fontFamily: GAME_FONT,
       fontSize: '32px',
       fontStyle: 'bold',

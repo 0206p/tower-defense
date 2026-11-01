@@ -5,6 +5,7 @@ import { WorldId, SaveSystem } from './SaveSystem';
 import { Enemy } from '../entities/Enemy';
 import { MapManager } from './MapManager';
 import { EconomySystem } from './EconomySystem';
+import { SoundManager } from './SoundManager';
 import { balancing } from './BalancingTelemetry';
 
 export class WaveManager {
@@ -114,13 +115,25 @@ export class WaveManager {
         announcement = `🏰 DUNGEON - KAMMER ${waveNum} / 30`;
       }
     } else if (this.isEndless) {
+      this.mapManager.checkEndlessPortals(waveNum);
       if (waveNum === 20) {
-        this.mapManager.unlockSecondPortal();
         announcement = `🚨 ALARM WELLE 20: DIMENSIONSTOR II ENTSIEGELT! DOPPELTER ANGRIFF!`;
+      } else if (waveNum === 25) {
+        announcement = `⚠️ QUANTEN-RISS ERKANNT: TOR III ÖFFNET SICH AB WELLE 30!`;
+      } else if (waveNum === 30) {
+        announcement = `🚨 DREIFACHE INVASION WELLE 30: TOR III IST OFFEN!`;
+      } else if (waveNum === 40) {
+        announcement = `☄️ ORBITALER KATASTROPHEN-STURM AB WELLE 40: METEORITEN BOMBARDEMENT!`;
+        this.triggerMeteorCataclysmEvent();
+      } else if (waveNum === 45) {
+        announcement = `⚠️ SCHWERE HYPERRAUM-INSTABILITÄT: TOR IV ÖFFNET AB WELLE 50!`;
+      } else if (waveNum === 50) {
+        announcement = `🚨 4-TORE VERNICHTUNGSKRIEG WELLE 50: ALLE SYSTEME MAXIMAL ÜBERLASTET!`;
+      } else if (waveNum >= 40 && waveNum % 5 === 0) {
+        announcement = `☄️ METEORITEN-BOMBARDEMENT WELLE ${waveNum}!`;
+        this.triggerMeteorCataclysmEvent();
       } else if (isBossWave) {
-        announcement = waveNum >= 20
-          ? `⚔️ ENDLOS-DOPPELBOSS WELLE ${waveNum}: Titanen stürmen aus beiden Toren!`
-          : `⚔️ ENDLOS-BOSS WELLE ${waveNum}: Titanen erwachen!`;
+        announcement = `⚔️ ENDLOS-BOSS WELLE ${waveNum}: Titanen erwachen aus allen Toren!`;
       } else if (isMiniBossWave) {
         announcement = `⚠️ ENDLOS WELLE ${waveNum}: Elite-Horde greift an!`;
       } else {
@@ -165,12 +178,12 @@ export class WaveManager {
       const poolSize = Math.min(allTypes.length, 3 + Math.floor(waveNum / 2));
       currentPool = allTypes.slice(0, poolSize);
     } else {
-      // Kampagnen-Skalierung: Balancierter Verlauf über 3 Welten x 30 Missionen
-      // Hexenwelt: 1.0x -> 1.8x
-      // Goblinhöhlen: 1.45x -> 2.9x
-      // Toter Berg: 1.9x -> 4.2x (Welle 1) bis max 10.8x (Welle 10)
+      // Kampagnen-Skalierung: Balancierter Verlauf über 3 Welten x 15 Missionen
+      // Hexenwelt (Zerus): 1.0x -> 1.8x
+      // Mech-Kolonie (Korhal): 1.45x -> 2.9x
+      // Vulkan-Sektor (Char): 1.9x -> 4.2x (Welle 1) bis max 10.8x (Welle 10)
       const worldMult = this.worldId === 'dead_mountain' ? 1.9 : this.worldId === 'goblin_caves' ? 1.45 : 1.0;
-      const progressRatio = Math.max(0, (this.missionNumber - 1) / 29);
+      const progressRatio = Math.max(0, (this.missionNumber - 1) / 14);
       const missionMult = 1.0 + Math.pow(progressRatio, 1.15) * 1.20;
 
       // Wellen-Skalierung innerhalb der 10 Wellen einer Mission:
@@ -187,8 +200,22 @@ export class WaveManager {
       spawnCount = 6 + Math.floor(waveNum * 1.1);
     }
 
-    const dualGateActive = this.isEndless && this.mapManager.isSecondPortalUnlocked && !!this.mapManager.curvePath2;
-    const extraEnemies = isBossWave ? (dualGateActive ? 2 : 1) : isMiniBossWave ? (dualGateActive ? 2 : 1) : 0;
+    // Pfad-Pool für den Endlosmodus (alle aktivierten Tore nutzen)
+    const availablePaths: Phaser.Curves.Path[] = [this.mapManager.curvePath];
+    if (this.isEndless) {
+      if (this.mapManager.isSecondPortalUnlocked && this.mapManager.curvePath2) {
+        availablePaths.push(this.mapManager.curvePath2);
+      }
+      if (this.mapManager.isThirdPortalUnlocked && this.mapManager.curvePath3) {
+        availablePaths.push(this.mapManager.curvePath3);
+      }
+      if (this.mapManager.isFourthPortalUnlocked && this.mapManager.curvePath4) {
+        availablePaths.push(this.mapManager.curvePath4);
+      }
+    }
+
+    const dualGateActive = availablePaths.length > 1;
+    const extraEnemies = isBossWave ? availablePaths.length : isMiniBossWave ? availablePaths.length : 0;
     this.isSpawning = true;
     this.enemiesRemainingToSpawn = spawnCount + extraEnemies;
 
@@ -206,10 +233,7 @@ export class WaveManager {
     for (let i = 0; i < spawnCount; i++) {
       cumulativeDelay += spawnDelay;
       const enemyType = currentPool[i % currentPool.length];
-
-      // Ab Welle 20 im Endlosmodus greifen Feinde abwechselnd aus Tor 1 und Tor 2 an!
-      const usePath2 = dualGateActive && (i % 2 === 1);
-      const chosenPath = usePath2 && this.mapManager.curvePath2 ? this.mapManager.curvePath2 : this.mapManager.curvePath;
+      const chosenPath = availablePaths[i % availablePaths.length];
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
@@ -226,24 +250,10 @@ export class WaveManager {
     }
 
     if (isBossWave) {
-      cumulativeDelay += 1200;
-      this.scene.time.delayedCall(cumulativeDelay, () => {
-        if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy('boss', hpMult * 2.2, 1.0, this.mapManager.curvePath);
-          this.enemiesRemainingToSpawn--;
-          if (this.enemiesRemainingToSpawn <= 0) {
-            this.isSpawning = false;
-            if (this.activeEnemies.length === 0) {
-              this.handleWaveEnd();
-            }
-          }
-        }
-      });
-
-      if (dualGateActive && this.mapManager.curvePath2) {
-        this.scene.time.delayedCall(cumulativeDelay + 300, () => {
+      availablePaths.forEach((path, idx) => {
+        this.scene.time.delayedCall(cumulativeDelay + 800 + idx * 300, () => {
           if (this.scene && this.scene.sys.isActive()) {
-            this.spawnEnemy('boss', hpMult * 2.2, 1.0, this.mapManager.curvePath2!);
+            this.spawnEnemy('boss', hpMult * 2.2, 1.0, path);
             this.enemiesRemainingToSpawn--;
             if (this.enemiesRemainingToSpawn <= 0) {
               this.isSpawning = false;
@@ -253,26 +263,12 @@ export class WaveManager {
             }
           }
         });
-      }
+      });
     } else if (isMiniBossWave) {
-      cumulativeDelay += 800;
-      this.scene.time.delayedCall(cumulativeDelay, () => {
-        if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy('armored_troll', hpMult * 1.6, 1.05, this.mapManager.curvePath);
-          this.enemiesRemainingToSpawn--;
-          if (this.enemiesRemainingToSpawn <= 0) {
-            this.isSpawning = false;
-            if (this.activeEnemies.length === 0) {
-              this.handleWaveEnd();
-            }
-          }
-        }
-      });
-
-      if (dualGateActive && this.mapManager.curvePath2) {
-        this.scene.time.delayedCall(cumulativeDelay + 250, () => {
+      availablePaths.forEach((path, idx) => {
+        this.scene.time.delayedCall(cumulativeDelay + 600 + idx * 300, () => {
           if (this.scene && this.scene.sys.isActive()) {
-            this.spawnEnemy('armored_troll', hpMult * 1.6, 1.05, this.mapManager.curvePath2!);
+            this.spawnEnemy('armored_troll', hpMult * 1.6, 1.05, path);
             this.enemiesRemainingToSpawn--;
             if (this.enemiesRemainingToSpawn <= 0) {
               this.isSpawning = false;
@@ -282,10 +278,52 @@ export class WaveManager {
             }
           }
         });
-      }
+      });
     }
 
     return true;
+  }
+
+  private triggerMeteorCataclysmEvent(): void {
+    const meteorCount = 10;
+    for (let i = 0; i < meteorCount; i++) {
+      this.scene.time.delayedCall(1200 + i * 950, () => {
+        if (!this.scene || !this.scene.sys.isActive()) return;
+        const targetX = Phaser.Math.Between(150, 1100);
+        const targetY = Phaser.Math.Between(80, 580);
+
+        const meteor = this.scene.add.circle(targetX - 140, targetY - 240, 9, 0xf97316, 1).setDepth(50);
+        this.scene.tweens.add({
+          targets: meteor,
+          x: targetX,
+          y: targetY,
+          duration: 380,
+          ease: 'Quad.easeIn',
+          onComplete: () => {
+            meteor.destroy();
+            SoundManager.playExplosion();
+            this.scene.cameras.main.shake(220, 0.012);
+
+            const crater = this.scene.add.circle(targetX, targetY, 36, 0xef4444, 0.75).setDepth(15);
+            this.scene.tweens.add({
+              targets: crater,
+              scaleX: 1.8,
+              scaleY: 1.8,
+              alpha: 0,
+              duration: 500,
+              onComplete: () => crater.destroy()
+            });
+
+            this.activeEnemies.forEach((e) => {
+              if (!e.isDead && Math.hypot(e.x - targetX, e.y - targetY) <= 85) {
+                e.takeDamage(260, true, true);
+                e.applyStun(1400);
+              }
+            });
+          }
+        });
+      });
+    }
   }
 
   private spawnEnemy(

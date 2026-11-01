@@ -128,7 +128,7 @@ export class GameOverScene extends Phaser.Scene {
       });
     });
 
-    this.createButton(GAME_WIDTH / 2, 490, 'TURM-SCHMIEDE', 300, 44, 0x512b7a, 0x8e44ad, () => {
+    this.createButton(GAME_WIDTH / 2, 490, '⚙️ SCHMIEDE', 300, 44, 0x432368, 0x7b3fa8, () => {
       this.scene.start('UpgradeMenuScene');
     });
 

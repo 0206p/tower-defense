@@ -4,6 +4,7 @@ import { TOWER_CONFIGS, TowerType } from '../config/TowerConfig';
 import { EconomySystem } from '../systems/EconomySystem';
 import { SoundManager } from '../systems/SoundManager';
 import { Tower, TARGET_PRIORITY_LABELS } from '../entities/Tower';
+import { SaveSystem } from '../systems/SaveSystem';
 
 export interface RTSCommandConsoleCallbacks {
   onSelectBuildType: (type: TowerType | null) => void;
@@ -26,6 +27,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
   private selectionModeContainer!: Phaser.GameObjects.Container;
 
   // Build Mode Elements (Großzügig, ungeschnitten & voll lesbar)
+  private currentCardW: number = 175;
   private buildCardContainers: Map<TowerType, {
     container: Phaser.GameObjects.Container;
     bg: Phaser.GameObjects.Graphics;
@@ -78,15 +80,16 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     this.buildModeContainer = this.scene.add.container(0, 0);
     this.add(this.buildModeContainer);
 
-    const towerTypes: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    const hotkeys = ['1', '2', '3', '4', '5', '6'];
+    const towerTypes = SaveSystem.getUnlockedTowers();
+    const hotkeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
 
-    // Großzügige Kantenbreite: 175px pro Karte (volle Namen haben reichlich Platz!)
-    const cardW = 175;
+    const count = towerTypes.length;
+    const gap = count > 8 ? 6 : (count > 6 ? 10 : 16);
+    this.currentCardW = Math.min(175, Math.floor((1220 - (count - 1) * gap) / count));
+    const cardW = this.currentCardW;
     const cardH = 64;
-    const gap = 16;
-    const totalW = towerTypes.length * cardW + (towerTypes.length - 1) * gap; // 1130px
-    const startX = Math.round((GAME_WIDTH - totalW) / 2); // 75px -> perfekt zentriert!
+    const totalW = count * cardW + (count - 1) * gap;
+    const startX = Math.round((GAME_WIDTH - totalW) / 2);
 
     towerTypes.forEach((type, index) => {
       const x = startX + index * (cardW + gap);
@@ -96,32 +99,36 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       cardContainer.add(bg);
 
       // Turm-Sprite links auf der Karte
-      const icon = this.scene.add.sprite(30, cardH / 2, `tower_${type}_1`).setDisplaySize(42, 42);
+      const isCompact = cardW < 130;
+      const iconX = isCompact ? 20 : 30;
+      const iconSize = isCompact ? 34 : 42;
+      const icon = this.scene.add.sprite(iconX, cardH / 2, `tower_${type}_1`).setDisplaySize(iconSize, iconSize);
       cardContainer.add(icon);
 
       // Hotkey-Badge oben rechts
-      const hkText = this.scene.add.text(cardW - 8, 7, `[${hotkeys[index]}]`, {
+      const hkText = this.scene.add.text(cardW - 6, isCompact ? 5 : 7, `[${hotkeys[index] || (index + 1)}]`, {
         fontFamily: GAME_FONT,
-        fontSize: '11px',
+        fontSize: isCompact ? '10px' : '11px',
         fontStyle: 'bold',
         color: '#38bdf8'
       }).setOrigin(1.0, 0);
       cardContainer.add(hkText);
 
-      // VOLLSTÄNDIGER Turm-Name (nicht abgeschnitten!)
+      // Turm-Name
       const def = TOWER_CONFIGS[type];
-      const nameText = this.scene.add.text(58, 22, def.name, {
+      const textX = isCompact ? 42 : 58;
+      const nameText = this.scene.add.text(textX, 22, def.name, {
         fontFamily: GAME_FONT,
-        fontSize: '12px',
+        fontSize: isCompact ? '11px' : '12px',
         fontStyle: 'bold',
         color: '#ffffff'
       }).setOrigin(0, 0.5);
       cardContainer.add(nameText);
 
       // Gold-Kosten
-      const costText = this.scene.add.text(58, 44, `${def.baseCost} 💰`, {
+      const costText = this.scene.add.text(textX, 44, `${def.baseCost} 💰`, {
         fontFamily: GAME_FONT,
-        fontSize: '13px',
+        fontSize: isCompact ? '11.5px' : '13px',
         fontStyle: 'bold',
         color: '#facc15'
       }).setOrigin(0, 0.5);
@@ -179,7 +186,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
   }
 
   private renderBuildCards(): void {
-    const cardW = 175;
+    const cardW = this.currentCardW;
     const cardH = 64;
 
     this.buildCardContainers.forEach((card, type) => {
@@ -251,11 +258,12 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     });
     this.selectionModeContainer.add(this.inspectorStatsText);
 
-    // Spezial-Effekte & Priorität
+    // Spezial-Effekte & Priorität (mit wordWrap und sicherem Padding)
     this.inspectorDetailsText = this.scene.add.text(inspX + 76, 51, '', {
       fontFamily: GAME_FONT,
       fontSize: '11px',
-      color: '#94a3b8'
+      color: '#94a3b8',
+      wordWrap: { width: 440 }
     });
     this.selectionModeContainer.add(this.inspectorDetailsText);
   }
@@ -337,6 +345,8 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       borderColor: number;
       enabled: boolean;
       onClick: () => void;
+      onHover?: () => void;
+      onHoverOut?: () => void;
     }[] = [];
 
     // 1. UPGRADE / SPEZIALISIERUNG
@@ -381,6 +391,15 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           tower.specialize('path_a');
           SoundManager.playUpgrade();
           this.refresh();
+        },
+        onHover: () => {
+          this.inspectorTitleText.setText(`[A] ${specA.name.toUpperCase()} (${specA.cost}💰)`);
+          this.inspectorTitleText.setColor('#06b6d4');
+          this.inspectorDetailsText.setText(`${specA.description} | +${specA.damage - tower.getStats().damage} Dmg, +${specA.range - tower.getStats().range}px Rng`);
+          this.inspectorDetailsText.setColor('#55efc4');
+        },
+        onHoverOut: () => {
+          this.renderTowerInspector(tower);
         }
       });
 
@@ -398,6 +417,15 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           tower.specialize('path_b');
           SoundManager.playUpgrade();
           this.refresh();
+        },
+        onHover: () => {
+          this.inspectorTitleText.setText(`[B] ${specB.name.toUpperCase()} (${specB.cost}💰)`);
+          this.inspectorTitleText.setColor('#c084fc');
+          this.inspectorDetailsText.setText(`${specB.description} | +${specB.damage - tower.getStats().damage} Dmg, +${specB.range - tower.getStats().range}px Rng`);
+          this.inspectorDetailsText.setColor('#e056fd');
+        },
+        onHoverOut: () => {
+          this.renderTowerInspector(tower);
         }
       });
     } else {
@@ -511,6 +539,9 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           bg.fillRoundedRect(0, 0, btnW, btnH, 6);
           bg.lineStyle(1.5, act.borderColor, 1);
           bg.strokeRoundedRect(0, 0, btnW, btnH, 6);
+          if (act.onHoverOut) {
+            act.onHoverOut();
+          }
         });
 
         hitZone.on('pointerover', () => {
@@ -519,6 +550,9 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           bg.fillRoundedRect(0, 0, btnW, btnH, 6);
           bg.lineStyle(2, 0xffffff, 1);
           bg.strokeRoundedRect(0, 0, btnW, btnH, 6);
+          if (act.onHover) {
+            act.onHover();
+          }
         });
       }
 

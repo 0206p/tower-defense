@@ -74,12 +74,55 @@ export class SoundManager {
       const currentChord = this.chords[this.currentNoteIndex % this.chords.length];
 
       this.playAtmosphericPad(currentChord, 4.0, now);
+      this.playMelodicMotif(now);
 
       this.currentNoteIndex++;
       this.musicTimer = setTimeout(playStep, 3500); // Ruhiger, angenehmer 3.5s Takt
     };
 
     playStep();
+  }
+
+  // Sanfte, melodische Sci-Fi Lead-Notes (D-Moll Pentatonik)
+  private static melodyScale = [
+    293.66, // D4
+    329.63, // E4
+    349.23, // F4
+    440.00, // A4
+    523.25, // C5
+    587.33  // D5
+  ];
+
+  private static playMelodicMotif(startTime: number): void {
+    if (!this.ctx || this.isMuted) return;
+    try {
+      const noteCount = 2;
+      for (let i = 0; i < noteCount; i++) {
+        const noteTime = startTime + 0.8 + i * 1.2;
+        const noteIdx = (this.currentNoteIndex * 2 + i * 3) % this.melodyScale.length;
+        const freq = this.melodyScale[noteIdx];
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(850, noteTime);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.0001, noteTime);
+        gain.gain.linearRampToValueAtTime(0.018, noteTime + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 1.1);
+
+        const osc = this.ctx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, noteTime);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(noteTime);
+        osc.stop(noteTime + 1.2);
+      }
+    } catch {}
   }
 
   public static stopMusic(): void {
@@ -167,6 +210,24 @@ export class SoundManager {
         osc.start(now);
         osc.stop(now + 0.1);
       }
+    } catch (e) {}
+  }
+
+  public static playExplosion(): void {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(20, now + 0.4);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.4);
     } catch (e) {}
   }
 
