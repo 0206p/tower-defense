@@ -13,6 +13,7 @@ import { HUD } from '../ui/HUD';
 import { TowerSelectionBar } from '../ui/TowerSelectionBar';
 import { TowerInfoModal } from '../ui/TowerInfoModal';
 import { PauseModal } from '../ui/PauseModal';
+import { logger } from '../systems/GameLogger';
 
 export class GameScene extends Phaser.Scene {
   private worldId: WorldId = 'witch_forest';
@@ -56,9 +57,11 @@ export class GameScene extends Phaser.Scene {
   public init(data: { worldId?: WorldId; missionNumber?: number }): void {
     if (data.worldId) this.worldId = data.worldId;
     if (data.missionNumber) this.missionNumber = data.missionNumber;
+    logger.info('GameScene', `Mission initialisiert: Welt=${this.worldId}, Mission=${this.missionNumber}`);
   }
 
   public create(): void {
+    logger.info('GameScene', `Spielfeld geladen: Welt=${this.worldId}, Mission=${this.missionNumber}`);
     this.isGameOver = false;
     this.isGamePaused = false;
     this.towers = [];
@@ -100,6 +103,7 @@ export class GameScene extends Phaser.Scene {
     // 3. WaveManager
     this.waveManager = new WaveManager(this, this.mapManager, this.economy, this.worldId, this.missionNumber, {
       onWaveChange: (waveNum, total) => {
+        logger.wave(`Welle ${waveNum} / ${total} gestartet`);
         this.hud.updateWave(waveNum, total);
         this.hud.setNextWaveButtonEnabled(false, `WELLE ${waveNum} LÄUFT`);
         this.towerBar.setBuildEnabled(false);
@@ -107,6 +111,7 @@ export class GameScene extends Phaser.Scene {
         this.placementPreviewContainer.setVisible(false);
       },
       onWaveCompleted: (waveNum) => {
+        logger.wave(`Welle ${waveNum} überstanden`);
         SoundManager.playCoin();
         this.towerBar.setBuildEnabled(true);
         if (waveNum < this.waveManager.getTotalWaves()) {
@@ -115,6 +120,7 @@ export class GameScene extends Phaser.Scene {
         }
       },
       onAllWavesCompleted: () => {
+        logger.wave('Alle Wellen der Mission geschlagen!');
         this.triggerVictory();
       },
       onWaveAnnouncement: (text) => {
@@ -125,6 +131,7 @@ export class GameScene extends Phaser.Scene {
     // 4. HUD mit 1x, 2x, 3x, Vollbild und Pause
     this.hud = new HUD(this, this.economy.getLives(), this.economy.getGold(), {
       onSpeedChange: (speed) => {
+        logger.info('GameSpeed', `Tempo auf ${speed}x gesetzt`);
         this.time.timeScale = speed;
       },
       onNextWaveClicked: () => {
@@ -176,6 +183,12 @@ export class GameScene extends Phaser.Scene {
       onUpgrade: (tower) => {
         const success = tower.upgrade();
         if (success) {
+          logger.tower(`Turm hochgestuft: ${tower.towerType} auf Stufe ${tower.currentLevel}`, {
+            type: tower.towerType,
+            level: tower.currentLevel,
+            col: tower.gridCol,
+            row: tower.gridRow
+          });
           SoundManager.playUpgrade();
           this.towerBar.updateAffordability();
           this.infoModal.refresh();
@@ -353,6 +366,10 @@ export class GameScene extends Phaser.Scene {
       this.towers.splice(idx, 1);
     }
     const refund = tower.sell();
+    logger.tower(`Turm gelöscht/verkauft: ${tower.towerType} bei (${tower.gridCol}, ${tower.gridRow})`, {
+      type: tower.towerType,
+      refund
+    });
     this.selectedPlacedTower = null;
     this.hideDeleteButton();
     this.infoModal.hide();
@@ -609,6 +626,12 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.towers.push(tower);
+    logger.tower(`Turm platziert: ${type} bei (${col}, ${row})`, {
+      type,
+      col,
+      row,
+      isRune: this.mapManager.isRuneTile(col, row)
+    });
     this.spawnBuildDust(x, y);
     this.towerBar.updateAffordability();
   }

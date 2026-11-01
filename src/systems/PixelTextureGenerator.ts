@@ -179,99 +179,437 @@ export class PixelTextureGenerator {
     });
 
     create('tile_ground_witch', 40, 40, (ctx) => {
-      ctx.fillStyle = '#223824';
+      // 1. Tiefe Moosbasis mit klarem Kachelrand für perfekte Orientierung
+      ctx.fillStyle = '#172b1b';
       ctx.fillRect(0, 0, 40, 40);
-      ctx.fillStyle = '#1c281e';
-      ctx.fillRect(4, 4, 16, 12);
-      ctx.fillRect(24, 20, 12, 16);
-      ctx.fillStyle = '#4a2f54';
-      ctx.fillRect(2, 26, 8, 10);
-      ctx.fillStyle = '#8e44ad';
-      ctx.fillRect(8, 22, 2, 2);
+      ctx.fillStyle = '#213f28';
+      ctx.fillRect(1, 1, 38, 38);
+      ctx.fillStyle = '#2b5234';
+      ctx.fillRect(3, 3, 34, 34);
+
+      // Moos-Textur & Lichtflecken
+      ctx.fillStyle = '#376b44';
+      ctx.fillRect(5, 5, 8, 7);
+      ctx.fillRect(22, 18, 12, 10);
+      ctx.fillRect(10, 24, 7, 7);
+      ctx.fillStyle = '#488c59';
+      ctx.fillRect(7, 6, 3, 3);
+      ctx.fillRect(24, 20, 4, 3);
+
+      // Magische Blüten & Leuchtsporen
+      ctx.fillStyle = '#9b59b6';
+      ctx.fillRect(16, 8, 2, 2);
+      ctx.fillRect(30, 28, 2, 2);
+      ctx.fillStyle = '#e056fd';
+      ctx.fillRect(17, 8, 1, 1);
     });
 
     create('tile_path_witch', 40, 40, (ctx) => {
-      ctx.fillStyle = '#3a2936';
+      // Magischer Holzbohlenweg mit Steinrand
+      ctx.fillStyle = '#2c1e29';
       ctx.fillRect(0, 0, 40, 40);
-      ctx.fillStyle = '#4d3748';
-      ctx.fillRect(4, 0, 32, 40);
-      ctx.fillStyle = '#2b1c28';
-      ctx.fillRect(8, 10, 24, 4);
-      ctx.fillRect(6, 26, 26, 4);
+
+      // Steineinfassung an den Rändern
+      ctx.fillStyle = '#3f2d3d';
+      ctx.fillRect(0, 0, 4, 40);
+      ctx.fillRect(36, 0, 4, 40);
+
+      // Holzbohlen (horizontal)
+      const planks = [1, 11, 21, 31];
+      planks.forEach((py) => {
+        ctx.fillStyle = '#56384e';
+        ctx.fillRect(5, py, 30, 8);
+        ctx.fillStyle = '#6b4561';
+        ctx.fillRect(6, py + 1, 28, 6);
+        ctx.fillStyle = '#825577';
+        ctx.fillRect(8, py + 1, 12, 2);
+        // Holznägel
+        ctx.fillStyle = '#d4af37';
+        ctx.fillRect(8, py + 3, 2, 2);
+        ctx.fillRect(28, py + 3, 2, 2);
+      });
     });
 
     create('tile_decor_witch', 40, 40, (ctx) => {
-      ctx.fillStyle = '#dcdde1';
-      ctx.fillRect(17, 18, 6, 16);
+      // Leuchtende Hexenpilze mit Biolumineszenz
+      ctx.fillStyle = '#f5f0e6';
+      ctx.fillRect(18, 20, 5, 14); // Stiel
       ctx.fillStyle = '#8e44ad';
       ctx.beginPath();
-      ctx.arc(20, 18, 14, Math.PI, 0);
+      ctx.arc(20, 20, 14, Math.PI, 0); // Kappe
       ctx.fill();
-      ctx.fillStyle = '#f1c40f';
-      ctx.fillRect(14, 10, 3, 3);
-      ctx.fillRect(23, 9, 3, 3);
+      ctx.fillStyle = '#be2edd';
+      ctx.beginPath();
+      ctx.arc(20, 18, 11, Math.PI, 0);
+      ctx.fill();
+      // Leuchtpunkte
+      ctx.fillStyle = '#55efc4';
+      ctx.fillRect(13, 13, 3, 3);
+      ctx.fillRect(22, 11, 4, 3);
+      ctx.fillRect(18, 15, 3, 2);
+      // Kleiner Nachbarpilz
+      ctx.fillStyle = '#e84393';
+      ctx.beginPath();
+      ctx.arc(10, 28, 6, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = '#f5f0e6';
+      ctx.fillRect(9, 28, 3, 6);
     });
 
     create('tile_ground_cave', 40, 40, (ctx) => {
-      ctx.fillStyle = '#23222a';
+      // Tiefer Schieferboden mit Kristalladern
+      ctx.fillStyle = '#14151b';
       ctx.fillRect(0, 0, 40, 40);
-      ctx.fillStyle = '#1a1920';
-      ctx.fillRect(0, 0, 20, 20);
-      ctx.fillRect(20, 20, 20, 20);
-      ctx.fillStyle = '#f39c12';
-      ctx.fillRect(14, 18, 2, 3);
+      ctx.fillStyle = '#1e212b';
+      ctx.fillRect(1, 1, 38, 38);
+      ctx.fillStyle = '#262a37';
+      ctx.fillRect(3, 3, 34, 34);
+
+      // Steintextur
+      ctx.fillStyle = '#34394a';
+      ctx.fillRect(4, 4, 14, 12);
+      ctx.fillRect(20, 20, 16, 14);
+
+      // Glänzende Golderz- & Azurit-Adern
+      ctx.fillStyle = '#00d2d3';
+      ctx.fillRect(8, 24, 3, 2);
+      ctx.fillRect(11, 26, 4, 2);
+      ctx.fillStyle = '#f1c40f';
+      ctx.fillRect(26, 8, 3, 2);
+      ctx.fillRect(28, 10, 2, 3);
     });
 
     create('tile_path_cave', 40, 40, (ctx) => {
-      ctx.fillStyle = '#3d3023';
+      // Unterirdische Lorenschienen auf Schotterbett
+      ctx.fillStyle = '#201b17';
       ctx.fillRect(0, 0, 40, 40);
-      ctx.fillStyle = '#5c4632';
-      ctx.fillRect(4, 6, 32, 6);
-      ctx.fillRect(4, 24, 32, 6);
-      ctx.fillStyle = '#95a5a6';
-      ctx.fillRect(10, 0, 3, 40);
-      ctx.fillRect(27, 0, 3, 40);
+
+      // Schottersteine
+      ctx.fillStyle = '#38312b';
+      ctx.fillRect(3, 3, 34, 34);
+
+      // Holzschwellen
+      const ties = [2, 12, 22, 32];
+      ties.forEach((ty) => {
+        ctx.fillStyle = '#4e3a2b';
+        ctx.fillRect(4, ty, 32, 6);
+        ctx.fillStyle = '#654b38';
+        ctx.fillRect(6, ty + 1, 28, 4);
+      });
+
+      // Stahlschienen (vertikal verlaufend)
+      ctx.fillStyle = '#7f8c8d';
+      ctx.fillRect(10, 0, 4, 40);
+      ctx.fillRect(26, 0, 4, 40);
+      ctx.fillStyle = '#bdc3c7';
+      ctx.fillRect(11, 0, 2, 40);
+      ctx.fillRect(27, 0, 2, 40);
     });
 
     create('tile_decor_cave', 40, 40, (ctx) => {
-      ctx.fillStyle = '#d35400';
+      // Leuchtende Höhlen-Kristallformation
+      ctx.fillStyle = '#f39c12';
       ctx.beginPath();
-      ctx.moveTo(20, 6);
-      ctx.lineTo(28, 30);
-      ctx.lineTo(12, 30);
+      ctx.moveTo(20, 4);
+      ctx.lineTo(29, 32);
+      ctx.lineTo(11, 32);
       ctx.closePath();
       ctx.fill();
+
       ctx.fillStyle = '#f1c40f';
-      ctx.fillRect(18, 12, 3, 14);
+      ctx.beginPath();
+      ctx.moveTo(20, 4);
+      ctx.lineTo(24, 32);
+      ctx.lineTo(16, 32);
+      ctx.closePath();
+      ctx.fill();
+
+      // Kleiner Nebenkristall
+      ctx.fillStyle = '#e67e22';
+      ctx.beginPath();
+      ctx.moveTo(11, 16);
+      ctx.lineTo(16, 34);
+      ctx.lineTo(6, 34);
+      ctx.closePath();
+      ctx.fill();
     });
 
     create('tile_ground_mountain', 40, 40, (ctx) => {
-      ctx.fillStyle = '#1f0d0d';
+      // Basaltfelsen mit glühenden Magma-Rissen
+      ctx.fillStyle = '#140b0d';
       ctx.fillRect(0, 0, 40, 40);
-      ctx.fillStyle = '#2f1212';
-      ctx.fillRect(6, 6, 28, 28);
+      ctx.fillStyle = '#211316';
+      ctx.fillRect(1, 1, 38, 38);
+      ctx.fillStyle = '#2c191d';
+      ctx.fillRect(3, 3, 34, 34);
+
+      // Felsrelief
+      ctx.fillStyle = '#3a2026';
+      ctx.fillRect(6, 6, 12, 12);
+      ctx.fillRect(20, 18, 14, 16);
+
+      // Glühende Lava-Adern
       ctx.fillStyle = '#c0392b';
-      ctx.fillRect(0, 18, 16, 3);
-      ctx.fillRect(16, 26, 24, 3);
+      ctx.fillRect(4, 24, 8, 2);
+      ctx.fillRect(10, 26, 10, 2);
+      ctx.fillRect(24, 8, 10, 2);
+      ctx.fillStyle = '#e67e22';
+      ctx.fillRect(6, 24, 4, 1);
+      ctx.fillRect(12, 26, 6, 1);
+      ctx.fillRect(26, 8, 6, 1);
     });
 
     create('tile_path_mountain', 40, 40, (ctx) => {
-      ctx.fillStyle = '#3a1313';
+      // Obsidian-Weg mit Magmagraben
+      ctx.fillStyle = '#1f0d0d';
       ctx.fillRect(0, 0, 40, 40);
-      ctx.fillStyle = '#4a1c1c';
-      ctx.fillRect(4, 0, 32, 40);
-      ctx.fillStyle = '#e67e22';
-      ctx.fillRect(3, 0, 2, 40);
-      ctx.fillRect(35, 0, 2, 40);
+
+      // Fließende Lava an den Seiten
+      ctx.fillStyle = '#ff4757';
+      ctx.fillRect(1, 0, 4, 40);
+      ctx.fillRect(35, 0, 4, 40);
+      ctx.fillStyle = '#ffa502';
+      ctx.fillRect(2, 0, 2, 40);
+      ctx.fillRect(36, 0, 2, 40);
+
+      // Dunkle Obsidian-Platten
+      const slabs = [2, 12, 22, 32];
+      slabs.forEach((sy) => {
+        ctx.fillStyle = '#331a1f';
+        ctx.fillRect(6, sy, 28, 8);
+        ctx.fillStyle = '#48252b';
+        ctx.fillRect(8, sy + 1, 24, 6);
+        ctx.fillStyle = '#e74c3c';
+        ctx.fillRect(14, sy + 3, 2, 2);
+      });
     });
 
     create('tile_decor_mountain', 40, 40, (ctx) => {
-      ctx.fillStyle = '#180707';
-      ctx.fillRect(8, 10, 24, 24);
+      // Rauchender Vulkanschlot
+      ctx.fillStyle = '#1a0c0e';
+      ctx.beginPath();
+      ctx.moveTo(10, 34);
+      ctx.lineTo(15, 12);
+      ctx.lineTo(25, 12);
+      ctx.lineTo(30, 34);
+      ctx.closePath();
+      ctx.fill();
+
+      // Magmakrater
       ctx.fillStyle = '#e74c3c';
-      ctx.fillRect(16, 12, 8, 16);
+      ctx.fillRect(15, 10, 10, 5);
       ctx.fillStyle = '#f1c40f';
-      ctx.fillRect(18, 14, 4, 12);
+      ctx.fillRect(17, 11, 6, 3);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(19, 12, 2, 1);
+    });
+
+    // ==========================================
+    // WEHENDES GRAS & AMBIENTE-DEKORATIONEN
+    // ==========================================
+    create('decor_grass_tuft_1', 24, 24, (ctx) => {
+      // Zartes Grasbüschel (Basis bei y=23)
+      ctx.fillStyle = '#2ed573';
+      // Halm 1 (links)
+      ctx.fillRect(6, 12, 2, 11);
+      ctx.fillRect(4, 7, 2, 6);
+      // Halm 2 (mitte)
+      ctx.fillRect(11, 6, 2, 17);
+      ctx.fillRect(10, 2, 2, 5);
+      // Halm 3 (rechts)
+      ctx.fillRect(16, 10, 2, 13);
+      ctx.fillRect(18, 5, 2, 6);
+      // Glanzlichter
+      ctx.fillStyle = '#7bed9f';
+      ctx.fillRect(11, 4, 1, 8);
+      ctx.fillRect(5, 8, 1, 6);
+    });
+
+    create('decor_grass_tuft_2', 24, 24, (ctx) => {
+      // Dichtes Gras mit kleiner Berg-Blume
+      ctx.fillStyle = '#26af5f';
+      ctx.fillRect(4, 10, 2, 13);
+      ctx.fillRect(9, 5, 2, 18);
+      ctx.fillRect(14, 8, 2, 15);
+      ctx.fillRect(18, 12, 2, 11);
+      // Blüte
+      ctx.fillStyle = '#ffd32a';
+      ctx.fillRect(13, 3, 4, 4);
+      ctx.fillStyle = '#ff3f34';
+      ctx.fillRect(14, 4, 2, 2);
+    });
+
+    create('decor_grass_tuft_3', 24, 24, (ctx) => {
+      // Wilder Busch / Farn
+      ctx.fillStyle = '#1e824c';
+      ctx.fillRect(3, 14, 3, 9);
+      ctx.fillRect(8, 7, 3, 16);
+      ctx.fillRect(13, 10, 3, 13);
+      ctx.fillRect(18, 16, 3, 7);
+      ctx.fillStyle = '#2ecc71';
+      ctx.fillRect(9, 8, 1, 7);
+    });
+
+    // ==========================================
+    // TITEL-PANORAMA-HINTERGRUND (RETRO FANTASY)
+    // ==========================================
+    create('bg_menu_panorama', 1280, 720, (ctx) => {
+      // 1. Himmel mit stimmungsvollem Farbverlauf
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 720);
+      skyGrad.addColorStop(0, '#0a0714');
+      skyGrad.addColorStop(0.35, '#15102a');
+      skyGrad.addColorStop(0.65, '#28133d');
+      skyGrad.addColorStop(0.85, '#4a1d47');
+      skyGrad.addColorStop(1.0, '#1d0c24');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, 1280, 720);
+
+      // 2. Sterne
+      ctx.fillStyle = '#ffffff';
+      const starCoords = [
+        [120, 45], [240, 80], [380, 35], [510, 110], [640, 60],
+        [790, 40], [920, 95], [1050, 50], [1180, 85], [160, 140],
+        [310, 160], [450, 190], [700, 170], [860, 150], [1120, 130]
+      ];
+      starCoords.forEach(([sx, sy]) => {
+        ctx.fillRect(sx, sy, 2, 2);
+        ctx.fillStyle = 'rgba(255, 235, 167, 0.4)';
+        ctx.fillRect(sx - 1, sy, 4, 2);
+        ctx.fillRect(sx, sy - 1, 2, 4);
+        ctx.fillStyle = '#ffffff';
+      });
+
+      // 3. Mystischer Mond
+      const moonX = 1040;
+      const moonY = 140;
+      const moonRadius = 65;
+      const moonGrad = ctx.createRadialGradient(moonX, moonY, 10, moonX, moonY, moonRadius);
+      moonGrad.addColorStop(0, '#fffbf0');
+      moonGrad.addColorStop(0.7, '#f6e58d');
+      moonGrad.addColorStop(1, '#eccc68');
+      ctx.fillStyle = moonGrad;
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mondkrater
+      ctx.fillStyle = 'rgba(214, 162, 59, 0.25)';
+      ctx.beginPath();
+      ctx.arc(moonX - 20, moonY - 15, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(moonX + 22, moonY + 12, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(moonX - 12, moonY + 28, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mond-Aura
+      ctx.strokeStyle = 'rgba(246, 229, 141, 0.2)';
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, moonRadius + 8, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 4. Entfernte Bergketten (Parallax-Schichten)
+      // Schicht 1 (fern, lila-blau)
+      ctx.fillStyle = '#1d1733';
+      ctx.beginPath();
+      ctx.moveTo(0, 480);
+      ctx.lineTo(180, 360);
+      ctx.lineTo(340, 440);
+      ctx.lineTo(520, 320);
+      ctx.lineTo(740, 460);
+      ctx.lineTo(920, 350);
+      ctx.lineTo(1120, 440);
+      ctx.lineTo(1280, 370);
+      ctx.lineTo(1280, 720);
+      ctx.lineTo(0, 720);
+      ctx.closePath();
+      ctx.fill();
+
+      // Schicht 2 (mittlere Gebirgszüge, dunkler)
+      ctx.fillStyle = '#171128';
+      ctx.beginPath();
+      ctx.moveTo(0, 530);
+      ctx.lineTo(120, 450);
+      ctx.lineTo(280, 520);
+      ctx.lineTo(440, 410);
+      ctx.lineTo(620, 510);
+      ctx.lineTo(840, 420);
+      ctx.lineTo(1020, 500);
+      ctx.lineTo(1200, 430);
+      ctx.lineTo(1280, 490);
+      ctx.lineTo(1280, 720);
+      ctx.lineTo(0, 720);
+      ctx.closePath();
+      ctx.fill();
+
+      // 5. Epische Turm-Festung auf einem Felsplateau (links)
+      const fortressBaseX = 140;
+      const fortressBaseY = 560;
+
+      // Felsklippe
+      ctx.fillStyle = '#0f0a1c';
+      ctx.beginPath();
+      ctx.moveTo(0, 570);
+      ctx.lineTo(260, 540);
+      ctx.lineTo(320, 720);
+      ctx.lineTo(0, 720);
+      ctx.closePath();
+      ctx.fill();
+
+      // Großer Wehrturm
+      ctx.fillStyle = '#1a132c';
+      ctx.fillRect(100, 320, 80, 240);
+      // Zinnen
+      ctx.fillRect(92, 305, 96, 16);
+      ctx.fillStyle = '#0f0a1c';
+      ctx.fillRect(112, 305, 12, 10);
+      ctx.fillRect(144, 305, 12, 10);
+      ctx.fillRect(176, 305, 12, 10);
+      // Turmspitze (Spitzdach)
+      ctx.fillStyle = '#2c1e48';
+      ctx.beginPath();
+      ctx.moveTo(140, 240);
+      ctx.lineTo(190, 305);
+      ctx.lineTo(90, 305);
+      ctx.closePath();
+      ctx.fill();
+
+      // Leuchtender Magiekristall auf der Turmspitze
+      ctx.fillStyle = '#55efc4';
+      ctx.beginPath();
+      ctx.moveTo(140, 215);
+      ctx.lineTo(146, 230);
+      ctx.lineTo(140, 245);
+      ctx.lineTo(134, 230);
+      ctx.closePath();
+      ctx.fill();
+
+      // Erleuchtete Bogenfenster
+      ctx.fillStyle = '#ffd32a';
+      ctx.fillRect(132, 350, 16, 24);
+      ctx.fillRect(132, 410, 16, 24);
+      ctx.fillRect(132, 470, 16, 24);
+
+      // 6. Vordergrund-Plateau (unten)
+      ctx.fillStyle = '#0d0818';
+      ctx.beginPath();
+      ctx.moveTo(0, 640);
+      ctx.lineTo(400, 610);
+      ctx.lineTo(880, 630);
+      ctx.lineTo(1280, 600);
+      ctx.lineTo(1280, 720);
+      ctx.lineTo(0, 720);
+      ctx.closePath();
+      ctx.fill();
+
+      // Zarte Nebelstreifen über dem Tal
+      ctx.fillStyle = 'rgba(74, 29, 71, 0.35)';
+      ctx.fillRect(0, 520, 1280, 25);
+      ctx.fillStyle = 'rgba(224, 86, 253, 0.12)';
+      ctx.fillRect(0, 560, 1280, 30);
     });
 
     create('tile_runestone', 40, 40, (ctx) => {

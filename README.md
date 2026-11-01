@@ -102,6 +102,27 @@ In jeder Mission verdienst du wertvolle **magische Kristalle** (durch Sterne und
 
 ---
 
+### 🌿 Lebendiges Schlachtfeld: Wehendes Gras & Dynamischer Untergrund
+* **Organisch wehendes Gras**: Grasbüschel und Waldflora schwingen in einer natürlichen, phasengesteuerten Sinus-Windwelle über das Spielfeld.
+* **Aktiver Untergrund je Kampagne**:
+  * *Hexenwelt*: Saftiges Moosgrün mit klaren Kachelkonturen, Holzbohlenwegen mit Steinrändern, biolumineszenten Pilzen und schwebenden Zaubersporen.
+  * *Goblinhöhlen*: Schieferplatten mit glänzenden Golderz- und Azuritadern, Lorengleisen auf Schotterbett und leuchtenden Höhlenkristallen.
+  * *Der tote Berg*: Basaltfelsen mit feinen Magmarissen, Obsidianstraßen mit Lavarinnen und rauchenden Vulkanschloten mit aufsteigenden Glutpartikeln.
+* **18 Kampagnen-spezifische Kartenvarianten**: Jede der 3 Welten bietet 6 einzigartige, an ihre Thematik angepasste Pfadgeometrien inklusive spezieller Boss-Arenen mit strategischen Runensteinen (+20% Reichweite).
+
+---
+
+### 📊 Integriertes Telemetrie- & Logging-System (15-Minuten-Analyse)
+Das Spiel besitzt ein permanentes In-Game-Logging-System (`GameLogger`), das alle Spielereignisse aufzeichnet und im Ringpuffer speichert:
+* **Globale Konsolen-Befehle** für Spieler und Entwickler:
+  * `getRecentLogs(15)`: Gibt alle Ereignisse der letzten 15 Minuten formatiert als Text aus.
+  * `printRecentLogs(15)`: Schreibt die Logs der letzten 15 Minuten direkt in die Browser-Konsole.
+  * `downloadLogs(30)`: Lädt eine `.txt`-Logdatei der letzten 30 Minuten herunter (auch per Klick auf `📜 LOGS EXPORT` im Hauptmenü erreichbar).
+  * `getGameStats(15)`: Berechnet sofort eine statistische Auswertung über verursachten Schaden je Turmklasse, besiegte Feindtypen, Turmbauten und verlorene Leben.
+* **Automatischer Absturzschutz**: Unbehandelte JS-Fehler und Promise-Rejections werden automatisch mit Zeilennummer und Fehlerursache erfasst.
+
+---
+
 ### 📱 Vollbild & Responsive Mobil-Unterstützung
 * **Automatische 16:9-Zentrierung**: Auf Desktop-Monitoren, Laptops, Tablets und Smartphones passt sich das Spiel via `Phaser.Scale.FIT` und `CENTER_BOTH` optimal an.
 * **Mobile Fullscreen**: Kein störendes Verschieben, keine abgeschnittenen Kanten – das Spielfeld nutzt die maximal verfügbare Displayfläche im Vollbild.

@@ -11,6 +11,7 @@ import { Enemy } from './Enemy';
 import { Projectile, ProjectileType } from './Projectile';
 import { EconomySystem } from '../systems/EconomySystem';
 import { SaveSystem } from '../systems/SaveSystem';
+import { logger } from '../systems/GameLogger';
 
 export type TargetPriority = 'FIRST' | 'LAST' | 'STRONGEST' | 'WEAKEST' | 'CLOSEST';
 
@@ -231,6 +232,12 @@ export class Tower extends Phaser.GameObjects.Container {
     this.investedGold += spec.cost;
     this.specialization = pathId;
     this.specializationDef = spec;
+    logger.tower(`Turm spezialisiert: ${this.towerType} Pfad ${pathId} (${spec.name})`, {
+      type: this.towerType,
+      path: pathId,
+      name: spec.name,
+      cost: spec.cost
+    });
 
     const textureKey = `tower_${this.towerType}_${pathId === 'path_a' ? 'spec_a' : 'spec_b'}`;
     if (this.scene.textures.exists(textureKey)) {

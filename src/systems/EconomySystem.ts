@@ -1,4 +1,5 @@
 import { INITIAL_GOLD, INITIAL_LIVES } from '../config/GameConfig';
+import { logger } from './GameLogger';
 
 export class EconomySystem {
   private gold: number;
@@ -24,6 +25,7 @@ export class EconomySystem {
     this.onLivesChanged = callbacks.onLivesChanged;
     this.onScoreChanged = callbacks.onScoreChanged;
     this.onGameOver = callbacks.onGameOver;
+    logger.economy('Spielwirtschaft initialisiert', { gold: this.gold, lives: this.lives });
   }
 
   public getGold(): number {
@@ -40,12 +42,14 @@ export class EconomySystem {
 
   public addGold(amount: number): void {
     this.gold += amount;
+    logger.economy(`Gold erhalten: +${amount}`, { neu: this.gold });
     this.onGoldChanged?.(this.gold);
   }
 
   public spendGold(amount: number): boolean {
     if (this.gold >= amount) {
       this.gold -= amount;
+      logger.economy(`Gold ausgegeben: -${amount}`, { verbleibend: this.gold });
       this.onGoldChanged?.(this.gold);
       return true;
     }
@@ -59,9 +63,11 @@ export class EconomySystem {
 
   public loseLives(amount: number): void {
     this.lives = Math.max(0, this.lives - amount);
+    logger.economy(`Leben verloren: -${amount}`, { verbleibend: this.lives });
     this.onLivesChanged?.(this.lives);
 
     if (this.lives <= 0) {
+      logger.warn('System', 'Alle Leben verloren -> Game Over!');
       this.onGameOver?.();
     }
   }
