@@ -217,11 +217,13 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
   }
 
   public hide(): void {
-    if (this.currentTower) {
-      this.currentTower.setSelected(false);
-      this.currentTower = null;
-    }
+    if (!this.visible && !this.currentTower) return;
     this.setVisible(false);
+    if (this.currentTower) {
+      const tower = this.currentTower;
+      this.currentTower = null;
+      tower.setSelected(false);
+    }
     this.onCloseCallback();
   }
 

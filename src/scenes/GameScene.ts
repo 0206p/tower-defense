@@ -695,12 +695,16 @@ export class GameScene extends Phaser.Scene {
   }
 
   private deselectPlacedTower(): void {
+    if (!this.selectedPlacedTower && !this.infoModal.visible) return;
     if (this.selectedPlacedTower) {
-      this.selectedPlacedTower.setSelected(false);
+      const tower = this.selectedPlacedTower;
       this.selectedPlacedTower = null;
+      tower.setSelected(false);
     }
     this.hideDeleteButton();
-    this.infoModal.hide();
+    if (this.infoModal.visible) {
+      this.infoModal.hide();
+    }
   }
 
   private triggerGameOver(): void {
