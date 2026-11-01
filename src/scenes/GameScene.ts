@@ -7,7 +7,7 @@ import { EconomySystem } from '../systems/EconomySystem';
 import { WaveManager } from '../systems/WaveManager';
 import { SaveSystem, WorldId } from '../systems/SaveSystem';
 import { SoundManager } from '../systems/SoundManager';
-import { Tower } from '../entities/Tower';
+import { Tower, TARGET_PRIORITY_LABELS } from '../entities/Tower';
 import { Projectile } from '../entities/Projectile';
 import { HUD } from '../ui/HUD';
 import { RTSCommandConsole } from '../ui/RTSCommandConsole';
@@ -47,6 +47,7 @@ export class GameScene extends Phaser.Scene {
   private repositionTower: Tower | null = null;
   private isRepositionDragging: boolean = false;
   private pointerDownStartPos: { x: number; y: number } | null = null;
+  private handleGlobalKeyDown?: (e: KeyboardEvent) => void;
 
   private isGameOver: boolean = false;
   private isGamePaused: boolean = false;
@@ -226,52 +227,146 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 7. Echte RTS-Tastaturbefehle (Hotkeys)
+    // 7. Echte RTS-Tastaturbefehle (Globale Hotkeys: [1]-[6], [U], [P], [V], [A], [B], [ESC], [LEERTASTE])
     const hotkeyTowers: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    hotkeyTowers.forEach((type, idx) => {
-      this.input.keyboard?.on(`keydown-${idx + 1}`, () => {
-        if (!this.waveManager.isWaveActive()) {
-          this.rtsConsole.selectBuildType(this.selectedTowerType === type ? null : type);
-        }
-      });
-    });
+    this.handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const activeTag = (e.target as HTMLElement)?.tagName;
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
 
-    this.input.keyboard?.on('keydown-U', () => {
-      if (this.selectedPlacedTower && this.selectedPlacedTower.canUpgrade()) {
-        const cost = this.selectedPlacedTower.getUpgradeCost();
-        if (this.selectedPlacedTower.upgrade()) {
-          balancing.recordTowerUpgrade(this.selectedPlacedTower.towerType, cost);
-          SoundManager.playUpgrade();
-          this.rtsConsole.updateAffordability();
+      const key = e.key.toLowerCase();
+
+      // [1] - [6]: Turmauswahl / Bauen
+      if (['1', '2', '3', '4', '5', '6'].includes(key)) {
+        const idx = parseInt(key, 10) - 1;
+        const towerType = hotkeyTowers[idx];
+        if (towerType) {
+          if (this.waveManager.isWaveActive()) {
+            SoundManager.playDeny();
+            this.hud.showAnnouncement('Während einer Welle können keine neuen Türme gebaut werden!');
+          } else {
+            const def = TOWER_CONFIGS[towerType];
+            if (!this.economy.canAfford(def.baseCost)) {
+              SoundManager.playDeny();
+              this.hud.showAnnouncement(`Nicht genügend Gold für ${def.name}! (${def.baseCost}G)`);
+            } else {
+              SoundManager.playClick();
+              const nextType = this.selectedTowerType === towerType ? null : towerType;
+              this.rtsConsole.selectBuildType(nextType);
+            }
+          }
+        }
+        return;
+      }
+
+      // [U]: Turm-Upgrade
+      if (key === 'u') {
+        if (this.selectedPlacedTower) {
+          if (this.selectedPlacedTower.canUpgrade()) {
+            const cost = this.selectedPlacedTower.getUpgradeCost();
+            if (this.selectedPlacedTower.upgrade()) {
+              balancing.recordTowerUpgrade(this.selectedPlacedTower.towerType, cost);
+              SoundManager.playUpgrade();
+              this.rtsConsole.updateAffordability();
+              this.rtsConsole.refresh();
+              this.showDeleteButton(this.selectedPlacedTower);
+              this.hud.showAnnouncement(`${this.selectedPlacedTower.getDefinition().name} auf Stufe ${this.selectedPlacedTower.currentLevel} verbessert!`);
+            } else {
+              SoundManager.playDeny();
+              this.hud.showAnnouncement('Nicht genügend Gold für Upgrade!');
+            }
+          } else {
+            SoundManager.playDeny();
+          }
+        }
+        return;
+      }
+
+      // [P]: Zielpriorität zyklisch umschalten
+      if (key === 'p') {
+        if (this.selectedPlacedTower) {
+          SoundManager.playClick();
+          this.selectedPlacedTower.cycleTargetPriority();
           this.rtsConsole.refresh();
-          this.showDeleteButton(this.selectedPlacedTower);
+          this.hud.showAnnouncement(`Zielpriorität: [${TARGET_PRIORITY_LABELS[this.selectedPlacedTower.targetPriority]}]`);
         }
+        return;
       }
-    });
 
-    this.input.keyboard?.on('keydown-P', () => {
-      if (this.selectedPlacedTower) {
-        SoundManager.playClick();
-        this.selectedPlacedTower.cycleTargetPriority();
-        this.rtsConsole.refresh();
+      // [V]: Turm verkaufen
+      if (key === 'v') {
+        if (this.selectedPlacedTower) {
+          this.quickDeleteTower(this.selectedPlacedTower);
+        }
+        return;
       }
-    });
 
-    this.input.keyboard?.on('keydown-V', () => {
-      if (this.selectedPlacedTower) {
-        this.quickDeleteTower(this.selectedPlacedTower);
+      // [A]: Spezialisierung Pfad A
+      if (key === 'a') {
+        if (this.selectedPlacedTower && this.selectedPlacedTower.canSpecialize()) {
+          const def = this.selectedPlacedTower.getDefinition();
+          const specA = def.specializations.path_a;
+          if (this.economy.spendGold(specA.cost)) {
+            this.selectedPlacedTower.specialize('path_a');
+            SoundManager.playUpgrade();
+            this.rtsConsole.refresh();
+            this.hud.showAnnouncement(`Spezialisierung aktiviert: ${specA.name}!`);
+          } else {
+            SoundManager.playDeny();
+            this.hud.showAnnouncement(`Nicht genügend Gold für ${specA.name}!`);
+          }
+        }
+        return;
       }
-    });
 
-    this.input.keyboard?.on('keydown-ESC', () => {
-      if (this.selectedPlacedTower) {
-        this.deselectPlacedTower();
-      } else if (this.selectedTowerType) {
-        this.rtsConsole.clearSelection();
-        this.selectedTowerType = null;
-        this.placementPreviewContainer.setVisible(false);
-      } else {
-        this.togglePause();
+      // [B]: Spezialisierung Pfad B
+      if (key === 'b') {
+        if (this.selectedPlacedTower && this.selectedPlacedTower.canSpecialize()) {
+          const def = this.selectedPlacedTower.getDefinition();
+          const specB = def.specializations.path_b;
+          if (this.economy.spendGold(specB.cost)) {
+            this.selectedPlacedTower.specialize('path_b');
+            SoundManager.playUpgrade();
+            this.rtsConsole.refresh();
+            this.hud.showAnnouncement(`Spezialisierung aktiviert: ${specB.name}!`);
+          } else {
+            SoundManager.playDeny();
+            this.hud.showAnnouncement(`Nicht genügend Gold für ${specB.name}!`);
+          }
+        }
+        return;
+      }
+
+      // [Escape]: Abwählen oder Pause
+      if (key === 'escape') {
+        if (this.selectedPlacedTower) {
+          this.deselectPlacedTower();
+        } else if (this.selectedTowerType) {
+          this.rtsConsole.clearSelection();
+          this.selectedTowerType = null;
+          this.placementPreviewContainer.setVisible(false);
+          this.mapManager.showBuildGrid(false);
+        } else {
+          this.togglePause();
+        }
+        return;
+      }
+
+      // [Space]: Nächste Welle starten oder Pause umschalten
+      if (key === ' ' || key === 'space') {
+        e.preventDefault();
+        if (!this.waveManager.isWaveActive() && !this.isGamePaused) {
+          this.waveManager.startNextWave();
+        } else {
+          this.togglePause();
+        }
+        return;
+      }
+    };
+    window.addEventListener('keydown', this.handleGlobalKeyDown);
+
+    this.events.once('shutdown', () => {
+      if (this.handleGlobalKeyDown) {
+        window.removeEventListener('keydown', this.handleGlobalKeyDown);
       }
     });
 
@@ -587,16 +682,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handlePointerUp(pointer: Phaser.Input.Pointer): void {
-    // 1. Neuer Turm per Drag & Drop
+    // 1. Neuer Turm per Drag & Drop oder Klick
     if (this.draggedNewTowerType) {
       const type = this.draggedNewTowerType;
       this.draggedNewTowerType = null;
-      this.selectedTowerType = null;
-      this.placementPreviewContainer.setVisible(false);
-      this.mapManager.showBuildGrid(false);
 
       const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
       if (inGameField) {
+        // Drop im Spielfeld: Turm platzieren
         const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
         const def = TOWER_CONFIGS[type];
         if (this.mapManager.canBuildAt(gridPos.col, gridPos.row)) {
@@ -611,9 +704,18 @@ export class GameScene extends Phaser.Scene {
             this.hud.showAnnouncement('Während einer Welle können keine neuen Türme gebaut werden!');
           }
         }
+        this.selectedTowerType = null;
+        this.placementPreviewContainer.setVisible(false);
+        this.mapManager.showBuildGrid(false);
+        this.rtsConsole.clearSelection();
+        return;
+      } else {
+        // Loslassen fand auf der Konsole/HUD statt: Es war ein reiner Klick!
+        // Ausgewählten Turm aktiv lassen, damit man per Klick ins Spielfeld bauen kann!
+        this.selectedTowerType = type;
+        this.updatePlacementPreviewVisibility();
+        return;
       }
-      this.rtsConsole.clearSelection();
-      return;
     }
 
     // 2. Existierenden Turm repositionieren (Drop)

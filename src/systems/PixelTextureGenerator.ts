@@ -259,60 +259,83 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
-    // 3. MODERNER UNTERGRUND & PFADE (GEMALTE ÄSTHETIK)
+    // 3. MODERNER UNTERGRUND & PFADE (SCI-FI / RTS ÄSTHETIK)
     // ==========================================
     create('tile_ground_witch', 40, 40, (ctx) => {
-      // Sanfter Wald- & Moosboden mit Tiefenverlauf
+      // Dunkler Neosteel- / Alien-Boden mit dezentem Hexagonal-Tech-Muster
       const grad = ctx.createLinearGradient(0, 0, 40, 40);
-      grad.addColorStop(0, '#2d5a32');
-      grad.addColorStop(0.5, '#224827');
-      grad.addColorStop(1, '#19361d');
-
+      grad.addColorStop(0, '#0c1322');
+      grad.addColorStop(0.5, '#111a2e');
+      grad.addColorStop(1, '#080d17');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 40, 40);
 
-      // Weiche Gras-Nuancen & Blüten
-      ctx.fillStyle = 'rgba(76, 175, 80, 0.35)';
+      // Subtile Tech-Panel-Fugen
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.07)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(1, 1, 38, 38);
+
+      // Feines Cyber-Schaltkreis-Segment
+      ctx.strokeStyle = 'rgba(14, 165, 233, 0.18)';
       ctx.beginPath();
-      ctx.arc(12, 14, 8, 0, Math.PI * 2);
-      ctx.arc(28, 26, 10, 0, Math.PI * 2);
+      ctx.moveTo(8, 20);
+      ctx.lineTo(20, 20);
+      ctx.lineTo(26, 14);
+      ctx.stroke();
+
+      // Mikro-Lichtsensor-Knoten
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(26, 14, 1.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Zarte kleine Waldblüte
-      ctx.fillStyle = '#e056fd';
+      // Dezent leuchtende Alien-Biolumineszenz-Spore
+      ctx.fillStyle = 'rgba(168, 85, 247, 0.35)';
       ctx.beginPath();
-      ctx.arc(24, 12, 2.2, 0, Math.PI * 2);
+      ctx.arc(32, 30, 2, 0, Math.PI * 2);
       ctx.fill();
     });
 
     create('tile_path_witch', 40, 40, (ctx) => {
-      // Eleganter Holzsteg mit Schatten und feinen Fugen
-      ctx.fillStyle = '#22151f';
+      // Schwerer Neosteel-Aufmarschpfad mit leuchtenden Cyan-Führungsstreifen
+      ctx.fillStyle = '#090e18';
       ctx.fillRect(0, 0, 40, 40);
 
-      // Steinrand
-      ctx.fillStyle = '#3a2434';
-      ctx.fillRect(0, 0, 3, 40);
-      ctx.fillRect(37, 0, 3, 40);
+      // Zentrale titanverstärkte Lauffläche
+      const plateGrad = ctx.createLinearGradient(0, 0, 40, 0);
+      plateGrad.addColorStop(0, '#151e30');
+      plateGrad.addColorStop(0.5, '#1e293b');
+      plateGrad.addColorStop(1, '#151e30');
+      ctx.fillStyle = plateGrad;
+      ctx.fillRect(4, 0, 32, 40);
 
-      // Holzbohlen
-      const plankY = [1, 11, 21, 31];
-      plankY.forEach((py) => {
-        const pGrad = ctx.createLinearGradient(0, py, 0, py + 8);
-        pGrad.addColorStop(0, '#6d4864');
-        pGrad.addColorStop(0.7, '#593952');
-        pGrad.addColorStop(1, '#43293e');
+      // Querverstrebungen / Dehnungsfugen
+      ctx.fillStyle = '#0a0f1d';
+      ctx.fillRect(4, 10, 32, 2);
+      ctx.fillRect(4, 20, 32, 2);
+      ctx.fillRect(4, 30, 32, 2);
 
-        ctx.fillStyle = pGrad;
-        ctx.fillRect(4, py, 32, 8);
+      // Beidseitige leuchtende Cyan-Navigationsspuren
+      const cyanGlow = ctx.createLinearGradient(0, 0, 0, 40);
+      cyanGlow.addColorStop(0, '#38bdf8');
+      cyanGlow.addColorStop(0.5, '#0284c7');
+      cyanGlow.addColorStop(1, '#38bdf8');
+      ctx.fillStyle = cyanGlow;
+      ctx.fillRect(2, 0, 2, 40);
+      ctx.fillRect(36, 0, 2, 40);
 
-        // Zarte Messingnägel
-        ctx.fillStyle = '#d4af37';
-        ctx.beginPath();
-        ctx.arc(8, py + 4, 1.2, 0, Math.PI * 2);
-        ctx.arc(32, py + 4, 1.2, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      // Gelbe Warn-Pfeilmarkierung in der Mitte
+      ctx.fillStyle = 'rgba(250, 204, 21, 0.55)';
+      ctx.beginPath();
+      ctx.moveTo(17, 24);
+      ctx.lineTo(20, 21);
+      ctx.lineTo(23, 24);
+      ctx.lineTo(21, 24);
+      ctx.lineTo(21, 27);
+      ctx.lineTo(19, 27);
+      ctx.lineTo(19, 24);
+      ctx.closePath();
+      ctx.fill();
     });
 
     create('tile_decor_witch', 40, 40, (ctx) => {
@@ -606,100 +629,173 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
-    // 4b. BÄUME, FELSEN, BÄCHE & LEBENDIGE VIECHER
+    // 4b. SCI-FI REQUISITEN: ENERGIE-PYLONEN, KRISTALLE, KÜHLVENTS & DRONES
     // ==========================================
 
-    // Großer Laubbaum (Hexenwald)
-    create('decor_tree_oak', 46, 54, (ctx) => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+    // Taktischer Energie-Pylon / Plasma-Relais (ersetzt alten Laubbaum)
+    create('decor_tree_oak', 46, 56, (ctx) => {
+      // Bodenschatten
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
       ctx.beginPath();
-      ctx.ellipse(23, 49, 14, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(23, 51, 16, 5, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      const trunkGrad = ctx.createLinearGradient(19, 32, 27, 49);
-      trunkGrad.addColorStop(0, '#593922');
-      trunkGrad.addColorStop(0.5, '#422817');
-      trunkGrad.addColorStop(1, '#2c180d');
-      ctx.fillStyle = trunkGrad;
+      // Tripod-Basis aus Neosteel
+      const baseGrad = ctx.createLinearGradient(12, 38, 34, 52);
+      baseGrad.addColorStop(0, '#334155');
+      baseGrad.addColorStop(0.5, '#1e293b');
+      baseGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = baseGrad;
       ctx.beginPath();
-      ctx.moveTo(21, 30);
-      ctx.lineTo(25, 30);
-      ctx.lineTo(27, 48);
-      ctx.lineTo(19, 48);
+      ctx.moveTo(23, 32);
+      ctx.lineTo(34, 50);
+      ctx.lineTo(28, 52);
+      ctx.lineTo(23, 44);
+      ctx.lineTo(18, 52);
+      ctx.lineTo(12, 50);
       ctx.closePath();
       ctx.fill();
 
-      const drawCanopy = (cx: number, cy: number, r: number, color1: string, color2: string) => {
-        const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 2, cx, cy, r);
-        g.addColorStop(0, color1);
-        g.addColorStop(1, color2);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fill();
-      };
+      // Pylonen-Kernsäule (Vertikaler Generator)
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(20, 14, 6, 26);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(20, 14, 6, 26);
 
-      drawCanopy(17, 24, 13, '#2ed573', '#1e824c');
-      drawCanopy(29, 24, 13, '#26af61', '#145a32');
-      drawCanopy(23, 14, 14, '#7bed9f', '#20bf6b');
-    });
+      // Leuchtender Plasma-Energiekern (Cyan Puls)
+      const coreGrad = ctx.createLinearGradient(0, 16, 0, 36);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.3, '#38bdf8');
+      coreGrad.addColorStop(0.7, '#0284c7');
+      coreGrad.addColorStop(1, '#0369a1');
+      ctx.fillStyle = coreGrad;
+      ctx.fillRect(21.5, 17, 3, 20);
 
-    // Nadelbaum / Wald-Tanne
-    create('decor_tree_pine', 38, 56, (ctx) => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+      // Schwebende Energie-Fokus-Spitze
+      ctx.fillStyle = '#38bdf8';
       ctx.beginPath();
-      ctx.ellipse(19, 52, 11, 4, 0, 0, Math.PI * 2);
+      ctx.moveTo(23, 4);
+      ctx.lineTo(27, 13);
+      ctx.lineTo(19, 13);
+      ctx.closePath();
       ctx.fill();
 
-      ctx.fillStyle = '#3e2723';
-      ctx.fillRect(17, 42, 4, 10);
-
-      const drawNeedles = (yTop: number, yBot: number, w: number, c1: string, c2: string) => {
-        const g = ctx.createLinearGradient(19, yTop, 19, yBot);
-        g.addColorStop(0, c1);
-        g.addColorStop(1, c2);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.moveTo(19, yTop);
-        ctx.lineTo(19 + w, yBot);
-        ctx.lineTo(19 - w, yBot);
-        ctx.closePath();
-        ctx.fill();
-      };
-
-      drawNeedles(26, 44, 16, '#27ae60', '#145a32');
-      drawNeedles(15, 33, 13, '#2ecc71', '#196f3d');
-      drawNeedles(4, 21, 10, '#55efc4', '#1e824c');
+      // Rote Status-LED / Beacon
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(23, 4, 1.5, 0, Math.PI * 2);
+      ctx.fill();
     });
 
-    // Toter Vulkan-Baum mit Glut
-    create('decor_tree_dead', 42, 54, (ctx) => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    // StarCraft Khaydarin-Mineralien-Kristallspitze (ersetzt Tanne)
+    create('decor_tree_pine', 40, 56, (ctx) => {
+      // Bodenschatten
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
       ctx.beginPath();
-      ctx.ellipse(21, 50, 13, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(20, 52, 14, 4, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = '#1a0a0d';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
+      // Dunkle geologische Kristallsockel-Felsen
+      ctx.fillStyle = '#0f172a';
       ctx.beginPath();
-      ctx.moveTo(21, 49);
-      ctx.lineTo(21, 28);
-      ctx.lineTo(12, 14);
-      ctx.moveTo(21, 32);
-      ctx.lineTo(31, 16);
-      ctx.moveTo(16, 21);
-      ctx.lineTo(8, 10);
-      ctx.moveTo(26, 24);
-      ctx.lineTo(35, 12);
+      ctx.moveTo(10, 51);
+      ctx.lineTo(14, 44);
+      ctx.lineTo(26, 44);
+      ctx.lineTo(31, 51);
+      ctx.closePath();
+      ctx.fill();
+
+      // Große zentrale Kristallspitze (StarCraft Blue Minerals)
+      const c1Grad = ctx.createLinearGradient(8, 12, 28, 48);
+      c1Grad.addColorStop(0, '#e0f2fe');
+      c1Grad.addColorStop(0.2, '#7dd3fc');
+      c1Grad.addColorStop(0.6, '#0284c7');
+      c1Grad.addColorStop(1, '#0c4a6e');
+      ctx.fillStyle = c1Grad;
+      ctx.beginPath();
+      ctx.moveTo(20, 4);
+      ctx.lineTo(26, 26);
+      ctx.lineTo(23, 48);
+      ctx.lineTo(17, 48);
+      ctx.lineTo(14, 24);
+      ctx.closePath();
+      ctx.fill();
+
+      // Lichtkante / Facette
+      ctx.strokeStyle = '#bae6fd';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(20, 4);
+      ctx.lineTo(20, 48);
       ctx.stroke();
 
-      ctx.fillStyle = '#ff6b6b';
-      [ {x: 12, y: 14}, {x: 8, y: 10}, {x: 31, y: 16}, {x: 35, y: 12} ].forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      // Zweite kleinere Kristallspitze links
+      const c2Grad = ctx.createLinearGradient(6, 20, 16, 46);
+      c2Grad.addColorStop(0, '#38bdf8');
+      c2Grad.addColorStop(0.7, '#0369a1');
+      c2Grad.addColorStop(1, '#082f49');
+      ctx.fillStyle = c2Grad;
+      ctx.beginPath();
+      ctx.moveTo(12, 18);
+      ctx.lineTo(17, 34);
+      ctx.lineTo(15, 48);
+      ctx.lineTo(9, 48);
+      ctx.lineTo(7, 32);
+      ctx.closePath();
+      ctx.fill();
+
+      // Dritte Kristallspitze rechts
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.moveTo(28, 22);
+      ctx.lineTo(33, 36);
+      ctx.lineTo(30, 49);
+      ctx.lineTo(25, 49);
+      ctx.lineTo(24, 34);
+      ctx.closePath();
+      ctx.fill();
+    });
+
+    // Industrieller Thermal-Kühlvent / Auslass (ersetzt toten Baum)
+    create('decor_tree_dead', 42, 54, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(21, 50, 14, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Zylindrischer Industrieschacht
+      const tubeGrad = ctx.createLinearGradient(12, 0, 30, 0);
+      tubeGrad.addColorStop(0, '#1e293b');
+      tubeGrad.addColorStop(0.5, '#334155');
+      tubeGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = tubeGrad;
+      ctx.fillRect(15, 20, 12, 28);
+
+      // Hitzegitter mit glühender Orange/Rot-Emission
+      ctx.fillStyle = '#ea580c';
+      ctx.fillRect(17, 14, 8, 8);
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(19, 16, 4, 4);
+
+      // Dampfrohr-Arme
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(15, 28);
+      ctx.lineTo(8, 22);
+      ctx.lineTo(8, 14);
+      ctx.moveTo(27, 28);
+      ctx.lineTo(34, 22);
+      ctx.lineTo(34, 14);
+      ctx.stroke();
+
+      // Hitzewarn-LEDs
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(8, 12, 1.5, 0, Math.PI * 2);
+      ctx.arc(34, 12, 1.5, 0, Math.PI * 2);
+      ctx.fill();
     });
 
     // Stalagmit-Säule (Goblinhöhle)
@@ -806,145 +902,164 @@ export class PixelTextureGenerator {
       ctx.stroke();
     });
 
-    // Bach / Wasser-Kachel (Hexenwald)
+    // Supraleitender Plasma-Energieleiter (ersetzt Wasserbach)
     create('decor_water_stream_h', 40, 40, (ctx) => {
-      const g = ctx.createLinearGradient(0, 0, 0, 40);
-      g.addColorStop(0, '#192a56');
-      g.addColorStop(0.3, '#0984e3');
-      g.addColorStop(0.7, '#48dbfb');
-      g.addColorStop(1, '#192a56');
-      ctx.fillStyle = g;
+      // Dunkle Panzerschacht-Bettung
+      ctx.fillStyle = '#060a12';
       ctx.fillRect(0, 4, 40, 32);
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+      // Titan-Schienenkanten oben und unten
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 4, 40, 4);
+      ctx.fillRect(0, 32, 40, 4);
+
+      // Fließender hochenergetischer Plasma-Strom
+      const g = ctx.createLinearGradient(0, 8, 0, 32);
+      g.addColorStop(0, '#0369a1');
+      g.addColorStop(0.2, '#0284c7');
+      g.addColorStop(0.5, '#38bdf8');
+      g.addColorStop(0.8, '#0284c7');
+      g.addColorStop(1, '#0369a1');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 8, 40, 24);
+
+      // Zentrale Lichtbogen-Führung
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(4, 14);
-      ctx.quadraticCurveTo(14, 11, 24, 14);
-      ctx.quadraticCurveTo(32, 17, 38, 14);
+      ctx.moveTo(0, 20);
+      ctx.lineTo(12, 18);
+      ctx.lineTo(24, 22);
+      ctx.lineTo(40, 20);
       ctx.stroke();
 
-      ctx.beginPath();
-      ctx.moveTo(2, 26);
-      ctx.quadraticCurveTo(12, 23, 22, 26);
-      ctx.quadraticCurveTo(30, 29, 36, 26);
-      ctx.stroke();
-
-      ctx.fillStyle = '#57606f';
-      ctx.beginPath();
-      ctx.arc(8, 4, 2, 0, Math.PI * 2);
-      ctx.arc(28, 5, 2.5, 0, Math.PI * 2);
-      ctx.arc(18, 36, 2, 0, Math.PI * 2);
-      ctx.fill();
+      // Magnet-Stabilisatoren
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(8, 4, 3, 4);
+      ctx.fillRect(28, 4, 3, 4);
+      ctx.fillRect(18, 32, 3, 4);
     });
 
-    // Seerose auf dem Wasser
+    // Magnetischer Induktionsknoten / Plasma-Koppler (ersetzt Seerose)
     create('decor_water_lily', 24, 24, (ctx) => {
-      ctx.fillStyle = '#10ac84';
+      // Äußerer Magnetring
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(12, 12, 8, 0.3, Math.PI * 1.85);
-      ctx.lineTo(12, 12);
-      ctx.closePath();
+      ctx.arc(12, 12, 9, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Innerer leuchtender Plasma-Knoten
+      const nodeGrad = ctx.createRadialGradient(12, 12, 1, 12, 12, 6);
+      nodeGrad.addColorStop(0, '#ffffff');
+      nodeGrad.addColorStop(0.5, '#38bdf8');
+      nodeGrad.addColorStop(1, '#0369a1');
+      ctx.fillStyle = nodeGrad;
+      ctx.beginPath();
+      ctx.arc(12, 12, 5.5, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#ff9ff3';
+      // Mikro-Emitter-Zentrum
+      ctx.fillStyle = '#facc15';
       ctx.beginPath();
-      ctx.arc(12, 12, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#feca57';
-      ctx.beginPath();
-      ctx.arc(12, 12, 1.5, 0, Math.PI * 2);
+      ctx.arc(12, 12, 2, 0, Math.PI * 2);
       ctx.fill();
     });
 
-    // Süßes Wald-Kaninchen
-    create('critter_rabbit', 22, 20, (ctx) => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    // Taktische Aufklärungs-Drohne (SC2 Scout Drone - ersetzt altes Wald-Kaninchen)
+    create('critter_rabbit', 24, 22, (ctx) => {
+      // Schwebeschatten am Boden
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
       ctx.beginPath();
-      ctx.ellipse(11, 18, 8, 2.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(12, 19, 9, 3, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#f5f0e6';
+      // Drohnen-Rumpf (Aerodynamisches Neosteel/Karbon)
+      const hullGrad = ctx.createLinearGradient(4, 4, 20, 16);
+      hullGrad.addColorStop(0, '#334155');
+      hullGrad.addColorStop(0.5, '#1e293b');
+      hullGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = hullGrad;
       ctx.beginPath();
-      ctx.ellipse(10, 13, 7, 5, -0.15, 0, Math.PI * 2);
+      ctx.moveTo(12, 4);
+      ctx.lineTo(21, 10);
+      ctx.lineTo(18, 16);
+      ctx.lineTo(6, 16);
+      ctx.lineTo(3, 10);
+      ctx.closePath();
       ctx.fill();
 
-      ctx.beginPath();
-      ctx.arc(15, 9, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#f5f0e6';
-      ctx.beginPath();
-      ctx.ellipse(14, 3, 1.8, 4.5, -0.2, 0, Math.PI * 2);
-      ctx.ellipse(17, 4, 1.8, 4.5, 0.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffb8b8';
-      ctx.beginPath();
-      ctx.ellipse(14, 3, 0.9, 3, -0.2, 0, Math.PI * 2);
-      ctx.ellipse(17, 4, 0.9, 3, 0.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#2f3542';
-      ctx.beginPath();
-      ctx.arc(16, 8, 0.9, 0, Math.PI * 2);
-      ctx.fill();
-
+      // Ionen-Schubdüsen hinten (Cyan Flammen)
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(5, 15, 3, 3);
+      ctx.fillRect(16, 15, 3, 3);
       ctx.fillStyle = '#ffffff';
+      ctx.fillRect(6, 15, 1, 2);
+      ctx.fillRect(17, 15, 1, 2);
+
+      // Leuchtendes Scanner-Visier vorne (Cyan Sensorlinie)
+      const opticGrad = ctx.createLinearGradient(7, 8, 17, 8);
+      opticGrad.addColorStop(0, '#0284c7');
+      opticGrad.addColorStop(0.5, '#38bdf8');
+      opticGrad.addColorStop(1, '#0284c7');
+      ctx.fillStyle = opticGrad;
+      ctx.fillRect(8, 8, 8, 2.5);
+
+      // Status-Beacon oben
+      ctx.fillStyle = '#22c55e';
       ctx.beginPath();
-      ctx.arc(3, 13, 2, 0, Math.PI * 2);
+      ctx.arc(12, 5, 1.2, 0, Math.PI * 2);
       ctx.fill();
     });
 
-    // Schillernder Wald-Schmetterling
-    create('critter_butterfly', 20, 18, (ctx) => {
-      const grad = ctx.createLinearGradient(0, 0, 20, 18);
-      grad.addColorStop(0, '#00d2d3');
-      grad.addColorStop(0.5, '#54a0ff');
-      grad.addColorStop(1, '#5f27cd');
-      ctx.fillStyle = grad;
+    // Orbital-Mikrosonde / Plasma-Funke (ersetzt Wald-Schmetterling)
+    create('critter_butterfly', 22, 22, (ctx) => {
+      // Äußerer gyroskopischer Magnetring
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(11, 11, 8.5, 0, Math.PI * 2);
+      ctx.stroke();
 
+      // Leuchtender Plasma-Wisp Kern
+      const coreGrad = ctx.createRadialGradient(11, 11, 1, 11, 11, 6);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.4, '#38bdf8');
+      coreGrad.addColorStop(0.8, '#0284c7');
+      coreGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = coreGrad;
       ctx.beginPath();
-      ctx.ellipse(6, 6, 5, 4, -0.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(7, 12, 3.5, 2.5, 0.3, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.ellipse(14, 6, 5, 4, 0.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(13, 12, 3.5, 2.5, -0.3, 0, Math.PI * 2);
+      ctx.arc(11, 11, 6, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#222f3e';
-      ctx.fillRect(9, 4, 2, 9);
+      // Orbitale Energie-Funken
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath();
+      ctx.arc(4, 7, 1.2, 0, Math.PI * 2);
+      ctx.arc(18, 15, 1.2, 0, Math.PI * 2);
+      ctx.fill();
     });
 
-    // Höhlen-Fledermaus
+    // Stealth Raven-UAV Aufklärer (ersetzt Höhlen-Fledermaus)
     create('critter_bat', 24, 18, (ctx) => {
-      ctx.fillStyle = '#1e272e';
+      ctx.fillStyle = '#0f172a';
       ctx.beginPath();
-      ctx.ellipse(12, 9, 3, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(12, 7);
-      ctx.quadraticCurveTo(6, 2, 2, 6);
-      ctx.quadraticCurveTo(5, 12, 10, 10);
+      ctx.moveTo(12, 3);
+      ctx.lineTo(23, 11);
+      ctx.lineTo(16, 14);
+      ctx.lineTo(12, 12);
+      ctx.lineTo(8, 14);
+      ctx.lineTo(1, 11);
       ctx.closePath();
       ctx.fill();
 
-      ctx.beginPath();
-      ctx.moveTo(12, 7);
-      ctx.quadraticCurveTo(18, 2, 22, 6);
-      ctx.quadraticCurveTo(19, 12, 14, 10);
-      ctx.closePath();
-      ctx.fill();
+      // Rotes Zielsuch-Auge
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(11, 5, 2, 2);
 
-      ctx.fillStyle = '#ff4757';
-      ctx.fillRect(11, 7, 1, 1);
-      ctx.fillRect(13, 7, 1, 1);
+      // Micro-Thruster
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(11, 12, 2, 2);
     });
 
     // Feuer-Salamander
@@ -1159,35 +1274,83 @@ export class PixelTextureGenerator {
     });
 
     create('tile_portal', 40, 40, (ctx) => {
-      // Wirbelndes Raumportal
-      const portGrad = ctx.createRadialGradient(20, 20, 2, 20, 20, 18);
+      // Hyperraum-Warp-Riss / Quantum Jump Portal (StarCraft Warp Gate)
+      const portGrad = ctx.createRadialGradient(20, 20, 2, 20, 20, 19);
       portGrad.addColorStop(0, '#ffffff');
-      portGrad.addColorStop(0.3, '#a29bfe');
-      portGrad.addColorStop(0.7, '#6c5ce7');
+      portGrad.addColorStop(0.25, '#38bdf8');
+      portGrad.addColorStop(0.6, '#9333ea');
+      portGrad.addColorStop(0.85, '#3b0764');
       portGrad.addColorStop(1, 'transparent');
 
       ctx.fillStyle = portGrad;
       ctx.beginPath();
-      ctx.arc(20, 20, 18, 0, Math.PI * 2);
+      ctx.arc(20, 20, 19, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rotierender Quantum-Ring
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(20, 20, 13, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Energetischer Kern
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(20, 20, 3.5, 0, Math.PI * 2);
       ctx.fill();
     });
 
     create('tile_castle', 40, 40, (ctx) => {
-      // Königliches Schloss-Tor
-      ctx.fillStyle = '#2c3e50';
+      // Terranisches Hauptquartier / Fortress Command Center (ersetzt altes Holz/Steintor)
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.beginPath();
-      ctx.roundRect(8, 8, 24, 28, 6);
+      ctx.ellipse(20, 36, 17, 4, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#ffd32a';
+      // Titan-Bunker-Hauptbau
+      const bunkerGrad = ctx.createLinearGradient(6, 6, 34, 34);
+      bunkerGrad.addColorStop(0, '#334155');
+      bunkerGrad.addColorStop(0.5, '#1e293b');
+      bunkerGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = bunkerGrad;
       ctx.beginPath();
-      ctx.arc(20, 16, 5, 0, Math.PI * 2);
+      ctx.roundRect(6, 8, 28, 28, 4);
       ctx.fill();
 
-      // Torbogen
-      ctx.fillStyle = '#130e1e';
+      // Schutzschild-Emitter-Kuppel (Leuchtendes Cyan-Energiefeld)
+      const shieldGrad = ctx.createRadialGradient(20, 18, 2, 20, 18, 14);
+      shieldGrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+      shieldGrad.addColorStop(0.4, 'rgba(56, 189, 248, 0.6)');
+      shieldGrad.addColorStop(1, 'rgba(2, 132, 199, 0.15)');
+      ctx.fillStyle = shieldGrad;
       ctx.beginPath();
-      ctx.arc(20, 36, 8, Math.PI, 0);
+      ctx.arc(20, 18, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(20, 18, 10, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Gelb-schwarze Gefahren-Markierung an der Basis
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(8, 32, 24, 3);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(12, 32, 4, 3);
+      ctx.fillRect(20, 32, 4, 3);
+
+      // Radar-Antenne / Uplink
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(27, 8);
+      ctx.lineTo(31, 3);
+      ctx.stroke();
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(31, 3, 1.2, 0, Math.PI * 2);
       ctx.fill();
     });
 

@@ -70,12 +70,6 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     bg.lineBetween(775, 6, 775, 78);
     this.add(bg);
 
-    // Klick-Abfänger auf der Konsole (verhindert versehentliches Klicken ins Spielfeld)
-    const blockHitbox = scene.add.zone(GAME_WIDTH / 2, 42, GAME_WIDTH, 84)
-      .setInteractive()
-      .on('pointerdown', (p: Phaser.Input.Pointer) => p.event.stopPropagation());
-    this.add(blockHitbox);
-
     // 2. Linkes Panel: Taktischer Status (x: 10 bis 230)
     this.setupLeftStatusPanel();
 
@@ -253,11 +247,12 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       }).setOrigin(0.5);
       cardContainer.add(costText);
 
-      // Interaktivität
-      cardContainer.setSize(cardW, cardH);
-      cardContainer.setInteractive(new Phaser.Geom.Rectangle(0, 0, cardW, cardH), Phaser.Geom.Rectangle.Contains);
+      // Interaktivität mit dedizierter Hit-Zone & sofortiger taktiler Rückmeldung
+      const hitZone = this.scene.add.zone(cardW / 2, cardH / 2, cardW, cardH)
+        .setInteractive({ useHandCursor: true });
+      cardContainer.add(hitZone);
 
-      cardContainer.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      hitZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
         pointer.event.stopPropagation();
         if (!this.buildEnabled) {
           SoundManager.playDeny();
@@ -268,8 +263,20 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           return;
         }
         SoundManager.playClick();
-        this.selectBuildType(this.selectedBuildType === type ? null : type);
-        this.callbacks.onStartDragBuildType(type, pointer);
+        cardContainer.setScale(0.92);
+        const nextType = this.selectedBuildType === type ? null : type;
+        this.selectBuildType(nextType);
+        if (nextType) {
+          this.callbacks.onStartDragBuildType(type, pointer);
+        }
+      });
+
+      hitZone.on('pointerup', () => {
+        cardContainer.setScale(1.0);
+      });
+
+      hitZone.on('pointerout', () => {
+        cardContainer.setScale(1.0);
       });
 
       this.buildCardContainers.set(type, { container: cardContainer, bg, nameText, costText });
@@ -554,15 +561,22 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       container.add(txtSub);
 
       if (act.enabled) {
-        container.setSize(btnW, btnH);
-        container.setInteractive(new Phaser.Geom.Rectangle(0, 0, btnW, btnH), Phaser.Geom.Rectangle.Contains);
+        const hitZone = this.scene.add.zone(btnW / 2, btnH / 2, btnW, btnH)
+          .setInteractive({ useHandCursor: true });
+        container.add(hitZone);
 
-        container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+        hitZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
           pointer.event.stopPropagation();
+          container.setScale(0.92);
+          SoundManager.playClick();
           act.onClick();
         });
 
-        container.on('pointerover', () => {
+        hitZone.on('pointerup', () => {
+          container.setScale(1.0);
+        });
+
+        hitZone.on('pointerover', () => {
           bg.clear();
           bg.fillStyle(act.borderColor, 0.4);
           bg.fillRoundedRect(0, 0, btnW, btnH, 5);
@@ -570,7 +584,8 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           bg.strokeRoundedRect(0, 0, btnW, btnH, 5);
         });
 
-        container.on('pointerout', () => {
+        hitZone.on('pointerout', () => {
+          container.setScale(1.0);
           bg.clear();
           bg.fillStyle(act.bgColor, 0.95);
           bg.fillRoundedRect(0, 0, btnW, btnH, 5);

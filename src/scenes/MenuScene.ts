@@ -247,7 +247,7 @@ export class MenuScene extends Phaser.Scene {
     });
 
     // Subtiler Fußnoten-Text
-    const hint = this.add.text(GAME_WIDTH / 2, 598, 'Dungeon: 30 gnadenlose Kammern • StarCraft II: Hochwertiger 2.5D RTS Prototyp', {
+    const hint = this.add.text(GAME_WIDTH / 2, 598, 'Dungeon: 30 gnadenlose Kammern • Schmiede-Upgrades & StarCraft II RTS-Befehlskonsole', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       color: '#f5f0e6',

@@ -877,7 +877,7 @@ export class MapManager {
       }
     });
 
-    // 6. BÄUME MIT WIND-SCHWUNG & WURZELSCHATTEN
+    // 6. ENERGIE-PYLONEN, KRISTALLE & INDUSTRIE-GEBILDE
     this.treeTiles.forEach((tree) => {
       const { x, y } = this.gridToPixel(tree.col, tree.row);
       let texKey = 'decor_tree_oak';
@@ -888,16 +888,15 @@ export class MapManager {
 
       const treeImg = this.scene.add.image(x, y + TILE_SIZE / 2 - 2, texKey).setOrigin(0.5, 1.0).setDepth(3);
 
-      if (tree.type === 'oak' || tree.type === 'pine') {
-        this.scene.tweens.add({
-          targets: treeImg,
-          angle: { from: -2.5, to: 2.5 },
-          duration: 2200 + ((tree.col * 31) % 800),
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-      }
+      // Sanfter Energie-Puls statt Baum-Biegen
+      this.scene.tweens.add({
+        targets: treeImg,
+        alpha: { from: 0.88, to: 1.0 },
+        duration: 1800 + ((tree.col * 31) % 800),
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
     });
 
     // 7. FELSEN & KRISTALLE
@@ -952,84 +951,75 @@ export class MapManager {
     if (freeTiles.length === 0) return;
 
     if (this.worldId === 'witch_forest') {
-      // 1. SÜSSE WALD-KANINCHEN (Hüpfen herum & pausieren)
-      const rabbitCount = Math.min(3, freeTiles.length);
-      for (let i = 0; i < rabbitCount; i++) {
+      // 1. TAKTISCHE AUFKLÄRUNGS-DROHNEN (Hovern geschmeidig & scannen den Sektor)
+      const droneCount = Math.min(3, freeTiles.length);
+      for (let i = 0; i < droneCount; i++) {
         const tileIdx = (i * 7 + 3) % freeTiles.length;
         const pt = freeTiles[tileIdx];
         const { x, y } = this.gridToPixel(pt.col, pt.row);
 
-        const rabbit = this.scene.add.image(x, y, 'critter_rabbit').setOrigin(0.5).setDepth(4);
-        this.critters.push(rabbit);
+        const drone = this.scene.add.image(x, y - 6, 'critter_rabbit').setOrigin(0.5).setDepth(4);
+        this.critters.push(drone);
 
+        // Sanftes Antigravitations-Schweben
         this.scene.tweens.add({
-          targets: rabbit,
-          scaleY: { from: 1.0, to: 1.08 },
-          duration: 700 + i * 150,
+          targets: drone,
+          y: drone.y - 4,
+          duration: 900 + i * 200,
           yoyo: true,
           repeat: -1,
           ease: 'Sine.easeInOut'
         });
 
-        const hopTimer = this.scene.time.addEvent({
-          delay: Phaser.Math.Between(3500, 6500),
+        const patrolTimer = this.scene.time.addEvent({
+          delay: Phaser.Math.Between(4000, 7000),
           loop: true,
           callback: () => {
-            if (!rabbit.active || !this.scene || !this.scene.sys.isActive()) return;
-            const dx = Phaser.Math.Between(-35, 35);
-            const dy = Phaser.Math.Between(-20, 20);
-            const targetX = Phaser.Math.Clamp(rabbit.x + dx, 50, GRID_COLS * TILE_SIZE - 50);
-            const targetY = Phaser.Math.Clamp(rabbit.y + dy, 60, 15 * TILE_SIZE);
+            if (!drone.active || !this.scene || !this.scene.sys.isActive()) return;
+            const dx = Phaser.Math.Between(-45, 45);
+            const dy = Phaser.Math.Between(-25, 25);
+            const targetX = Phaser.Math.Clamp(drone.x + dx, 50, GRID_COLS * TILE_SIZE - 50);
+            const targetY = Phaser.Math.Clamp(drone.y + dy, 60, 15 * TILE_SIZE);
 
-            rabbit.setFlipX(dx < 0);
+            drone.setFlipX(dx < 0);
 
+            // Taktischer Ionen-Gleitflug zum Zielpunkt
             this.scene.tweens.add({
-              targets: rabbit,
+              targets: drone,
               x: targetX,
-              duration: 400,
-              ease: 'Quad.easeInOut'
-            });
-
-            this.scene.tweens.add({
-              targets: rabbit,
-              y: rabbit.y - 14,
-              duration: 200,
-              yoyo: true,
-              ease: 'Sine.easeOut',
-              onComplete: () => {
-                if (rabbit.active) rabbit.setY(targetY);
-              }
+              y: targetY - 6,
+              duration: 850,
+              ease: 'Cubic.easeInOut'
             });
           }
         });
-        this.critterTimers.push(hopTimer);
+        this.critterTimers.push(patrolTimer);
       }
 
-      // 2. SCHILLERNDE SCHMETTERLINGE (Flattern in weichen Kurven)
-      const butterflyCount = 4;
-      for (let i = 0; i < butterflyCount; i++) {
+      // 2. ORBITALE MIKRO-SONDEN (Rotieren und gleiten in Ionenbahnen)
+      const probeCount = 4;
+      for (let i = 0; i < probeCount; i++) {
         const pt = freeTiles[(i * 9 + 5) % freeTiles.length];
         const { x, y } = this.gridToPixel(pt.col, pt.row);
 
-        const butterfly = this.scene.add.image(x, y - 8, 'critter_butterfly').setOrigin(0.5).setDepth(5);
-        this.critters.push(butterfly);
+        const probe = this.scene.add.image(x, y - 8, 'critter_butterfly').setOrigin(0.5).setDepth(5);
+        this.critters.push(probe);
 
         this.scene.tweens.add({
-          targets: butterfly,
-          scaleX: { from: 1.0, to: 0.15 },
-          duration: 90 + i * 15,
-          yoyo: true,
+          targets: probe,
+          angle: 360,
+          duration: 4000 + i * 500,
           repeat: -1,
-          ease: 'Sine.easeInOut'
+          ease: 'Linear'
         });
 
-        const driftX = Phaser.Math.Between(25, 45) * (i % 2 === 0 ? 1 : -1);
+        const driftX = Phaser.Math.Between(30, 50) * (i % 2 === 0 ? 1 : -1);
         const driftY = Phaser.Math.Between(15, 30);
         this.scene.tweens.add({
-          targets: butterfly,
-          x: butterfly.x + driftX,
-          y: butterfly.y - driftY,
-          duration: 3200 + i * 400,
+          targets: probe,
+          x: probe.x + driftX,
+          y: probe.y - driftY,
+          duration: 3500 + i * 400,
           yoyo: true,
           repeat: -1,
           ease: 'Sine.easeInOut'
