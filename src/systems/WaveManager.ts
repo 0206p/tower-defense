@@ -140,31 +140,42 @@ export class WaveManager {
       spawnCount = 5 + waveNum;
     }
 
+    const extraEnemies = isBossWave ? 1 : isMiniBossWave ? 1 : 0;
     this.isSpawning = true;
-    this.enemiesRemainingToSpawn = spawnCount + (isBossWave ? 1 : isMiniBossWave ? 2 : 0);
+    this.enemiesRemainingToSpawn = spawnCount + extraEnemies;
 
     let cumulativeDelay = 350;
 
     for (let i = 0; i < spawnCount; i++) {
-      cumulativeDelay += Math.max(500, 1100 - waveNum * 25);
+      cumulativeDelay += Math.max(400, 1000 - waveNum * 25);
       const enemyType = currentPool[i % currentPool.length];
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
           this.spawnEnemy(enemyType, hpMult);
           this.enemiesRemainingToSpawn--;
-          if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
+          if (this.enemiesRemainingToSpawn <= 0) {
+            this.isSpawning = false;
+            if (this.activeEnemies.length === 0) {
+              this.handleWaveEnd();
+            }
+          }
         }
       });
     }
 
     if (isBossWave) {
-      cumulativeDelay += 1400;
+      cumulativeDelay += 1200;
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
           this.spawnEnemy('boss', hpMult * 1.8);
           this.enemiesRemainingToSpawn--;
-          if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
+          if (this.enemiesRemainingToSpawn <= 0) {
+            this.isSpawning = false;
+            if (this.activeEnemies.length === 0) {
+              this.handleWaveEnd();
+            }
+          }
         }
       });
     } else if (isMiniBossWave) {
@@ -173,7 +184,12 @@ export class WaveManager {
         if (this.scene && this.scene.sys.isActive()) {
           this.spawnEnemy('armored_troll', hpMult * 1.4);
           this.enemiesRemainingToSpawn--;
-          if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
+          if (this.enemiesRemainingToSpawn <= 0) {
+            this.isSpawning = false;
+            if (this.activeEnemies.length === 0) {
+              this.handleWaveEnd();
+            }
+          }
         }
       });
     }

@@ -97,23 +97,27 @@ export class HUD extends Phaser.GameObjects.Container {
     this.add(this.scoreText);
 
     // 5. PAUSE-BUTTON
-    this.btnPause = this.createPauseButton(675, 22);
+    this.btnPause = this.createPauseButton(575, 22);
     this.add(this.btnPause);
 
-    // 6. SPEED BUTTONS (1x, 2x, 3x)
-    const speeds = [1.0, 2.0, 3.0];
-    const speedLabels = ['1x', '2x', '3x'];
+    // 6. SPEED BUTTONS (1x, 2x, 3x, 5x - noch schnellere Wellen!)
+    const speeds = [1.0, 2.0, 3.0, 5.0];
+    const speedLabels = ['1x', '2x', '3x', '5x'];
     speeds.forEach((sp, i) => {
-      const btn = this.createSpeedButton(760 + i * 50, 22, speedLabels[i], sp, sp === 1.0);
+      const btn = this.createSpeedButton(630 + i * 42, 22, speedLabels[i], sp, sp === 1.0);
       this.speedButtons.set(sp, btn);
       this.add(btn);
     });
 
-    // 7. VOLLBILD BUTTON
-    const btnFullscreen = this.createFullscreenButton(950, 22);
+    // 7. IN-GAME SOUND TOGGLE BUTTON (Speichert Einstellung permanent in localStorage)
+    const btnSound = this.createSoundButton(830, 22);
+    this.add(btnSound);
+
+    // 8. VOLLBILD BUTTON
+    const btnFullscreen = this.createFullscreenButton(925, 22);
     this.add(btnFullscreen);
 
-    // 8. NÄCHSTE WELLE BUTTON
+    // 9. NÄCHSTE WELLE BUTTON
     this.btnNextWave = this.createNextWaveButton(1120, 22);
     this.add(this.btnNextWave);
 
@@ -144,20 +148,21 @@ export class HUD extends Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
     const bg = this.scene.add.graphics();
     bg.fillStyle(0x3d354a, 1);
-    bg.fillRoundedRect(-35, -14, 70, 28, 4);
+    bg.fillRoundedRect(-30, -14, 60, 28, 4);
     bg.lineStyle(2, 0x8a78a5, 1);
-    bg.strokeRoundedRect(-35, -14, 70, 28, 4);
+    bg.strokeRoundedRect(-30, -14, 60, 28, 4);
     container.add(bg);
 
     const text = this.scene.add.text(0, 0, 'PAUSE', {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
+      fontSize: '12px',
+      fontStyle: 'bold',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(text);
 
-    container.setSize(70, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-35, -14, 70, 28), Phaser.Geom.Rectangle.Contains);
+    container.setSize(60, 28);
+    container.setInteractive(new Phaser.Geom.Rectangle(-30, -14, 60, 28), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -168,15 +173,15 @@ export class HUD extends Phaser.GameObjects.Container {
     container.on('pointerover', () => {
       bg.clear();
       bg.fillStyle(0x564969, 1);
-      bg.fillRoundedRect(-35, -14, 70, 28, 4);
+      bg.fillRoundedRect(-30, -14, 60, 28, 4);
     });
 
     container.on('pointerout', () => {
       bg.clear();
       bg.fillStyle(0x3d354a, 1);
-      bg.fillRoundedRect(-35, -14, 70, 28, 4);
+      bg.fillRoundedRect(-30, -14, 60, 28, 4);
       bg.lineStyle(2, 0x8a78a5, 1);
-      bg.strokeRoundedRect(-35, -14, 70, 28, 4);
+      bg.strokeRoundedRect(-30, -14, 60, 28, 4);
     });
 
     return container;
@@ -228,6 +233,43 @@ export class HUD extends Phaser.GameObjects.Container {
       bg.strokeRoundedRect(-20, -14, 40, 28, 4);
       text.setColor(isCur ? '#ffffff' : '#8c829e');
     });
+  }
+
+  private createSoundButton(x: number, y: number): Phaser.GameObjects.Container {
+    const container = this.scene.add.container(x, y);
+    const bg = this.scene.add.graphics();
+    const isMuted = SoundManager.getIsMuted();
+
+    const drawBg = (muted: boolean) => {
+      bg.clear();
+      bg.fillStyle(muted ? 0x3d1c24 : 0x221f2d, 1);
+      bg.fillRoundedRect(-36, -14, 72, 28, 4);
+      bg.lineStyle(2, muted ? 0xe74c3c : 0x4d4766, 1);
+      bg.strokeRoundedRect(-36, -14, 72, 28, 4);
+    };
+    drawBg(isMuted);
+    container.add(bg);
+
+    const label = this.scene.add.text(0, 0, isMuted ? '🔇 AUS' : '🔊 AN', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: isMuted ? '#ff7675' : '#55efc4'
+    }).setOrigin(0.5);
+    container.add(label);
+
+    container.setSize(72, 28);
+    container.setInteractive(new Phaser.Geom.Rectangle(-36, -14, 72, 28), Phaser.Geom.Rectangle.Contains);
+
+    container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pointer.event.stopPropagation();
+      const muted = SoundManager.toggleMute();
+      drawBg(muted);
+      label.setText(muted ? '🔇 AUS' : '🔊 AN');
+      label.setColor(muted ? '#ff7675' : '#55efc4');
+    });
+
+    return container;
   }
 
   private createFullscreenButton(x: number, y: number): Phaser.GameObjects.Container {

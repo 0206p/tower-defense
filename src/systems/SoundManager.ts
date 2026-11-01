@@ -5,10 +5,19 @@
  */
 export class SoundManager {
   private static ctx: AudioContext | null = null;
-  private static isMuted: boolean = false;
+  private static STORAGE_KEY = 'td_sound_muted';
+  private static isMuted: boolean = SoundManager.loadMuteState();
   private static isMusicPlaying: boolean = false;
   private static musicTimer: any = null;
   private static currentNoteIndex: number = 0;
+
+  private static loadMuteState(): boolean {
+    try {
+      return localStorage.getItem('td_sound_muted') === 'true';
+    } catch {
+      return false;
+    }
+  }
 
   // Eingängige Retro-Melodie & Basslinie
   private static melody = [
@@ -37,6 +46,10 @@ export class SoundManager {
 
   public static toggleMute(): boolean {
     this.isMuted = !this.isMuted;
+    try {
+      localStorage.setItem(this.STORAGE_KEY, String(this.isMuted));
+    } catch {}
+
     if (this.isMuted) {
       this.stopMusic();
     } else {
