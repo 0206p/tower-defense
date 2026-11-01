@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GRID_COLS, GRID_ROWS, TILE_SIZE } from '../config/GameConfig';
+import { GAME_HEIGHT, GAME_WIDTH, GRID_COLS, GRID_ROWS, TILE_SIZE } from '../config/GameConfig';
 import { WorldId } from './SaveSystem';
 import { logger } from './GameLogger';
 
@@ -23,6 +23,8 @@ export class MapManager {
   private rockTiles: { col: number; row: number; type: 'granite' | 'ore' | 'volcanic' | 'dungeon_torch' }[] = [];
   private critters: Phaser.GameObjects.GameObject[] = [];
   private critterTimers: Phaser.Time.TimerEvent[] = [];
+  private mapBgImage?: Phaser.GameObjects.Image;
+  private buildGridContainer?: Phaser.GameObjects.Container;
 
   constructor(scene: Phaser.Scene, worldId: WorldId = 'witch_forest', missionNumber: number = 1) {
     this.scene = scene;
@@ -357,47 +359,446 @@ export class MapManager {
   }
 
   private buildCurvePath(): void {
-    const firstPoint = this.gridToPixel(this.pathPoints[0].col, this.pathPoints[0].row);
-    this.curvePath = this.scene.add.path(firstPoint.x, firstPoint.y);
+    const points = this.pathPoints.map((pt) => this.gridToPixel(pt.col, pt.row));
+    if (points.length === 0) return;
 
-    for (let i = 1; i < this.pathPoints.length; i++) {
-      const nextPoint = this.gridToPixel(this.pathPoints[i].col, this.pathPoints[i].row);
-      this.curvePath.lineTo(nextPoint.x, nextPoint.y);
+    this.curvePath = this.scene.add.path(points[0].x, points[0].y);
+    const cornerRadius = 14;
+
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const cur = points[i];
+      const next = i < points.length - 1 ? points[i + 1] : null;
+
+      if (!next) {
+        this.curvePath.lineTo(cur.x, cur.y);
+      } else {
+        const dx1 = Math.sign(cur.x - prev.x);
+        const dy1 = Math.sign(cur.y - prev.y);
+        const dx2 = Math.sign(next.x - cur.x);
+        const dy2 = Math.sign(next.y - cur.y);
+
+        if (dx1 !== dx2 || dy1 !== dy2) {
+          const startX = cur.x - dx1 * cornerRadius;
+          const startY = cur.y - dy1 * cornerRadius;
+          const endX = cur.x + dx2 * cornerRadius;
+          const endY = cur.y + dy2 * cornerRadius;
+
+          this.curvePath.lineTo(startX, startY);
+          this.curvePath.quadraticBezierTo(endX, endY, cur.x, cur.y);
+        } else {
+          this.curvePath.lineTo(cur.x, cur.y);
+        }
+      }
+    }
+  }
+
+  private createModernBattlefieldTexture(key: string): void {
+    const canvas = document.createElement('canvas');
+    canvas.width = GAME_WIDTH;
+    canvas.height = GAME_HEIGHT;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // Deterministischer Seed pro Mission für individuelle Map-Details
+    let seed = (this.missionNumber * 9301 + 49297) % 233280;
+    const rnd = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+
+    // 1. TERRAIN BASIS-GRADIENT
+    let topColor = '#1d361a';
+    let midColor = '#254821';
+    let botColor = '#1a3318';
+    let vergeColor = '#3f2815';
+    let roadColor = '#6d4c2b';
+
+    if (this.worldId === 'goblin_caves') {
+      topColor = '#161320';
+      midColor = '#211a30';
+      botColor = '#14111d';
+      vergeColor = '#1e1a2b';
+      roadColor = '#2c273a';
+    } else if (this.worldId === 'dead_mountain') {
+      topColor = '#170f13';
+      midColor = '#251319';
+      botColor = '#150d11';
+      vergeColor = '#2c1418';
+      roadColor = '#28161a';
+    } else if (this.worldId === 'dungeon') {
+      topColor = '#130f1c';
+      midColor = '#1d152a';
+      botColor = '#110e19';
+      vergeColor = '#2a1f38';
+      roadColor = '#272036';
+    }
+
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
+    bgGrad.addColorStop(0, topColor);
+    bgGrad.addColorStop(0.5, midColor);
+    bgGrad.addColorStop(1, botColor);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    // 2. WELTSPEZIFISCHE TEXTUREN & DETAILS
+    if (this.worldId === 'witch_forest') {
+      // Weiche Moos- & Waldboden-Schattierungen
+      for (let i = 0; i < 45; i++) {
+        const cx = rnd() * GAME_WIDTH;
+        const cy = 44 + rnd() * (GAME_HEIGHT - 110);
+        const cr = 40 + rnd() * 80;
+        const pGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, cr);
+        pGrad.addColorStop(0, rnd() > 0.5 ? 'rgba(48, 92, 42, 0.28)' : 'rgba(20, 40, 18, 0.35)');
+        pGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = pGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Wiesen-Punkte (Grasfäden & zarte Waldblumen)
+      for (let i = 0; i < 90; i++) {
+        const fx = rnd() * GAME_WIDTH;
+        const fy = 44 + rnd() * (GAME_HEIGHT - 110);
+        const col = Math.floor(fx / TILE_SIZE);
+        const row = Math.floor(fy / TILE_SIZE);
+        if (this.grid[row] && this.grid[row][col] === 0) {
+          ctx.fillStyle = rnd() > 0.6 ? 'rgba(245, 230, 211, 0.6)' : 'rgba(126, 214, 223, 0.45)';
+          ctx.beginPath();
+          ctx.arc(fx, fy, 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    } else if (this.worldId === 'goblin_caves') {
+      // Unterirdische Gesteinsschichten
+      for (let i = 0; i < 5; i++) {
+        ctx.strokeStyle = 'rgba(38, 30, 52, 0.45)';
+        ctx.lineWidth = 14 + rnd() * 12;
+        ctx.beginPath();
+        const startY = 80 + i * 110 + rnd() * 30;
+        ctx.moveTo(0, startY);
+        ctx.bezierCurveTo(400, startY - 25, 800, startY + 25, GAME_WIDTH, startY - 10);
+        ctx.stroke();
+      }
+
+      // Fluoreszierendes Höhlenmoos
+      for (let i = 0; i < 18; i++) {
+        const mx = rnd() * GAME_WIDTH;
+        const my = 44 + rnd() * (GAME_HEIGHT - 110);
+        const mr = 25 + rnd() * 45;
+        const mGrad = ctx.createRadialGradient(mx, my, 1, mx, my, mr);
+        mGrad.addColorStop(0, 'rgba(18, 137, 142, 0.22)');
+        mGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = mGrad;
+        ctx.beginPath();
+        ctx.arc(mx, my, mr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Gold- und Erzglimmer
+      for (let i = 0; i < 65; i++) {
+        const ex = rnd() * GAME_WIDTH;
+        const ey = 44 + rnd() * (GAME_HEIGHT - 110);
+        ctx.fillStyle = rnd() > 0.4 ? 'rgba(241, 196, 15, 0.45)' : 'rgba(230, 126, 34, 0.35)';
+        ctx.fillRect(ex, ey, 2, 2);
+      }
+    } else if (this.worldId === 'dead_mountain') {
+      // Magma-Adern & Vulkanglut im Boden
+      for (let i = 0; i < 22; i++) {
+        const lx = rnd() * GAME_WIDTH;
+        const ly = 44 + rnd() * (GAME_HEIGHT - 110);
+        const lr = 35 + rnd() * 65;
+        const lGrad = ctx.createRadialGradient(lx, ly, 1, lx, ly, lr);
+        lGrad.addColorStop(0, 'rgba(235, 77, 45, 0.28)');
+        lGrad.addColorStop(0.6, 'rgba(211, 84, 0, 0.12)');
+        lGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = lGrad;
+        ctx.beginPath();
+        ctx.arc(lx, ly, lr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Dunkle Aschespuren
+      for (let i = 0; i < 30; i++) {
+        const ax = rnd() * GAME_WIDTH;
+        const ay = 44 + rnd() * (GAME_HEIGHT - 110);
+        ctx.fillStyle = 'rgba(10, 7, 10, 0.45)';
+        ctx.beginPath();
+        ctx.ellipse(ax, ay, 20 + rnd() * 30, 8 + rnd() * 12, rnd() * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (this.worldId === 'dungeon') {
+      // Gotische Fliesen-Fugen
+      ctx.strokeStyle = 'rgba(65, 52, 85, 0.25)';
+      ctx.lineWidth = 1;
+      for (let c = 0; c <= GRID_COLS; c++) {
+        ctx.beginPath();
+        ctx.moveTo(c * TILE_SIZE, 44);
+        ctx.lineTo(c * TILE_SIZE, GAME_HEIGHT - 66);
+        ctx.stroke();
+      }
+      for (let r = 1; r <= 16; r++) {
+        ctx.beginPath();
+        ctx.moveTo(0, r * TILE_SIZE);
+        ctx.lineTo(GAME_WIDTH, r * TILE_SIZE);
+        ctx.stroke();
+      }
+
+      // Edle Boden-Lichtreflexe
+      for (let i = 0; i < 14; i++) {
+        const dx = rnd() * GAME_WIDTH;
+        const dy = 44 + rnd() * (GAME_HEIGHT - 110);
+        ctx.fillStyle = 'rgba(168, 140, 215, 0.08)';
+        ctx.beginPath();
+        ctx.ellipse(dx, dy, 35, 12, -Math.PI / 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 3. ORGANISCHER FLIESSENDER PFAD (Multi-Pass Rendering mit runden Kurven)
+    const pts = this.pathPoints.map((p) => this.gridToPixel(p.col, p.row));
+    if (pts.length > 1) {
+      const tracePath = (c: CanvasRenderingContext2D, r: number = 16) => {
+        c.beginPath();
+        c.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+          const prev = pts[i - 1];
+          const cur = pts[i];
+          const next = i < pts.length - 1 ? pts[i + 1] : null;
+
+          if (!next) {
+            c.lineTo(cur.x, cur.y);
+          } else {
+            const dx1 = Math.sign(cur.x - prev.x);
+            const dy1 = Math.sign(cur.y - prev.y);
+            const dx2 = Math.sign(next.x - cur.x);
+            const dy2 = Math.sign(next.y - cur.y);
+
+            if (dx1 !== dx2 || dy1 !== dy2) {
+              const sX = cur.x - dx1 * r;
+              const sY = cur.y - dy1 * r;
+              const eX = cur.x + dx2 * r;
+              const eY = cur.y + dy2 * r;
+              c.lineTo(sX, sY);
+              c.quadraticCurveTo(cur.x, cur.y, eX, eY);
+            } else {
+              c.lineTo(cur.x, cur.y);
+            }
+          }
+        }
+      };
+
+      // Pass 1: Tiefenschatten-Graben
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.lineWidth = 44;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      tracePath(ctx, 16);
+      ctx.stroke();
+      ctx.restore();
+
+      // Pass 2: Weicher Wegrand / Böschung
+      ctx.save();
+      ctx.strokeStyle = vergeColor;
+      ctx.lineWidth = 38;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      tracePath(ctx, 15);
+      ctx.stroke();
+      ctx.restore();
+
+      // Pass 3: Haupt-Fahrbahn
+      ctx.save();
+      ctx.strokeStyle = roadColor;
+      ctx.lineWidth = 32;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      tracePath(ctx, 14);
+      ctx.stroke();
+      ctx.restore();
+
+      // Pass 4: Welt-spezifische Gleise & Weg-Details
+      for (let i = 1; i < pts.length; i++) {
+        const p1 = pts[i - 1];
+        const p2 = pts[i];
+        const segDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        if (segDist <= 0) continue;
+
+        const ux = (p2.x - p1.x) / segDist;
+        const uy = (p2.y - p1.y) / segDist;
+        const nx = -uy;
+        const ny = ux;
+
+        if (this.worldId === 'witch_forest') {
+          // Doppelte Kutschen-Wagenspuren
+          ctx.strokeStyle = '#54371e';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(p1.x + nx * 7, p1.y + ny * 7);
+          ctx.lineTo(p2.x + nx * 7, p2.y + ny * 7);
+          ctx.moveTo(p1.x - nx * 7, p1.y - ny * 7);
+          ctx.lineTo(p2.x - nx * 7, p2.y - ny * 7);
+          ctx.stroke();
+        } else if (this.worldId === 'goblin_caves') {
+          // Authentische Minen-Gleise: 1. Holz-Schwellen
+          for (let d = 10; d < segDist - 6; d += 20) {
+            const sx = p1.x + ux * d;
+            const sy = p1.y + uy * d;
+            ctx.strokeStyle = '#3e2723';
+            ctx.lineWidth = 6;
+            ctx.lineCap = 'butt';
+            ctx.beginPath();
+            ctx.moveTo(sx - nx * 14, sy - ny * 14);
+            ctx.lineTo(sx + nx * 14, sy + ny * 14);
+            ctx.stroke();
+
+            // Hellerer Holz-Mittelstrich
+            ctx.strokeStyle = '#5d4037';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(sx - nx * 12, sy - ny * 12);
+            ctx.lineTo(sx + nx * 12, sy + ny * 12);
+            ctx.stroke();
+          }
+
+          // 2. Parallele Stahl-Schienen
+          ctx.strokeStyle = '#7f8c8d';
+          ctx.lineWidth = 3;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(p1.x + nx * 8, p1.y + ny * 8);
+          ctx.lineTo(p2.x + nx * 8, p2.y + ny * 8);
+          ctx.moveTo(p1.x - nx * 8, p1.y - ny * 8);
+          ctx.lineTo(p2.x - nx * 8, p2.y - ny * 8);
+          ctx.stroke();
+
+          // Metallischer Glanz
+          ctx.strokeStyle = '#ecf0f1';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(p1.x + nx * 8, p1.y + ny * 8);
+          ctx.lineTo(p2.x + nx * 8, p2.y + ny * 8);
+          ctx.moveTo(p1.x - nx * 8, p1.y - ny * 8);
+          ctx.lineTo(p2.x - nx * 8, p2.y - ny * 8);
+          ctx.stroke();
+        } else if (this.worldId === 'dead_mountain') {
+          // Lodernder Magma-Riss im Pfad
+          ctx.strokeStyle = '#ff4757';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+
+          ctx.strokeStyle = '#ffa502';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        } else if (this.worldId === 'dungeon') {
+          // Goldverzierte Palast-Bordüren
+          ctx.strokeStyle = '#d4af37';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(p1.x + nx * 12, p1.y + ny * 12);
+          ctx.lineTo(p2.x + nx * 12, p2.y + ny * 12);
+          ctx.moveTo(p1.x - nx * 12, p1.y - ny * 12);
+          ctx.lineTo(p2.x - nx * 12, p2.y - ny * 12);
+          ctx.stroke();
+
+          // Steinplatten-Rillen alle 36 Pixel
+          for (let d = 16; d < segDist - 8; d += 36) {
+            const rx = p1.x + ux * d;
+            const ry = p1.y + uy * d;
+            ctx.strokeStyle = '#1b1528';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(rx - nx * 11, ry - ny * 11);
+            ctx.lineTo(rx + nx * 11, ry + ny * 11);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    const tex = this.scene.textures.addCanvas(key, canvas);
+    if (tex) {
+      tex.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
+  }
+
+  private createBuildGridOverlay(): void {
+    if (this.buildGridContainer) {
+      this.buildGridContainer.destroy();
+    }
+
+    this.buildGridContainer = this.scene.add.container(0, 0);
+    this.buildGridContainer.setDepth(25);
+    this.buildGridContainer.setVisible(false);
+
+    const gfx = this.scene.add.graphics();
+    this.buildGridContainer.add(gfx);
+
+    const bLen = 6;
+
+    for (let r = 1; r < 16; r++) {
+      for (let c = 0; c < GRID_COLS; c++) {
+        const cellType = this.grid[r][c];
+        const { x, y } = this.gridToPixel(c, r);
+        const half = TILE_SIZE / 2 - 2;
+
+        if (cellType === 0) {
+          // Subtile moderne Eck-Klammern (Cyan)
+          gfx.lineStyle(1.5, 0x5eead4, 0.45);
+          gfx.strokeLineShape(new Phaser.Geom.Line(x - half, y - half, x - half + bLen, y - half));
+          gfx.strokeLineShape(new Phaser.Geom.Line(x - half, y - half, x - half, y - half + bLen));
+
+          gfx.strokeLineShape(new Phaser.Geom.Line(x + half, y - half, x + half - bLen, y - half));
+          gfx.strokeLineShape(new Phaser.Geom.Line(x + half, y - half, x + half, y - half + bLen));
+
+          gfx.strokeLineShape(new Phaser.Geom.Line(x - half, y + half, x - half + bLen, y + half));
+          gfx.strokeLineShape(new Phaser.Geom.Line(x - half, y + half, x - half, y + half - bLen));
+
+          gfx.strokeLineShape(new Phaser.Geom.Line(x + half, y + half, x + half - bLen, y + half));
+          gfx.strokeLineShape(new Phaser.Geom.Line(x + half, y + half, x + half, y + half - bLen));
+        } else if (cellType === 5) {
+          // Runenstein-Bauplatz: Glühender Magiekreis
+          gfx.fillStyle(0x8e44ad, 0.25);
+          gfx.fillCircle(x, y, 16);
+          gfx.lineStyle(2, 0xe056fd, 0.85);
+          gfx.strokeCircle(x, y, 16);
+          gfx.lineStyle(1.5, 0xffd13b, 0.9);
+          gfx.strokeCircle(x, y, 11);
+        }
+      }
+    }
+  }
+
+  public showBuildGrid(visible: boolean): void {
+    if (this.buildGridContainer) {
+      this.buildGridContainer.setVisible(visible);
     }
   }
 
   public renderMap(): void {
-    let groundKey = 'tile_ground_witch';
-    let pathKey = 'tile_path_witch';
-
-    if (this.worldId === 'goblin_caves') {
-      groundKey = 'tile_ground_cave';
-      pathKey = 'tile_path_cave';
-    } else if (this.worldId === 'dead_mountain') {
-      groundKey = 'tile_ground_mountain';
-      pathKey = 'tile_path_mountain';
-    } else if (this.worldId === 'dungeon') {
-      groundKey = 'tile_ground_dungeon';
-      pathKey = 'tile_path_dungeon';
+    const bgKey = `modern_map_${this.worldId}_m${this.missionNumber}`;
+    if (!this.scene.textures.exists(bgKey)) {
+      this.createModernBattlefieldTexture(bgKey);
     }
 
-    // 1. Hintergrund-Kacheln mit optimierter Kachelschärfe
-    for (let r = 0; r < GRID_ROWS; r++) {
-      for (let c = 0; c < GRID_COLS; c++) {
-        const { x, y } = this.gridToPixel(c, r);
-        this.scene.add.image(x, y, groundKey).setOrigin(0.5).setDepth(0);
-      }
+    if (this.mapBgImage) {
+      this.mapBgImage.destroy();
     }
+    this.mapBgImage = this.scene.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, bgKey).setOrigin(0.5).setDepth(0);
 
-    // 2. Pfad-Kacheln mit hohem Kontrast
-    for (let r = 0; r < GRID_ROWS; r++) {
-      for (let c = 0; c < GRID_COLS; c++) {
-        if (this.grid[r][c] === 1 || this.grid[r][c] === 4) {
-          const { x, y } = this.gridToPixel(c, r);
-          this.scene.add.image(x, y, pathKey).setOrigin(0.5).setDepth(1);
-        }
-      }
-    }
+    // Modernes, taktisches Bau-Gitter initialisieren (nur beim Bauen/Verschieben sichtbar)
+    this.createBuildGridOverlay();
 
     // 3. WEHENDES GRAS (Lebendiges Schlachtfeld)
     if (this.worldId === 'witch_forest') {
@@ -736,6 +1137,14 @@ export class MapManager {
   }
 
   public destroy(): void {
+    if (this.mapBgImage) {
+      this.mapBgImage.destroy();
+      this.mapBgImage = undefined;
+    }
+    if (this.buildGridContainer) {
+      this.buildGridContainer.destroy();
+      this.buildGridContainer = undefined;
+    }
     this.critters.forEach((c) => c.destroy());
     this.critters = [];
     this.critterTimers.forEach((t) => t.destroy());

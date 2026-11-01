@@ -186,14 +186,14 @@ export class MenuScene extends Phaser.Scene {
       logger.downloadLogs(30);
     });
 
-    // 7. Admin-Mode Switch (Temporär ein-/ausschaltbar)
+    // 7. Admin-Mode Switch (Kompakter Umschalter)
     const getAdminBtnText = (active: boolean) => {
-      return active ? '⚡ ADMIN-MODUS: AN' : '⚡ ADMIN-MODUS: AUS';
+      return active ? 'ADMIN-MODUS: AN' : 'ADMIN-MODUS: AUS';
     };
 
     const adminBtn = this.add.container(GAME_WIDTH / 2, 524);
     const adminBg = this.add.graphics();
-    const adminWidth = 260;
+    const adminWidth = 210;
     const adminHeight = 36;
 
     const renderAdminBg = (active: boolean, hovered: boolean = false) => {

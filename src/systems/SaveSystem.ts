@@ -346,10 +346,10 @@ export class SaveSystem {
   public static getStatMultipliers(towerType: string) {
     const up = this.getTowerUpgrade(towerType);
     return {
-      damageMult: 1.0 + up.damage * 0.12,
-      frequencyMult: 1.0 + up.frequency * 0.09,
-      rangeMult: 1.0 + up.range * 0.08,
-      speedMult: 1.0 + up.speed * 0.15
+      damageMult: 1.0 + up.damage * 0.16,
+      frequencyMult: 1.0 + up.frequency * 0.12,
+      rangeMult: 1.0 + up.range * 0.10,
+      speedMult: 1.0 + up.speed * 0.16
     };
   }
 

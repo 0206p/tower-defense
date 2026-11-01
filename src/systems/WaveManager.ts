@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { ENEMY_CONFIGS, EnemyType } from '../config/EnemyConfig';
+import { ENEMY_CONFIGS, EnemyDefinition, EnemyType } from '../config/EnemyConfig';
 import { WORLDS_CONFIG } from '../config/WorldConfig';
 import { WorldId, SaveSystem } from './SaveSystem';
 import { Enemy } from '../entities/Enemy';
@@ -131,16 +131,18 @@ export class WaveManager {
     let spawnCount = 6;
 
     if (this.isDungeon) {
-      // Dungeon-Skalierung über 30 anspruchsvolle Kammern
-      hpMult = 1.35 + (waveNum - 1) * 0.065 + Math.pow((waveNum - 1) / 29, 1.3) * 1.6;
-      spawnCount = Math.min(30, 8 + Math.floor(waveNum * 0.75));
+      // Dungeon: Brutaler Hardcore-Endgame-Modus
+      // Kammer 1 startet direkt bei 7.5x HP Multiplikator & Schilden!
+      // Ohne Schmiede-Upgrades ist kein Durchkommen möglich!
+      hpMult = 7.5 + (waveNum - 1) * 0.75 + Math.pow((waveNum - 1) / 29, 1.4) * 12.0;
+      spawnCount = Math.min(32, 10 + Math.floor(waveNum * 0.8));
 
       const allDungeonTypes: EnemyType[] = [
         'cave_goblin', 'bat', 'witch', 'slime', 'bomber',
         'orc', 'armored_troll', 'golem', 'fire_imp', 'magma_orc',
         'hellhound', 'lava_golem'
       ];
-      const poolLen = Math.min(allDungeonTypes.length, 3 + Math.floor(waveNum / 3));
+      const poolLen = Math.min(allDungeonTypes.length, 3 + Math.floor(waveNum / 2.5));
       currentPool = allDungeonTypes.slice(0, poolLen);
     } else if (this.isEndless) {
       // Endlosmodus-Skalierung: graduell, fordernd, aber mathematisch fair
@@ -156,17 +158,14 @@ export class WaveManager {
       const poolSize = Math.min(allTypes.length, 3 + Math.floor(waveNum / 2));
       currentPool = allTypes.slice(0, poolSize);
     } else {
-      // Kampagnen-Skalierung (3 Welten x 30 Missionen = 90 Missionen insgesamt)
-      const worldMult = this.worldId === 'dead_mountain' ? 1.25 : this.worldId === 'goblin_caves' ? 1.12 : 1.0;
-      const globalMission = this.worldId === 'dead_mountain'
-        ? 60 + this.missionNumber
-        : this.worldId === 'goblin_caves'
-        ? 30 + this.missionNumber
-        : this.missionNumber;
-
-      const progressRatio = Math.max(0, (globalMission - 1) / 89);
-      const missionMult = 1.0 + Math.pow(progressRatio, 1.2) * 1.5;
-      const waveMult = 1.0 + (waveNum - 1) * 0.045;
+      // Kampagnen-Skalierung mit spürbarem Powercreep über 3 Welten x 30 Missionen
+      // Hexenwelt: 1.0x -> 3.5x
+      // Goblinhöhlen: 2.2x -> 7.5x
+      // Toter Berg: 4.2x -> 16.0x
+      const worldMult = this.worldId === 'dead_mountain' ? 4.2 : this.worldId === 'goblin_caves' ? 2.2 : 1.0;
+      const progressRatio = Math.max(0, (this.missionNumber - 1) / 29);
+      const missionMult = 1.0 + Math.pow(progressRatio, 1.3) * 2.5;
+      const waveMult = 1.0 + (waveNum - 1) * 0.08;
       hpMult = worldMult * missionMult * waveMult;
 
       const fullPool = worldDef.enemyPool as EnemyType[];
@@ -175,7 +174,7 @@ export class WaveManager {
       if (waveNum >= 5) allowedPoolLength = 4;
       if (waveNum >= 8) allowedPoolLength = fullPool.length;
       currentPool = fullPool.slice(0, allowedPoolLength);
-      spawnCount = 5 + waveNum;
+      spawnCount = 6 + waveNum;
     }
 
     const extraEnemies = isBossWave ? 1 : isMiniBossWave ? 1 : 0;
@@ -237,9 +236,24 @@ export class WaveManager {
 
   private spawnEnemy(type: EnemyType, hpMultiplier: number): void {
     const config = ENEMY_CONFIGS[type] || ENEMY_CONFIGS.goblin;
+
+    // Hardcore-Powercreep: Im Dungeon und späten Welten erhalten Monster angeborene Schilde
+    let extraShield = 0;
+    if (this.isDungeon) {
+      extraShield = Math.max(config.shield || 0, 45);
+    } else if (this.worldId === 'dead_mountain') {
+      extraShield = Math.max(config.shield || 0, 25);
+    } else if (this.worldId === 'goblin_caves') {
+      extraShield = Math.max(config.shield || 0, 15);
+    }
+
+    const enemyConfig: EnemyDefinition = extraShield > 0
+      ? { ...config, shield: extraShield }
+      : config;
+
     const enemy = new Enemy(
       this.scene,
-      config,
+      enemyConfig,
       this.mapManager,
       this.economy,
       {

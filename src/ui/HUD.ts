@@ -85,8 +85,8 @@ export class HUD extends Phaser.GameObjects.Container {
     });
     this.add(this.waveText);
 
-    // 4. SCORE (Großzügiger Abstand zum Pause-Button, kein Überlappen)
-    this.scoreText = scene.add.text(375, 11, 'Punkte: 0', {
+    // 4. SCORE (Sicherer Abstand zum Pause-Button, absolut überschneidungsfrei)
+    this.scoreText = scene.add.text(340, 11, 'Punkte: 0', {
       fontFamily: GAME_FONT,
       fontSize: '14px',
       fontStyle: 'bold',
@@ -96,25 +96,25 @@ export class HUD extends Phaser.GameObjects.Container {
     });
     this.add(this.scoreText);
 
-    // 5. PAUSE-BUTTON (Sauber positioniert ab x=540)
-    this.btnPause = this.createPauseButton(540, 22);
+    // 5. PAUSE-BUTTON (Sauber positioniert bei x=535, kein Überlappen)
+    this.btnPause = this.createPauseButton(535, 22);
     this.add(this.btnPause);
 
     // 6. SPEED BUTTONS (1x, 2x, 3x, 5x)
     const speeds = [1.0, 2.0, 3.0, 5.0];
     const speedLabels = ['1x', '2x', '3x', '5x'];
     speeds.forEach((sp, i) => {
-      const btn = this.createSpeedButton(605 + i * 40, 22, speedLabels[i], sp, sp === 1.0);
+      const btn = this.createSpeedButton(595 + i * 38, 22, speedLabels[i], sp, sp === 1.0);
       this.speedButtons.set(sp, btn);
       this.add(btn);
     });
 
     // 7. IN-GAME SOUND TOGGLE BUTTON
-    const btnSound = this.createSoundButton(805, 22);
+    const btnSound = this.createSoundButton(785, 22);
     this.add(btnSound);
 
     // 8. VOLLBILD BUTTON
-    const btnFullscreen = this.createFullscreenButton(910, 22);
+    const btnFullscreen = this.createFullscreenButton(885, 22);
     this.add(btnFullscreen);
 
     // 9. NÄCHSTE WELLE BUTTON

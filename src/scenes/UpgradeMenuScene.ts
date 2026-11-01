@@ -151,29 +151,29 @@ export class UpgradeMenuScene extends Phaser.Scene {
         key: 'damage',
         name: 'SCHADENSKRAFT',
         icon: '⚔️',
-        desc: 'Erhöht den Basis- und Flächenschaden aller Geschosse.',
-        maxBonus: `+${upgrades.damage * 12}% (Max +60%)`
+        desc: 'Erhöht den Basis- und Flächenschaden aller Geschosse massiv.',
+        maxBonus: `+${upgrades.damage * 16}% (Max +80%)`
       },
       {
         key: 'frequency',
         name: 'ANGRIFFS-FREQUENZ',
         icon: '⏱️',
-        desc: 'Verringert die Nachladezeit und beschleunigt Salven.',
-        maxBonus: `+${upgrades.frequency * 9}% (Max +45%)`
+        desc: 'Verringert die Nachladezeit und beschleunigt Salven drastisch.',
+        maxBonus: `+${upgrades.frequency * 12}% (Max +60%)`
       },
       {
         key: 'range',
         name: 'REICHWEITE',
         icon: '🎯',
-        desc: 'Erweitert den Zielerfassungs-Radius auf dem Spielfeld.',
-        maxBonus: `+${upgrades.range * 8}% (Max +40%)`
+        desc: 'Erweitert den Zielerfassungs-Radius auf dem Schlachtfeld.',
+        maxBonus: `+${upgrades.range * 10}% (Max +50%)`
       },
       {
         key: 'speed',
         name: 'SCHNELLIGKEIT & SPEZIAL',
         icon: '⚡',
         desc: 'Erhöht Projektiltempo, Gift-Dauer, Frost-Slow & Blitz-Ketten.',
-        maxBonus: `+${upgrades.speed * 15}% (Max +75%)`
+        maxBonus: `+${upgrades.speed * 16}% (Max +80%)`
       }
     ];
 

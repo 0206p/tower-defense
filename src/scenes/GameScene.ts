@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, TILE_SIZE, GAME_FONT } from '../config/GameConfig';
+import { GAME_HEIGHT, GAME_WIDTH, INITIAL_LIVES, TILE_SIZE, GAME_FONT } from '../config/GameConfig';
 import { TOWER_CONFIGS, TowerType } from '../config/TowerConfig';
 import { WORLDS_CONFIG } from '../config/WorldConfig';
 import { MapManager } from '../systems/MapManager';
@@ -89,7 +89,8 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 1. Ökonomie
+    // 1. Ökonomie (Dungeon startet hardcore mit nur 10 Leben statt 20)
+    const startingLives = this.isDungeon ? 10 : INITIAL_LIVES;
     this.economy = new EconomySystem({
       onGoldChanged: (gold) => {
         this.hud.updateGold(gold);
@@ -105,7 +106,7 @@ export class GameScene extends Phaser.Scene {
       onGameOver: () => {
         this.triggerGameOver();
       }
-    });
+    }, startingLives);
 
     // 2. Map
     this.mapManager = new MapManager(this, this.worldId, this.missionNumber);
@@ -401,6 +402,7 @@ export class GameScene extends Phaser.Scene {
   private updatePlacementPreviewVisibility(): void {
     const visible = this.selectedTowerType !== null;
     this.placementPreviewContainer.setVisible(visible);
+    this.mapManager.showBuildGrid(visible || this.isRepositionDragging);
 
     if (visible && this.selectedTowerType) {
       const def = TOWER_CONFIGS[this.selectedTowerType];
@@ -461,6 +463,7 @@ export class GameScene extends Phaser.Scene {
 
       if (this.pointerDownStartPos && Math.hypot(pointer.x - this.pointerDownStartPos.x, pointer.y - this.pointerDownStartPos.y) > 8) {
         this.isRepositionDragging = true;
+        this.mapManager.showBuildGrid(true);
         this.hideDeleteButton();
 
         const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
@@ -556,6 +559,7 @@ export class GameScene extends Phaser.Scene {
       this.draggedNewTowerType = null;
       this.selectedTowerType = null;
       this.placementPreviewContainer.setVisible(false);
+      this.mapManager.showBuildGrid(false);
 
       const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 66;
       if (inGameField) {
@@ -585,6 +589,7 @@ export class GameScene extends Phaser.Scene {
       this.repositionTower = null;
       this.pointerDownStartPos = null;
       this.placementPreviewContainer.setVisible(false);
+      this.mapManager.showBuildGrid(false);
 
       const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 66;
       if (inGameField) {
@@ -622,6 +627,7 @@ export class GameScene extends Phaser.Scene {
     this.repositionTower = null;
     this.pointerDownStartPos = null;
     this.isRepositionDragging = false;
+    this.mapManager.showBuildGrid(false);
   }
 
   private placeTower(col: number, row: number, type: TowerType): void {
