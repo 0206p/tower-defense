@@ -114,14 +114,10 @@ export class HUD extends Phaser.GameObjects.Container {
     this.add(btnSound);
 
     // 8. VOLLBILD BUTTON
-    const btnFullscreen = this.createFullscreenButton(885, 22);
+    const btnFullscreen = this.createFullscreenButton(920, 22);
     this.add(btnFullscreen);
 
-    // 8b. STARCRAFT II RTS PROTOTYP SCHALTER
-    const btnRts = this.createRtsPrototypeButton(995, 22);
-    this.add(btnRts);
-
-    // 9. NÄCHSTE WELLE BUTTON
+    // 9. NÄCHSTE WELLE BUTTON (Bündig und reaktiv rechts)
     this.btnNextWave = this.createNextWaveButton(1135, 22);
     this.add(this.btnNextWave);
 

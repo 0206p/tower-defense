@@ -10,8 +10,7 @@ import { SoundManager } from '../systems/SoundManager';
 import { Tower } from '../entities/Tower';
 import { Projectile } from '../entities/Projectile';
 import { HUD } from '../ui/HUD';
-import { TowerSelectionBar } from '../ui/TowerSelectionBar';
-import { TowerInfoModal } from '../ui/TowerInfoModal';
+import { RTSCommandConsole } from '../ui/RTSCommandConsole';
 import { PauseModal } from '../ui/PauseModal';
 import { logger } from '../systems/GameLogger';
 import { balancing } from '../systems/BalancingTelemetry';
@@ -26,8 +25,7 @@ export class GameScene extends Phaser.Scene {
   private economy!: EconomySystem;
   private waveManager!: WaveManager;
   private hud!: HUD;
-  private towerBar!: TowerSelectionBar;
-  private infoModal!: TowerInfoModal;
+  private rtsConsole!: RTSCommandConsole;
   private pauseModal!: PauseModal;
 
   private towers: Tower[] = [];
@@ -94,8 +92,9 @@ export class GameScene extends Phaser.Scene {
     this.economy = new EconomySystem({
       onGoldChanged: (gold) => {
         this.hud.updateGold(gold);
-        this.towerBar.updateAffordability();
-        this.infoModal.refresh();
+        if (this.rtsConsole) {
+          this.rtsConsole.updateAffordability();
+        }
       },
       onLivesChanged: (lives) => {
         this.hud.updateLives(lives);
@@ -119,14 +118,16 @@ export class GameScene extends Phaser.Scene {
         logger.wave(`Welle ${waveNum} / ${total} gestartet`);
         this.hud.updateWave(waveNum, total);
         this.hud.setNextWaveButtonEnabled(false, `WELLE ${waveNum} LÄUFT`);
-        this.towerBar.setBuildEnabled(false);
+        this.rtsConsole.updateWave(waveNum, total);
+        this.rtsConsole.setBuildEnabled(false);
         this.draggedNewTowerType = null;
         this.placementPreviewContainer.setVisible(false);
       },
       onWaveCompleted: (waveNum) => {
         logger.wave(`Welle ${waveNum} überstanden`);
         SoundManager.playCoin();
-        this.towerBar.setBuildEnabled(true);
+        this.rtsConsole.setBuildEnabled(true);
+        this.rtsConsole.updateAffordability();
         if (waveNum < this.waveManager.getTotalWaves()) {
           this.hud.setNextWaveButtonEnabled(true, `WELLE ${waveNum + 1} STARTEN`);
           this.hud.showAnnouncement(`Welle ${waveNum} überstanden! +${20 + waveNum * 6} Bonusgold`);
@@ -164,16 +165,16 @@ export class GameScene extends Phaser.Scene {
       this.hud.showAnnouncement(`${worldDef.name.toUpperCase()} - MISSION ${this.missionNumber}`);
     }
 
-    // 5. Tower Bar mit Drag & Drop und Wellen-Sperre
-    this.towerBar = new TowerSelectionBar(this, this.economy, {
-      onSelect: (type) => {
+    // 5. Professionelle RTS-Befehlskonsole am unteren Rand (StarCraft II Style)
+    this.rtsConsole = new RTSCommandConsole(this, this.economy, {
+      onSelectBuildType: (type) => {
         this.selectedTowerType = type;
         if (type && this.selectedPlacedTower) {
           this.deselectPlacedTower();
         }
         this.updatePlacementPreviewVisibility();
       },
-      onStartDrag: (type, pointer) => {
+      onStartDragBuildType: (type, pointer) => {
         if (this.waveManager.isWaveActive()) {
           this.hud.showAnnouncement('Während einer Welle können keine neuen Türme gebaut werden!');
           return;
@@ -186,21 +187,8 @@ export class GameScene extends Phaser.Scene {
         this.updatePlacementPreviewVisibility();
         this.handlePointerMove(pointer);
       },
-      onLockedAttempt: () => {
-        this.hud.showAnnouncement('Während einer Welle können keine neuen Türme gebaut werden! Nur Upgrades möglich.');
-      },
-      onNotEnoughGold: () => {
-        this.hud.showAnnouncement('Nicht genügend Gold!');
-      }
-    });
-
-    // 6. Tower Info Modal
-    this.infoModal = new TowerInfoModal(this, this.economy, {
-      onClose: () => {
-        this.deselectPlacedTower();
-      },
-      onUpgrade: (tower) => {
-        const cost = tower.getStats().cost;
+      onUpgradeTower: (tower) => {
+        const cost = tower.getUpgradeCost();
         const success = tower.upgrade();
         if (success) {
           balancing.recordTowerUpgrade(tower.towerType, cost);
@@ -211,19 +199,23 @@ export class GameScene extends Phaser.Scene {
             row: tower.gridRow
           });
           SoundManager.playUpgrade();
-          this.towerBar.updateAffordability();
-          this.infoModal.refresh();
+          this.rtsConsole.updateAffordability();
+          this.rtsConsole.refresh();
           this.showDeleteButton(tower);
         } else {
+          SoundManager.playDeny();
           this.hud.showAnnouncement('Nicht genügend Gold für Upgrade!');
         }
       },
-      onSell: (tower) => {
+      onSellTower: (tower) => {
         this.quickDeleteTower(tower);
+      },
+      onDeselectTower: () => {
+        this.deselectPlacedTower();
       }
     });
 
-    // 7. Pause-Modal
+    // 6. Pause-Modal
     this.pauseModal = new PauseModal(this, {
       onResume: () => {
         this.togglePause();
@@ -234,9 +226,54 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // ESC oder P Taste für Pause
-    this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
-    this.input.keyboard?.on('keydown-P', () => this.togglePause());
+    // 7. Echte RTS-Tastaturbefehle (Hotkeys)
+    const hotkeyTowers: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
+    hotkeyTowers.forEach((type, idx) => {
+      this.input.keyboard?.on(`keydown-${idx + 1}`, () => {
+        if (!this.waveManager.isWaveActive()) {
+          this.rtsConsole.selectBuildType(this.selectedTowerType === type ? null : type);
+        }
+      });
+    });
+
+    this.input.keyboard?.on('keydown-U', () => {
+      if (this.selectedPlacedTower && this.selectedPlacedTower.canUpgrade()) {
+        const cost = this.selectedPlacedTower.getUpgradeCost();
+        if (this.selectedPlacedTower.upgrade()) {
+          balancing.recordTowerUpgrade(this.selectedPlacedTower.towerType, cost);
+          SoundManager.playUpgrade();
+          this.rtsConsole.updateAffordability();
+          this.rtsConsole.refresh();
+          this.showDeleteButton(this.selectedPlacedTower);
+        }
+      }
+    });
+
+    this.input.keyboard?.on('keydown-P', () => {
+      if (this.selectedPlacedTower) {
+        SoundManager.playClick();
+        this.selectedPlacedTower.cycleTargetPriority();
+        this.rtsConsole.refresh();
+      }
+    });
+
+    this.input.keyboard?.on('keydown-V', () => {
+      if (this.selectedPlacedTower) {
+        this.quickDeleteTower(this.selectedPlacedTower);
+      }
+    });
+
+    this.input.keyboard?.on('keydown-ESC', () => {
+      if (this.selectedPlacedTower) {
+        this.deselectPlacedTower();
+      } else if (this.selectedTowerType) {
+        this.rtsConsole.clearSelection();
+        this.selectedTowerType = null;
+        this.placementPreviewContainer.setVisible(false);
+      } else {
+        this.togglePause();
+      }
+    });
 
     // 8. Ghost Preview & Quick Delete 'X' Button
     this.createPlacementPreview();
@@ -253,7 +290,9 @@ export class GameScene extends Phaser.Scene {
       if (pointer.button === 0) {
         this.handlePointerDown(pointer);
       } else if (pointer.button === 2) {
-        this.towerBar.clearSelection();
+        this.rtsConsole.clearSelection();
+        this.selectedTowerType = null;
+        this.placementPreviewContainer.setVisible(false);
         this.deselectPlacedTower();
       }
     });
@@ -394,8 +433,8 @@ export class GameScene extends Phaser.Scene {
     });
     this.selectedPlacedTower = null;
     this.hideDeleteButton();
-    this.infoModal.hide();
-    this.towerBar.updateAffordability();
+    this.rtsConsole.setSelectedTower(null);
+    this.rtsConsole.updateAffordability();
     this.hud.showAnnouncement(`Turm gelöscht! +${refund}G zurückerhalten.`);
   }
 
@@ -430,7 +469,7 @@ export class GameScene extends Phaser.Scene {
 
       this.placementPreviewContainer.setPosition(pixelPos.x, pixelPos.y);
 
-      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 66;
+      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
       const canBuild = inGameField && this.mapManager.canBuildAt(gridPos.col, gridPos.row);
       const def = TOWER_CONFIGS[currentType];
       const canAfford = this.economy.canAfford(def.baseCost);
@@ -473,7 +512,7 @@ export class GameScene extends Phaser.Scene {
         this.placementPreviewContainer.setVisible(true);
         this.previewSprite.setTexture(`tower_${this.repositionTower.towerType}_${this.repositionTower.currentLevel}`);
 
-        const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 66;
+        const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
         const isSameTile = gridPos.col === this.repositionTower.gridCol && gridPos.row === this.repositionTower.gridRow;
         const canBuild = inGameField && (isSameTile || this.mapManager.canBuildAt(gridPos.col, gridPos.row));
 
@@ -503,12 +542,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer): void {
-    if (pointer.y <= 44 || pointer.y >= GAME_HEIGHT - 66) {
-      return;
-    }
-
-    // Wenn das TowerInfoModal geöffnet ist und der Klick im Modal liegt: Modal-Klick nicht stören
-    if (this.infoModal.visible && pointer.x >= 925 && pointer.y >= 45 && pointer.y <= 380) {
+    if (pointer.y <= 44 || pointer.y >= GAME_HEIGHT - 84) {
       return;
     }
 
@@ -526,7 +560,7 @@ export class GameScene extends Phaser.Scene {
     if (this.selectedTowerType && !this.draggedNewTowerType) {
       if (this.waveManager.isWaveActive()) {
         this.hud.showAnnouncement('Während einer Welle können keine neuen Türme gebaut werden!');
-        this.towerBar.clearSelection();
+        this.rtsConsole.clearSelection();
         return;
       }
 
@@ -537,7 +571,7 @@ export class GameScene extends Phaser.Scene {
           this.placeTower(gridPos.col, gridPos.row, this.selectedTowerType);
 
           if (!this.economy.canAfford(def.baseCost)) {
-            this.towerBar.clearSelection();
+            this.rtsConsole.clearSelection();
           }
         } else {
           this.hud.showAnnouncement('Nicht genügend Gold!');
@@ -561,7 +595,7 @@ export class GameScene extends Phaser.Scene {
       this.placementPreviewContainer.setVisible(false);
       this.mapManager.showBuildGrid(false);
 
-      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 66;
+      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
       if (inGameField) {
         const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
         const def = TOWER_CONFIGS[type];
@@ -578,7 +612,7 @@ export class GameScene extends Phaser.Scene {
           }
         }
       }
-      this.towerBar.clearSelection();
+      this.rtsConsole.clearSelection();
       return;
     }
 
@@ -591,7 +625,7 @@ export class GameScene extends Phaser.Scene {
       this.placementPreviewContainer.setVisible(false);
       this.mapManager.showBuildGrid(false);
 
-      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 66;
+      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
       if (inGameField) {
         const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
         const isSameTile = gridPos.col === tower.gridCol && gridPos.row === tower.gridRow;
@@ -661,7 +695,7 @@ export class GameScene extends Phaser.Scene {
       isRune: this.mapManager.isRuneTile(col, row)
     });
     this.spawnBuildDust(x, y);
-    this.towerBar.updateAffordability();
+    this.rtsConsole.updateAffordability();
   }
 
   private spawnBuildDust(x: number, y: number): void {
@@ -687,10 +721,10 @@ export class GameScene extends Phaser.Scene {
     if (this.selectedPlacedTower && this.selectedPlacedTower !== tower) {
       this.selectedPlacedTower.setSelected(false);
     }
-    this.towerBar.clearSelection();
+    this.rtsConsole.clearSelection();
     this.selectedPlacedTower = tower;
     tower.setSelected(true);
-    this.infoModal.show(tower);
+    this.rtsConsole.setSelectedTower(tower);
     this.showDeleteButton(tower);
 
     if (pointer && !this.waveManager.isWaveActive()) {
@@ -701,16 +735,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   private deselectPlacedTower(): void {
-    if (!this.selectedPlacedTower && !this.infoModal.visible) return;
-    if (this.selectedPlacedTower) {
-      const tower = this.selectedPlacedTower;
-      this.selectedPlacedTower = null;
-      tower.setSelected(false);
-    }
+    if (!this.selectedPlacedTower) return;
+    const tower = this.selectedPlacedTower;
+    this.selectedPlacedTower = null;
+    tower.setSelected(false);
     this.hideDeleteButton();
-    if (this.infoModal.visible) {
-      this.infoModal.hide();
-    }
+    this.rtsConsole.setSelectedTower(null);
   }
 
   private triggerGameOver(): void {
