@@ -188,3 +188,4 @@ Bei jedem Push auf den Branch `main` führt der GitHub Actions Workflow (`.githu
 ## 📜 Lizenz
 Dieses Projekt steht unter der [MIT License](LICENSE).
 Viel Spaß beim Spielen und Verteidigen des Königreichs!
+
