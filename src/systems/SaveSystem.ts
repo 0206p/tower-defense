@@ -62,6 +62,31 @@ const STORAGE_KEY = 'tower_defense_save_v3';
 
 export class SaveSystem {
   private static data: SaveData = SaveSystem.load();
+  private static adminMode: boolean = (function() {
+    try {
+      return localStorage.getItem('td_admin_mode') === 'true';
+    } catch {
+      return false;
+    }
+  })();
+
+  public static isAdminMode(): boolean {
+    return this.adminMode;
+  }
+
+  public static setAdminMode(enabled: boolean): void {
+    this.adminMode = enabled;
+    try {
+      localStorage.setItem('td_admin_mode', enabled ? 'true' : 'false');
+    } catch {
+      // ignore
+    }
+  }
+
+  public static toggleAdminMode(): boolean {
+    this.setAdminMode(!this.adminMode);
+    return this.adminMode;
+  }
 
   public static load(): SaveData {
     try {
@@ -140,6 +165,9 @@ export class SaveSystem {
   }
 
   public static getCrystals(): number {
+    if (this.adminMode) {
+      return 9999999999;
+    }
     return this.data.crystals;
   }
 
@@ -149,6 +177,9 @@ export class SaveSystem {
   }
 
   public static spendCrystals(amount: number): boolean {
+    if (this.adminMode) {
+      return true;
+    }
     if (this.data.crystals >= amount) {
       this.data.crystals -= amount;
       this.save();
@@ -158,6 +189,7 @@ export class SaveSystem {
   }
 
   public static isWorldUnlocked(worldId: WorldId): boolean {
+    if (this.adminMode) return true;
     if (worldId === 'witch_forest') return true;
     if (worldId === 'goblin_caves') {
       return (this.data.worlds.witch_forest.completedMissions || 0) >= 50;
@@ -169,6 +201,7 @@ export class SaveSystem {
   }
 
   public static isMissionUnlocked(worldId: WorldId, missionNum: number): boolean {
+    if (this.adminMode) return true;
     if (missionNum === 1) return true;
     const world = this.data.worlds[worldId];
     if (!world) return missionNum === 1;

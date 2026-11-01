@@ -74,11 +74,9 @@ export class MenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // 5. Exakt zentrierte "Verfügbare Kristalle"-Anzeige
-    const crystals = SaveSystem.getCrystals();
-    const crystalStr = `VERFÜGBARE KRISTALLE: ${crystals}`;
     const crystalContainer = this.add.container(GAME_WIDTH / 2, 235);
 
-    const crystalText = this.add.text(0, 0, crystalStr, {
+    const crystalText = this.add.text(0, 0, '', {
       fontFamily: GAME_FONT,
       fontSize: '16px',
       fontStyle: 'bold',
@@ -87,11 +85,25 @@ export class MenuScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0, 0.5);
 
-    const totalWidth = 32 + 8 + crystalText.width;
-    const startX = -totalWidth / 2;
-    const crystalIcon = this.add.image(startX + 14, 0, 'icon_crystal').setScale(1.3).setOrigin(0.5);
-    crystalText.setX(startX + 34);
+    const crystalIcon = this.add.image(0, 0, 'icon_crystal').setScale(1.3).setOrigin(0.5);
     crystalContainer.add([crystalIcon, crystalText]);
+
+    const updateCrystalDisplay = () => {
+      const currentCrystals = SaveSystem.getCrystals();
+      const isAdmin = SaveSystem.isAdminMode();
+      const crystalStr = isAdmin
+        ? 'VERFÜGBARE KRISTALLE: 9.999.999.999 (ADMIN)'
+        : `VERFÜGBARE KRISTALLE: ${currentCrystals.toLocaleString('de-DE')}`;
+
+      crystalText.setText(crystalStr);
+      crystalText.setColor(isAdmin ? '#fbc531' : '#e056fd');
+      const totalWidth = 32 + 8 + crystalText.width;
+      const startX = -totalWidth / 2;
+      crystalIcon.setX(startX + 14);
+      crystalText.setX(startX + 34);
+    };
+
+    updateCrystalDisplay();
 
     // 6. Hauptmenü-Buttons (Groß, responsiv, modern gestaltet)
     const maxEndlessWave = SaveSystem.getEndlessMaxWave();
@@ -99,13 +111,13 @@ export class MenuScene extends Phaser.Scene {
       ? `🔥 ENDLOSMODUS (REKORD: WELLE ${maxEndlessWave})`
       : '🔥 ENDLOSMODUS (ENDLESS SURVIVAL)';
 
-    this.createMenuButton(GAME_WIDTH / 2, 295, '⚔️ KAMPAGNE STARTEN', 400, 50, 0x27ae60, 0x2ecc71, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 292, '⚔️ KAMPAGNE STARTEN', 400, 48, 0x27ae60, 0x2ecc71, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Kampagne starten gewählt');
       this.scene.start('WorldSelectScene');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 355, endlessLabel, 400, 50, 0xb33939, 0xff5252, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 348, endlessLabel, 400, 48, 0xb33939, 0xff5252, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Endlosmodus gestartet');
       this.scene.start('GameScene', {
@@ -115,7 +127,7 @@ export class MenuScene extends Phaser.Scene {
       });
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 415, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 48, 0x512b7a, 0x8e44ad, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 404, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 46, 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
@@ -123,19 +135,85 @@ export class MenuScene extends Phaser.Scene {
 
     // Sound Toggle Button & Logs
     const soundLabel = SoundManager.getIsMuted() ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN';
-    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 478, soundLabel, 185, 40, 0x2d3436, 0x636e72, () => {
+    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 460, soundLabel, 185, 38, 0x2d3436, 0x636e72, () => {
       const muted = SoundManager.toggleMute();
       logger.info('Sound', `Musik umgeschaltet: ${muted ? 'AUS' : 'AN'}`);
       (soundBtn.getAt(1) as Phaser.GameObjects.Text).setText(muted ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 + 105, 478, '📜 LOGS EXPORT', 185, 40, 0x1e3799, 0x4a69bd, () => {
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 460, '📜 LOGS EXPORT', 185, 38, 0x1e3799, 0x4a69bd, () => {
       SoundManager.playClick();
       logger.downloadLogs(30);
     });
 
+    // 7. Admin-Mode Switch (Temporär ein-/ausschaltbar)
+    const getAdminBtnText = (active: boolean) => {
+      return active
+        ? '⚡ ADMIN-MODUS: AN (9.999.999.999 💎 | ALLE FREI)'
+        : '⚡ ADMIN-MODUS: AUS (NORMALER SPIELSTAND)';
+    };
+
+    const adminBtn = this.add.container(GAME_WIDTH / 2, 514);
+    const adminBg = this.add.graphics();
+    const adminWidth = 400;
+    const adminHeight = 40;
+
+    const renderAdminBg = (active: boolean, hovered: boolean = false) => {
+      adminBg.clear();
+      if (active) {
+        adminBg.fillStyle(hovered ? 0x995d08 : 0x78350f, 1);
+        adminBg.fillRoundedRect(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight, 8);
+        adminBg.lineStyle(2, 0xf59e0b, 1);
+        adminBg.strokeRoundedRect(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight, 8);
+      } else {
+        adminBg.fillStyle(hovered ? 0x2e293d : 0x1e1b29, 1);
+        adminBg.fillRoundedRect(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight, 8);
+        adminBg.lineStyle(2, hovered ? 0x6e5d87 : 0x443b59, 1);
+        adminBg.strokeRoundedRect(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight, 8);
+      }
+    };
+
+    adminBtn.add(adminBg);
+
+    const adminLabel = this.add.text(0, 0, getAdminBtnText(SaveSystem.isAdminMode()), {
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: SaveSystem.isAdminMode() ? '#fef08a' : '#9e97b0',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5);
+    adminBtn.add(adminLabel);
+
+    renderAdminBg(SaveSystem.isAdminMode());
+
+    adminBtn.setSize(adminWidth, adminHeight);
+    adminBtn.setInteractive(new Phaser.Geom.Rectangle(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight), Phaser.Geom.Rectangle.Contains);
+
+    adminBtn.on('pointerover', () => {
+      renderAdminBg(SaveSystem.isAdminMode(), true);
+    });
+
+    adminBtn.on('pointerout', () => {
+      renderAdminBg(SaveSystem.isAdminMode(), false);
+    });
+
+    adminBtn.on('pointerdown', () => {
+      const active = SaveSystem.toggleAdminMode();
+      SoundManager.playUpgrade();
+      logger.info('AdminMode', `Admin-Modus ${active ? 'EINGESCHALTET (9999999999 Kristalle & alle Missionen frei)' : 'AUSGESCHALTET'}`);
+      renderAdminBg(active, true);
+      adminLabel.setText(getAdminBtnText(active));
+      adminLabel.setColor(active ? '#fef08a' : '#9e97b0');
+      updateCrystalDisplay();
+
+      if (active) {
+        this.cameras.main.flash(220, 255, 215, 0, false);
+      }
+    });
+
     // Subtiler Fußnoten-Text
-    const hint = this.add.text(GAME_WIDTH / 2, 575, 'Endlosmodus: Überlebe unendliche Wellen & verdiene alle 5 Wellen Bonus-Kristalle!', {
+    const hint = this.add.text(GAME_WIDTH / 2, 572, 'Endlosmodus: Überlebe unendliche Wellen & verdiene alle 5 Wellen Bonus-Kristalle!', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       color: '#f5f0e6',

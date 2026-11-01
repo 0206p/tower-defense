@@ -125,7 +125,11 @@ export class WorldSelectScene extends Phaser.Scene {
     card.add(desc);
 
     // Fortschritt
-    const progressText = this.add.text(w / 2, 345, `FORTSCHRITT:\n${completed} / 50 MISSIONEN`, {
+    const progressLabel = SaveSystem.isAdminMode()
+      ? `FORTSCHRITT:\nALLE 50 FREI (ADMIN)`
+      : `FORTSCHRITT:\n${completed} / 50 MISSIONEN`;
+
+    const progressText = this.add.text(w / 2, 345, progressLabel, {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       lineSpacing: 5,
