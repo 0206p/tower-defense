@@ -131,12 +131,10 @@ export class WaveManager {
     let spawnCount = 6;
 
     if (this.isDungeon) {
-      // Dungeon: Extremer Hardcore-Endgame-Modus
-      // Kammer 1 startet bei 38.0x HP Multiplikator & 200+ Schilden!
-      // Kammer 30 skaliert bis auf 220.0x HP & Bosse bis zu 350.000 HP!
-      // Vollständige Turm-Schmiede-Upgrades und gezielte Synergien sind absolut zwingend!
-      hpMult = 38.0 + (waveNum - 1) * 3.8 + Math.pow((waveNum - 1) / 29, 1.5) * 110.0;
-      spawnCount = Math.min(36, 12 + Math.floor(waveNum * 0.9));
+      // Dungeon: Endgame-Herausforderung (30 Kammern), fordernd aber mit Upgrades schlagbar!
+      // Kammer 1 startet bei 2.2x HP, Kammer 30 skaliert bis auf ~12.5x HP
+      hpMult = 2.2 + (waveNum - 1) * 0.22 + Math.pow((waveNum - 1) / 29, 1.4) * 4.5;
+      spawnCount = Math.min(26, 8 + Math.floor(waveNum * 0.6));
 
       const allDungeonTypes: EnemyType[] = [
         'cave_goblin', 'bat', 'witch', 'slime', 'bomber',
@@ -159,17 +157,17 @@ export class WaveManager {
       const poolSize = Math.min(allTypes.length, 3 + Math.floor(waveNum / 2));
       currentPool = allTypes.slice(0, poolSize);
     } else {
-      // Kampagnen-Skalierung mit spürbarem Powercreep über 3 Welten x 30 Missionen
-      // Hexenwelt: 1.0x -> 3.5x
-      // Goblinhöhlen: 2.2x -> 7.5x
-      // Toter Berg: 4.2x -> 16.0x
-      const worldMult = this.worldId === 'dead_mountain' ? 4.2 : this.worldId === 'goblin_caves' ? 2.2 : 1.0;
+      // Kampagnen-Skalierung: Balancierter Verlauf über 3 Welten x 30 Missionen
+      // Hexenwelt: 1.0x -> 1.8x
+      // Goblinhöhlen: 1.45x -> 2.9x
+      // Toter Berg: 1.9x -> 4.2x (Welle 1) bis max 10.8x (Welle 10)
+      const worldMult = this.worldId === 'dead_mountain' ? 1.9 : this.worldId === 'goblin_caves' ? 1.45 : 1.0;
       const progressRatio = Math.max(0, (this.missionNumber - 1) / 29);
-      const missionMult = 1.0 + Math.pow(progressRatio, 1.3) * 2.5;
+      const missionMult = 1.0 + Math.pow(progressRatio, 1.15) * 1.20;
 
-      // Spürbare dynamische Steigerung pro Welle (kein AFK-Rumstehen mehr möglich!)
-      // Welle 1: 1.0x -> Welle 3: 1.6x -> Welle 6: 3.2x -> Welle 10: 7.2x
-      const waveMult = 1.0 + (waveNum - 1) * 0.24 + Math.pow((waveNum - 1) / 2.4, 1.6) * 0.50;
+      // Wellen-Skalierung innerhalb der 10 Wellen einer Mission:
+      // Welle 1: 1.0x -> Welle 5: 1.6x -> Welle 10: 2.5x
+      const waveMult = 1.0 + (waveNum - 1) * 0.12 + Math.pow((waveNum - 1) / 3.0, 1.4) * 0.25;
       hpMult = worldMult * missionMult * waveMult;
 
       const fullPool = worldDef.enemyPool as EnemyType[];
@@ -178,7 +176,7 @@ export class WaveManager {
       if (waveNum >= 5) allowedPoolLength = 4;
       if (waveNum >= 8) allowedPoolLength = fullPool.length;
       currentPool = fullPool.slice(0, allowedPoolLength);
-      spawnCount = 7 + Math.floor(waveNum * 1.3);
+      spawnCount = 6 + Math.floor(waveNum * 1.1);
     }
 
     const extraEnemies = isBossWave ? 1 : isMiniBossWave ? 1 : 0;
@@ -243,14 +241,17 @@ export class WaveManager {
   private spawnEnemy(type: EnemyType, hpMultiplier: number, speedMultiplier: number = 1.0): void {
     const config = ENEMY_CONFIGS[type] || ENEMY_CONFIGS.goblin;
 
-    // Hardcore-Powercreep: Im Dungeon und späten Welten erhalten Monster angeborene Schilde
-    let extraShield = 0;
-    if (this.isDungeon) {
-      extraShield = Math.max(config.shield || 0, 180) + this.currentWaveIndex * 35;
-    } else if (this.worldId === 'dead_mountain') {
-      extraShield = Math.max(config.shield || 0, 40) + this.missionNumber * 4;
-    } else if (this.worldId === 'goblin_caves') {
-      extraShield = Math.max(config.shield || 0, 20) + this.missionNumber * 2;
+    // Balancierte Schilde: Nur Einheiten mit angeborenen Panzern (Golems, gepanzerte Trolle, Bosse)
+    // erhalten skalierende Schilde. Schwärme/Läufer behalten 0 Schild, damit Türme direkten Schaden anrichten!
+    let extraShield = config.shield || 0;
+    if (extraShield > 0) {
+      if (this.isDungeon) {
+        extraShield += Math.round(this.currentWaveIndex * 3);
+      } else if (this.worldId === 'dead_mountain') {
+        extraShield += Math.round(this.missionNumber * 2);
+      } else if (this.worldId === 'goblin_caves') {
+        extraShield += Math.round(this.missionNumber * 1.2);
+      }
     }
 
     const enemyConfig: EnemyDefinition = {

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, INITIAL_LIVES, TILE_SIZE, GAME_FONT } from '../config/GameConfig';
+import { GAME_HEIGHT, GAME_WIDTH, INITIAL_LIVES, INITIAL_GOLD, TILE_SIZE, GAME_FONT } from '../config/GameConfig';
 import { TOWER_CONFIGS, TowerType } from '../config/TowerConfig';
 import { WORLDS_CONFIG } from '../config/WorldConfig';
 import { MapManager } from '../systems/MapManager';
@@ -90,8 +90,21 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 1. Ökonomie (Dungeon startet hardcore mit nur 10 Leben statt 20)
+    // 1. Ökonomie (Skalierendes Startgold je nach Welt & Mission)
     const startingLives = this.isDungeon ? 10 : INITIAL_LIVES;
+    let startingGold = INITIAL_GOLD;
+    if (this.isEndless) {
+      startingGold = 240;
+    } else if (this.isDungeon) {
+      startingGold = 350 + (this.missionNumber - 1) * 8;
+    } else if (this.worldId === 'dead_mountain') {
+      startingGold = 300 + (this.missionNumber - 1) * 6; // M1: 300G, M30: 474G
+    } else if (this.worldId === 'goblin_caves') {
+      startingGold = 220 + (this.missionNumber - 1) * 4; // M1: 220G, M30: 336G
+    } else {
+      startingGold = 160 + (this.missionNumber - 1) * 2; // M1: 160G, M30: 218G
+    }
+
     this.economy = new EconomySystem({
       onGoldChanged: (gold) => {
         this.hud.updateGold(gold);
@@ -108,7 +121,7 @@ export class GameScene extends Phaser.Scene {
       onGameOver: () => {
         this.triggerGameOver();
       }
-    }, startingLives);
+    }, startingLives, startingGold);
 
     // 2. Map
     this.mapManager = new MapManager(this, this.worldId, this.missionNumber);

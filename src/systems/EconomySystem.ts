@@ -17,9 +17,10 @@ export class EconomySystem {
       onScoreChanged?: (score: number) => void;
       onGameOver?: () => void;
     } = {},
-    initialLives: number = INITIAL_LIVES
+    initialLives: number = INITIAL_LIVES,
+    initialGold: number = INITIAL_GOLD
   ) {
-    this.gold = INITIAL_GOLD;
+    this.gold = initialGold;
     this.lives = initialLives;
     this.score = 0;
     this.onGoldChanged = callbacks.onGoldChanged;

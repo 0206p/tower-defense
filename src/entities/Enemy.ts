@@ -63,7 +63,7 @@ export class Enemy extends Phaser.GameObjects.Container {
 
     this.maxHp = Math.round(config.maxHp * hpMultiplier);
     this.currentHp = this.maxHp;
-    this.maxShield = config.shield ? Math.round(config.shield * hpMultiplier) : 0;
+    this.maxShield = config.shield ? Math.round(config.shield) : 0;
     this.currentShield = this.maxShield;
 
     // Sprite
