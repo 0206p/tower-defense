@@ -564,7 +564,7 @@ export class GameScene extends Phaser.Scene {
 
       this.placementPreviewContainer.setPosition(pixelPos.x, pixelPos.y);
 
-      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
+      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 80;
       const canBuild = inGameField && this.mapManager.canBuildAt(gridPos.col, gridPos.row);
       const def = TOWER_CONFIGS[currentType];
       const canAfford = this.economy.canAfford(def.baseCost);
@@ -607,7 +607,7 @@ export class GameScene extends Phaser.Scene {
         this.placementPreviewContainer.setVisible(true);
         this.previewSprite.setTexture(`tower_${this.repositionTower.towerType}_${this.repositionTower.currentLevel}`);
 
-        const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
+        const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 80;
         const isSameTile = gridPos.col === this.repositionTower.gridCol && gridPos.row === this.repositionTower.gridRow;
         const canBuild = inGameField && (isSameTile || this.mapManager.canBuildAt(gridPos.col, gridPos.row));
 
@@ -637,7 +637,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer): void {
-    if (pointer.y <= 44 || pointer.y >= GAME_HEIGHT - 84) {
+    if (pointer.y <= 44 || pointer.y >= GAME_HEIGHT - 80) {
       return;
     }
 
@@ -687,7 +687,7 @@ export class GameScene extends Phaser.Scene {
       const type = this.draggedNewTowerType;
       this.draggedNewTowerType = null;
 
-      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
+      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 80;
       if (inGameField) {
         // Drop im Spielfeld: Turm platzieren
         const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
@@ -727,7 +727,7 @@ export class GameScene extends Phaser.Scene {
       this.placementPreviewContainer.setVisible(false);
       this.mapManager.showBuildGrid(false);
 
-      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 84;
+      const inGameField = pointer.y > 44 && pointer.y < GAME_HEIGHT - 80;
       if (inGameField) {
         const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
         const isSameTile = gridPos.col === tower.gridCol && gridPos.row === tower.gridRow;

@@ -3,8 +3,7 @@ import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { TOWER_CONFIGS, TowerType } from '../config/TowerConfig';
 import { EconomySystem } from '../systems/EconomySystem';
 import { SoundManager } from '../systems/SoundManager';
-import { SaveSystem } from '../systems/SaveSystem';
-import { Tower, TARGET_PRIORITY_LABELS, TargetPriority } from '../entities/Tower';
+import { Tower, TARGET_PRIORITY_LABELS } from '../entities/Tower';
 
 export interface RTSCommandConsoleCallbacks {
   onSelectBuildType: (type: TowerType | null) => void;
@@ -22,19 +21,11 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
   private selectedTower: Tower | null = null;
   private buildEnabled: boolean = true;
 
-  // UI Container & Panels
-  private leftStatusPanel!: Phaser.GameObjects.Container;
-  private centerInspectorPanel!: Phaser.GameObjects.Container;
-  private rightCommandPanel!: Phaser.GameObjects.Container;
+  // Zwei Haupt-Container: Baumodus (6 Türme zentriert) & Turm-Verwaltung (Inspektor + Aktionen)
+  private buildModeContainer!: Phaser.GameObjects.Container;
+  private selectionModeContainer!: Phaser.GameObjects.Container;
 
-  // Inspector Elements (Mitte)
-  private inspectorIcon!: Phaser.GameObjects.Sprite;
-  private inspectorTitleText!: Phaser.GameObjects.Text;
-  private inspectorStatsText!: Phaser.GameObjects.Text;
-  private inspectorEffectText!: Phaser.GameObjects.Text;
-  private inspectorExtraText!: Phaser.GameObjects.Text;
-
-  // Build Mode Elements (Rechts)
+  // Build Mode Elements (Großzügig, ungeschnitten & voll lesbar)
   private buildCardContainers: Map<TowerType, {
     container: Phaser.GameObjects.Container;
     bg: Phaser.GameObjects.Graphics;
@@ -42,7 +33,11 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     costText: Phaser.GameObjects.Text;
   }> = new Map();
 
-  // Action Buttons Elements (Rechts - Wenn Turm gewählt)
+  // Selected Tower Inspector Elements
+  private inspectorIcon!: Phaser.GameObjects.Sprite;
+  private inspectorTitleText!: Phaser.GameObjects.Text;
+  private inspectorStatsText!: Phaser.GameObjects.Text;
+  private inspectorDetailsText!: Phaser.GameObjects.Text;
   private actionButtonContainers: Phaser.GameObjects.Container[] = [];
 
   constructor(
@@ -50,204 +45,89 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     economy: EconomySystem,
     callbacks: RTSCommandConsoleCallbacks
   ) {
-    // Höhe: 84px am unteren Bildschirmrand (y = 636 bis 720)
-    super(scene, 0, GAME_HEIGHT - 84);
+    // Höhe: 80px am unteren Bildschirmrand
+    super(scene, 0, GAME_HEIGHT - 80);
     this.economy = economy;
     this.callbacks = callbacks;
 
     // 1. Konsolen-Hauptrahmen (Dunkles Neosteel/Titan mit Cyan-Führungskante)
     const bg = scene.add.graphics();
     bg.fillStyle(0x0a0e17, 0.98);
-    bg.fillRect(0, 0, GAME_WIDTH, 84);
+    bg.fillRect(0, 0, GAME_WIDTH, 80);
 
     // Obere Kantenfase
     bg.lineStyle(2, 0x0284c7, 0.9);
     bg.lineBetween(0, 0, GAME_WIDTH, 0);
-
-    // Panel-Trennlinien
-    bg.lineStyle(1.5, 0x1e293b, 0.8);
-    bg.lineBetween(235, 6, 235, 78);
-    bg.lineBetween(775, 6, 775, 78);
     this.add(bg);
 
-    // 2. Linkes Panel: Taktischer Status (x: 10 bis 230)
-    this.setupLeftStatusPanel();
+    // 2. Baumodus-Container (Standard: 6 Bauturm-Karten zentriert über die volle Breite)
+    this.setupBuildModeCards();
 
-    // 3. Mittleres Panel: Turm- & Einheiten-Inspektor (x: 245 bis 765)
-    this.setupCenterInspectorPanel();
-
-    // 4. Rechtes Panel: Befehlskarte / Command Card (x: 785 bis 1270)
-    this.setupRightCommandPanel();
+    // 3. Auswahlmodus-Container (Wird aktiv, sobald ein Turm im Spielfeld angeklickt wird)
+    this.setupSelectionModePanel();
 
     this.setDepth(140);
     scene.add.existing(this);
+    this.refresh();
   }
 
   // =========================================================================
-  // 1. LINKES PANEL: Taktischer Status & Wellen-Info
+  // 1. BAUMODUS: 6 GERÄUMIGE TÜRME MIT VOLLEN, UNGESCHNITTENEN NAMEN
   // =========================================================================
-  private waveLabelText!: Phaser.GameObjects.Text;
-  private waveStatusText!: Phaser.GameObjects.Text;
+  private setupBuildModeCards(): void {
+    this.buildModeContainer = this.scene.add.container(0, 0);
+    this.add(this.buildModeContainer);
 
-  private setupLeftStatusPanel(): void {
-    this.leftStatusPanel = this.scene.add.container(14, 8);
-    this.add(this.leftStatusPanel);
-
-    // Radar/Taktik-Rahmen
-    const frame = this.scene.add.graphics();
-    frame.fillStyle(0x060911, 0.9);
-    frame.fillRoundedRect(0, 0, 210, 68, 5);
-    frame.lineStyle(1.5, 0x1e293b, 1);
-    frame.strokeRoundedRect(0, 0, 210, 68, 5);
-    this.leftStatusPanel.add(frame);
-
-    // Mini-Radar-Fadenkreuz
-    const cross = this.scene.add.graphics();
-    cross.lineStyle(1, 0x0284c7, 0.35);
-    cross.strokeCircle(36, 34, 22);
-    cross.strokeCircle(36, 34, 12);
-    cross.strokeLineShape(new Phaser.Geom.Line(10, 34, 62, 34));
-    cross.strokeLineShape(new Phaser.Geom.Line(36, 8, 36, 60));
-    this.leftStatusPanel.add(cross);
-
-    // Text-Labels
-    this.waveLabelText = this.scene.add.text(76, 12, 'WELLE: 1 / 10', {
-      fontFamily: GAME_FONT,
-      fontSize: '13px',
-      fontStyle: 'bold',
-      color: '#38bdf8',
-      stroke: '#000000',
-      strokeThickness: 1.5
-    });
-    this.leftStatusPanel.add(this.waveLabelText);
-
-    this.waveStatusText = this.scene.add.text(76, 32, 'STATUS: BEREIT', {
-      fontFamily: GAME_FONT,
-      fontSize: '11px',
-      fontStyle: 'bold',
-      color: '#22c55e',
-      stroke: '#000000',
-      strokeThickness: 1
-    });
-    this.leftStatusPanel.add(this.waveStatusText);
-
-    const subText = this.scene.add.text(76, 48, 'DECKUNG: 100%', {
-      fontFamily: GAME_FONT,
-      fontSize: '10px',
-      color: '#94a3b8'
-    });
-    this.leftStatusPanel.add(subText);
-  }
-
-  // =========================================================================
-  // 2. MITTLERES PANEL: Turm- & Einheiten-Inspektor
-  // =========================================================================
-  private setupCenterInspectorPanel(): void {
-    this.centerInspectorPanel = this.scene.add.container(245, 8);
-    this.add(this.centerInspectorPanel);
-
-    // Hintergrundrahmen
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(0x050811, 0.9);
-    bg.fillRoundedRect(0, 0, 520, 68, 5);
-    bg.lineStyle(1.5, 0x1e293b, 1);
-    bg.strokeRoundedRect(0, 0, 520, 68, 5);
-    this.centerInspectorPanel.add(bg);
-
-    // Turm-Vorschau-Icon (Links im Inspektor)
-    this.inspectorIcon = this.scene.add.sprite(36, 34, 'tower_cannon_1');
-    this.inspectorIcon.setDisplaySize(44, 44);
-    this.inspectorIcon.setVisible(false);
-    this.centerInspectorPanel.add(this.inspectorIcon);
-
-    // Textfelder
-    this.inspectorTitleText = this.scene.add.text(72, 8, '🛡️ TAKTISCHE VERTEIDIGUNGS-KONSOLE', {
-      fontFamily: GAME_FONT,
-      fontSize: '13px',
-      fontStyle: 'bold',
-      color: '#38bdf8',
-      stroke: '#000000',
-      strokeThickness: 1.5
-    });
-    this.centerInspectorPanel.add(this.inspectorTitleText);
-
-    this.inspectorStatsText = this.scene.add.text(72, 27, 'Klicke einen Turm auf dem Spielfeld zum Verwalten & Upgraden.', {
-      fontFamily: GAME_FONT,
-      fontSize: '11px',
-      color: '#cbd5e1'
-    });
-    this.centerInspectorPanel.add(this.inspectorStatsText);
-
-    this.inspectorEffectText = this.scene.add.text(72, 43, 'Oder wähle rechts einen Turm zum Bauen. Tastenkürzel: [1] bis [6].', {
-      fontFamily: GAME_FONT,
-      fontSize: '11px',
-      color: '#94a3b8'
-    });
-    this.centerInspectorPanel.add(this.inspectorEffectText);
-
-    this.inspectorExtraText = this.scene.add.text(72, 57, '', {
-      fontFamily: GAME_FONT,
-      fontSize: '10px',
-      fontStyle: 'bold',
-      color: '#eab308'
-    });
-    this.centerInspectorPanel.add(this.inspectorExtraText);
-  }
-
-  // =========================================================================
-  // 3. RECHTES PANEL: Befehlskarte (Command Card)
-  // =========================================================================
-  private setupRightCommandPanel(): void {
-    this.rightCommandPanel = this.scene.add.container(785, 8);
-    this.add(this.rightCommandPanel);
-
-    // 6 Bauturm-Karten (3 Spalten x 2 Zeilen oder 6 nebeneinander)
-    // Platz: 485px breit, 68px hoch -> 6 Karten nebeneinander (je 76px breit, 64px hoch)
     const towerTypes: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
     const hotkeys = ['1', '2', '3', '4', '5', '6'];
-    const cardW = 76;
-    const cardH = 68;
-    const gap = 5;
+
+    // Großzügige Kantenbreite: 175px pro Karte (volle Namen haben reichlich Platz!)
+    const cardW = 175;
+    const cardH = 64;
+    const gap = 16;
+    const totalW = towerTypes.length * cardW + (towerTypes.length - 1) * gap; // 1130px
+    const startX = Math.round((GAME_WIDTH - totalW) / 2); // 75px -> perfekt zentriert!
 
     towerTypes.forEach((type, index) => {
-      const x = index * (cardW + gap);
-      const cardContainer = this.scene.add.container(x, 0);
+      const x = startX + index * (cardW + gap);
+      const cardContainer = this.scene.add.container(x, 8);
 
       const bg = this.scene.add.graphics();
       cardContainer.add(bg);
 
-      // Turm-Sprite
-      const icon = this.scene.add.sprite(cardW / 2, 22, `tower_${type}_1`).setDisplaySize(32, 32);
+      // Turm-Sprite links auf der Karte
+      const icon = this.scene.add.sprite(30, cardH / 2, `tower_${type}_1`).setDisplaySize(42, 42);
       cardContainer.add(icon);
 
-      // Hotkey Badge
-      const hkText = this.scene.add.text(6, 4, `[${hotkeys[index]}]`, {
+      // Hotkey-Badge oben rechts
+      const hkText = this.scene.add.text(cardW - 8, 7, `[${hotkeys[index]}]`, {
         fontFamily: GAME_FONT,
-        fontSize: '9px',
+        fontSize: '11px',
         fontStyle: 'bold',
         color: '#38bdf8'
-      });
+      }).setOrigin(1.0, 0);
       cardContainer.add(hkText);
 
-      // Name & Kosten
+      // VOLLSTÄNDIGER Turm-Name (nicht abgeschnitten!)
       const def = TOWER_CONFIGS[type];
-      const nameText = this.scene.add.text(cardW / 2, 42, def.name.substring(0, 8), {
+      const nameText = this.scene.add.text(58, 22, def.name, {
         fontFamily: GAME_FONT,
-        fontSize: '10px',
+        fontSize: '12px',
         fontStyle: 'bold',
         color: '#ffffff'
-      }).setOrigin(0.5);
+      }).setOrigin(0, 0.5);
       cardContainer.add(nameText);
 
-      const costText = this.scene.add.text(cardW / 2, 55, `${def.baseCost} 💰`, {
+      // Gold-Kosten
+      const costText = this.scene.add.text(58, 44, `${def.baseCost} 💰`, {
         fontFamily: GAME_FONT,
-        fontSize: '10px',
+        fontSize: '13px',
         fontStyle: 'bold',
         color: '#facc15'
-      }).setOrigin(0.5);
+      }).setOrigin(0, 0.5);
       cardContainer.add(costText);
 
-      // Interaktivität mit dedizierter Hit-Zone & sofortiger taktiler Rückmeldung
+      // Dedizierte Hit-Zone mit Handcursor & direktem Klick-Feedback
       const hitZone = this.scene.add.zone(cardW / 2, cardH / 2, cardW, cardH)
         .setInteractive({ useHandCursor: true });
       cardContainer.add(hitZone);
@@ -263,7 +143,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           return;
         }
         SoundManager.playClick();
-        cardContainer.setScale(0.92);
+        cardContainer.setScale(0.93);
         const nextType = this.selectedBuildType === type ? null : type;
         this.selectBuildType(nextType);
         if (nextType) {
@@ -280,18 +160,15 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       });
 
       this.buildCardContainers.set(type, { container: cardContainer, bg, nameText, costText });
-      this.rightCommandPanel.add(cardContainer);
+      this.buildModeContainer.add(cardContainer);
     });
 
     this.renderBuildCards();
   }
 
-  // =========================================================================
-  // RENDER-LOGIK FÜR BAUKARTEN (Wenn kein Turm selektiert)
-  // =========================================================================
   private renderBuildCards(): void {
-    const cardW = 76;
-    const cardH = 68;
+    const cardW = 175;
+    const cardH = 64;
 
     this.buildCardContainers.forEach((card, type) => {
       const def = TOWER_CONFIGS[type];
@@ -301,19 +178,19 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       card.bg.clear();
       if (isSelected) {
         card.bg.fillStyle(0x0284c7, 0.95);
-        card.bg.fillRoundedRect(0, 0, cardW, cardH, 5);
+        card.bg.fillRoundedRect(0, 0, cardW, cardH, 6);
         card.bg.lineStyle(2, 0x38bdf8, 1);
-        card.bg.strokeRoundedRect(0, 0, cardW, cardH, 5);
+        card.bg.strokeRoundedRect(0, 0, cardW, cardH, 6);
       } else if (canAfford && this.buildEnabled) {
         card.bg.fillStyle(0x0f172a, 0.9);
-        card.bg.fillRoundedRect(0, 0, cardW, cardH, 5);
+        card.bg.fillRoundedRect(0, 0, cardW, cardH, 6);
         card.bg.lineStyle(1.5, 0x334155, 1);
-        card.bg.strokeRoundedRect(0, 0, cardW, cardH, 5);
+        card.bg.strokeRoundedRect(0, 0, cardW, cardH, 6);
       } else {
         card.bg.fillStyle(0x080c14, 0.85);
-        card.bg.fillRoundedRect(0, 0, cardW, cardH, 5);
+        card.bg.fillRoundedRect(0, 0, cardW, cardH, 6);
         card.bg.lineStyle(1, 0x1e293b, 0.6);
-        card.bg.strokeRoundedRect(0, 0, cardW, cardH, 5);
+        card.bg.strokeRoundedRect(0, 0, cardW, cardH, 6);
       }
 
       card.costText.setColor(canAfford ? '#facc15' : '#ef4444');
@@ -322,8 +199,52 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
   }
 
   // =========================================================================
-  // AKTIONEN FÜR AUSGEWÄHLTEN TURM (UPGRADE, ZIEL, VERKAUFEN, SPEZIALISIEREN)
+  // 2. AUSWAHLMODUS: TURM-INSPEKTOR LINKS & BEFEHLE RECHTS (WENN TURM GEWÄHLT)
   // =========================================================================
+  private setupSelectionModePanel(): void {
+    this.selectionModeContainer = this.scene.add.container(0, 0);
+    this.selectionModeContainer.setVisible(false);
+    this.add(this.selectionModeContainer);
+
+    // Inspektor-Rahmen links & Mitte (x: 40 bis 680)
+    const inspBg = this.scene.add.graphics();
+    inspBg.fillStyle(0x050811, 0.92);
+    inspBg.fillRoundedRect(40, 8, 630, 64, 6);
+    inspBg.lineStyle(1.5, 0x1e293b, 1);
+    inspBg.strokeRoundedRect(40, 8, 630, 64, 6);
+    this.selectionModeContainer.add(inspBg);
+
+    // Turm-Vorschau-Icon
+    this.inspectorIcon = this.scene.add.sprite(78, 40, 'tower_cannon_1');
+    this.inspectorIcon.setDisplaySize(46, 46);
+    this.selectionModeContainer.add(this.inspectorIcon);
+
+    // Titel mit Stufe
+    this.inspectorTitleText = this.scene.add.text(118, 14, '', {
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#38bdf8'
+    });
+    this.selectionModeContainer.add(this.inspectorTitleText);
+
+    // Kampfwert-Details
+    this.inspectorStatsText = this.scene.add.text(118, 33, '', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      color: '#f1f5f9'
+    });
+    this.selectionModeContainer.add(this.inspectorStatsText);
+
+    // Spezial-Effekte & Priorität
+    this.inspectorDetailsText = this.scene.add.text(118, 51, '', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      color: '#94a3b8'
+    });
+    this.selectionModeContainer.add(this.inspectorDetailsText);
+  }
+
   public setSelectedTower(tower: Tower | null): void {
     this.selectedTower = tower;
     if (tower) {
@@ -335,27 +256,21 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
 
   public refresh(): void {
     if (this.selectedTower) {
-      // 1. Baumodus-Karten ausblenden
-      this.buildCardContainers.forEach((c) => c.container.setVisible(false));
+      // 1. Baumodus ausblenden
+      this.buildModeContainer.setVisible(false);
 
-      // 2. Aktions-Buttons einblenden & aktualisieren
-      this.renderTowerActionButtons(this.selectedTower);
-
-      // 3. Inspektor mit echten Turm-Werten füllen
+      // 2. Turm-Inspektor & Aktions-Buttons anzeigen
+      this.selectionModeContainer.setVisible(true);
       this.renderTowerInspector(this.selectedTower);
+      this.renderTowerActionButtons(this.selectedTower);
     } else {
-      // Baumodus aktiv
+      // Baumodus aktiv (alle 6 Baukarten voll sichtbar)
+      this.selectionModeContainer.setVisible(false);
       this.actionButtonContainers.forEach((b) => b.destroy());
       this.actionButtonContainers = [];
-      this.buildCardContainers.forEach((c) => c.container.setVisible(true));
-      this.renderBuildCards();
 
-      // Standard-Inspektor
-      this.inspectorIcon.setVisible(false);
-      this.inspectorTitleText.setText('🛡️ TAKTISCHE VERTEIDIGUNGS-KONSOLE');
-      this.inspectorStatsText.setText('Klicke einen Turm auf dem Spielfeld zum Verwalten & Upgraden.');
-      this.inspectorEffectText.setText('Oder wähle rechts einen Turm zum Bauen. Tastenkürzel: [1] bis [6].');
-      this.inspectorExtraText.setText('');
+      this.buildModeContainer.setVisible(true);
+      this.renderBuildCards();
     }
   }
 
@@ -363,7 +278,6 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     const def = tower.getDefinition();
     const stats = tower.getStats();
 
-    this.inspectorIcon.setVisible(true);
     const textureKey = `tower_${tower.towerType}_${tower.specialization ? (tower.specialization === 'path_a' ? 'spec_a' : 'spec_b') : tower.currentLevel}`;
     if (this.scene.textures.exists(textureKey)) {
       this.inspectorIcon.setTexture(textureKey);
@@ -386,18 +300,15 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     const dps = Math.round(dmg / (tower.getEffectiveCooldown() / 1000));
     this.inspectorStatsText.setText(`⚔️ Schaden: ${dmg}   🎯 Reichweite: ${rng} px   ⏱️ Kadenz: ${cdSec}s   ⚡ DPS: ${dps}`);
 
-    // Spezial-Effekte
+    // Details & Priorität
+    const prioLabel = TARGET_PRIORITY_LABELS[tower.targetPriority] || 'ERSTER';
     let eff = '';
     if (stats.splashRadius) eff += `💥 Splash: ${stats.splashRadius}px  `;
-    if (stats.slowFactor) eff += `❄️ Verlangsamung: ${Math.round(stats.slowFactor * 100)}%  `;
-    if (stats.chainTargets) eff += `⚡ Kettenblitz: ${stats.chainTargets} Ziele  `;
+    if (stats.slowFactor) eff += `❄️ Slow: ${Math.round(stats.slowFactor * 100)}%  `;
+    if (stats.chainTargets) eff += `⚡ Ketten: ${stats.chainTargets}  `;
     if (stats.dotDamage) eff += `☠️ Gift-DoT: ${stats.dotDamage}/s  `;
-    if (tower.isRuneEmpowered) eff += `💎 Runenstein-Bonus (+20%)`;
-    this.inspectorEffectText.setText(eff || 'Direktschaden-Projektil');
 
-    // Extra: Ziel & Wert
-    const prioLabel = TARGET_PRIORITY_LABELS[tower.targetPriority] || 'ERSTER';
-    this.inspectorExtraText.setText(`🎯 Zielpriorität: [${prioLabel}]   •   💰 Verkaufswert: ${tower.getSellValue()} Gold`);
+    this.inspectorDetailsText.setText(`🎯 Ziel: [${prioLabel}]   •   💰 Verkauf: +${tower.getSellValue()}G   •   ${eff || 'Kinetisch'}`);
   }
 
   private renderTowerActionButtons(tower: Tower): void {
@@ -413,7 +324,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       onClick: () => void;
     }[] = [];
 
-    // 1. UPGRADE-BUTTON
+    // 1. UPGRADE / SPEZIALISIERUNG
     const canUpgrade = tower.canUpgrade();
     const upgradeCost = tower.getUpgradeCost();
     const canAffordUpgrade = this.economy.canAfford(upgradeCost);
@@ -435,7 +346,6 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
         }
       });
     } else if (tower.canSpecialize()) {
-      // Spezialisierung verfügbar
       const def = tower.getDefinition();
       const specA = def.specializations.path_a;
       const specB = def.specializations.path_b;
@@ -486,7 +396,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       });
     }
 
-    // 2. ZIELPRIORITÄTS-BUTTON (Zyklisch umschalten)
+    // 2. ZIELPRIORITÄT
     const prioName = TARGET_PRIORITY_LABELS[tower.targetPriority] || 'ERSTER';
     actions.push({
       label: `[P] ZIEL`,
@@ -501,7 +411,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       }
     });
 
-    // 3. VERKAUFEN-BUTTON
+    // 3. VERKAUFEN
     const sellValue = tower.getSellValue();
     actions.push({
       label: `[V] VERKAUF`,
@@ -528,33 +438,34 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       }
     });
 
-    // Buttons anordnen (je 90px breit, 68px hoch)
-    const btnW = 90;
-    const btnH = 68;
-    const gap = 6;
+    // Großzügige Aktions-Buttons rechts (x: 695 bis 1245)
+    const btnW = 125;
+    const btnH = 64;
+    const gap = 12;
+    const startX = 695;
 
     actions.forEach((act, idx) => {
-      const x = idx * (btnW + gap);
-      const container = this.scene.add.container(x, 0);
+      const x = startX + idx * (btnW + gap);
+      const container = this.scene.add.container(x, 8);
 
       const bg = this.scene.add.graphics();
       bg.fillStyle(act.bgColor, act.enabled ? 0.95 : 0.6);
-      bg.fillRoundedRect(0, 0, btnW, btnH, 5);
+      bg.fillRoundedRect(0, 0, btnW, btnH, 6);
       bg.lineStyle(1.5, act.borderColor, act.enabled ? 1 : 0.5);
-      bg.strokeRoundedRect(0, 0, btnW, btnH, 5);
+      bg.strokeRoundedRect(0, 0, btnW, btnH, 6);
       container.add(bg);
 
-      const txtTitle = this.scene.add.text(btnW / 2, 22, act.label, {
+      const txtTitle = this.scene.add.text(btnW / 2, 21, act.label, {
         fontFamily: GAME_FONT,
-        fontSize: '11px',
+        fontSize: '12px',
         fontStyle: 'bold',
         color: act.enabled ? '#ffffff' : '#94a3b8'
       }).setOrigin(0.5);
       container.add(txtTitle);
 
-      const txtSub = this.scene.add.text(btnW / 2, 44, act.sub, {
+      const txtSub = this.scene.add.text(btnW / 2, 43, act.sub, {
         fontFamily: GAME_FONT,
-        fontSize: '11px',
+        fontSize: '12px',
         fontStyle: 'bold',
         color: act.enabled ? '#facc15' : '#64748b'
       }).setOrigin(0.5);
@@ -576,26 +487,26 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
           container.setScale(1.0);
         });
 
-        hitZone.on('pointerover', () => {
-          bg.clear();
-          bg.fillStyle(act.borderColor, 0.4);
-          bg.fillRoundedRect(0, 0, btnW, btnH, 5);
-          bg.lineStyle(2, 0xffffff, 1);
-          bg.strokeRoundedRect(0, 0, btnW, btnH, 5);
-        });
-
         hitZone.on('pointerout', () => {
           container.setScale(1.0);
           bg.clear();
           bg.fillStyle(act.bgColor, 0.95);
-          bg.fillRoundedRect(0, 0, btnW, btnH, 5);
+          bg.fillRoundedRect(0, 0, btnW, btnH, 6);
           bg.lineStyle(1.5, act.borderColor, 1);
-          bg.strokeRoundedRect(0, 0, btnW, btnH, 5);
+          bg.strokeRoundedRect(0, 0, btnW, btnH, 6);
+        });
+
+        hitZone.on('pointerover', () => {
+          bg.clear();
+          bg.fillStyle(act.borderColor, 0.4);
+          bg.fillRoundedRect(0, 0, btnW, btnH, 6);
+          bg.lineStyle(2, 0xffffff, 1);
+          bg.strokeRoundedRect(0, 0, btnW, btnH, 6);
         });
       }
 
       this.actionButtonContainers.push(container);
-      this.rightCommandPanel.add(container);
+      this.selectionModeContainer.add(container);
     });
   }
 
@@ -611,7 +522,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
   public clearSelection(): void {
     this.selectedBuildType = null;
     this.selectedTower = null;
-    this.renderBuildCards();
+    this.refresh();
   }
 
   public updateAffordability(): void {
@@ -623,18 +534,10 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
 
   public setBuildEnabled(enabled: boolean): void {
     this.buildEnabled = enabled;
-    this.waveStatusText.setText(enabled ? 'STATUS: BEREIT' : 'STATUS: KAMPF');
-    this.waveStatusText.setColor(enabled ? '#22c55e' : '#ef4444');
     this.renderBuildCards();
   }
 
-  public updateWave(current: number, total: number): void {
-    if (total === 30) {
-      this.waveLabelText.setText(`KAMMER: ${current} / 30`);
-    } else if (total === 0 || total > 100) {
-      this.waveLabelText.setText(`WELLE: ${current} / ∞`);
-    } else {
-      this.waveLabelText.setText(`WELLE: ${current} / ${total}`);
-    }
+  public updateWave(_current: number, _total: number): void {
+    // Unnötiges linkes Radar-Zeug entfernt: Welle wird bereits sauber im oberen HUD angezeigt!
   }
 }
