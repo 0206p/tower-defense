@@ -1355,6 +1355,291 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
+    // 5b. MONUMENTALE FESTUNG, SPAWN-RISS & STEINBRÜCKE
+    // ==========================================
+
+    // Großes königliches Festungstor / Citadel Gatehouse (Ziel des Weges)
+    create('fortress_citadel_gate', 110, 120, (ctx) => {
+      // 1. Tiefer Bodenschatten
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(55, 110, 52, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Linker Bastions-Turm
+      const towerLGrad = ctx.createLinearGradient(4, 15, 32, 115);
+      towerLGrad.addColorStop(0, '#475569');
+      towerLGrad.addColorStop(0.5, '#1e293b');
+      towerLGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = towerLGrad;
+      ctx.fillRect(6, 20, 26, 92);
+
+      // Zinnen linker Turm
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(4, 15, 9, 8);
+      ctx.fillRect(16, 15, 7, 8);
+      ctx.fillRect(26, 15, 8, 8);
+
+      // Schießscharten linker Turm
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(18, 40, 3, 10);
+      ctx.fillRect(18, 65, 3, 10);
+
+      // Feuerschale linker Turm
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(14, 10, 10, 5);
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath();
+      ctx.arc(19, 9, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(19, 8, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Rechter Bastions-Turm
+      const towerRGrad = ctx.createLinearGradient(78, 15, 106, 115);
+      towerRGrad.addColorStop(0, '#475569');
+      towerRGrad.addColorStop(0.5, '#1e293b');
+      towerRGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = towerRGrad;
+      ctx.fillRect(78, 20, 26, 92);
+
+      // Zinnen rechter Turm
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(76, 15, 8, 8);
+      ctx.fillRect(87, 15, 7, 8);
+      ctx.fillRect(97, 15, 9, 8);
+
+      // Schießscharten rechter Turm
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(89, 40, 3, 10);
+      ctx.fillRect(89, 65, 3, 10);
+
+      // Feuerschale rechter Turm
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(86, 10, 10, 5);
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath();
+      ctx.arc(91, 9, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(91, 8, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. Zentraler Haupt-Torhaus-Bau
+      const gateWallGrad = ctx.createLinearGradient(30, 30, 80, 112);
+      gateWallGrad.addColorStop(0, '#334155');
+      gateWallGrad.addColorStop(0.7, '#1e293b');
+      gateWallGrad.addColorStop(1, '#090d16');
+      ctx.fillStyle = gateWallGrad;
+      ctx.fillRect(30, 32, 50, 80);
+
+      // Hoher mittlerer Wehrgang & Zinnen
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(36, 26, 9, 6);
+      ctx.fillRect(50, 26, 10, 6);
+      ctx.fillRect(65, 26, 9, 6);
+
+      // Königswappen über dem Tor
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.moveTo(55, 36); ctx.lineTo(61, 44); ctx.lineTo(55, 52); ctx.lineTo(49, 44);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(55, 44, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 5. Großes offenes Festungstor (hier führt der Weg direkt hinein!)
+      // Dunkler Tor-Tunnel mit Tiefen-Perspektive
+      const tunnelGrad = ctx.createRadialGradient(55, 95, 3, 55, 95, 26);
+      tunnelGrad.addColorStop(0, '#451a03'); // Warmes Hoflicht tief im Schloss
+      tunnelGrad.addColorStop(0.4, '#1e1b4b');
+      tunnelGrad.addColorStop(0.9, '#020617');
+      ctx.fillStyle = tunnelGrad;
+      ctx.beginPath();
+      ctx.arc(55, 75, 20, Math.PI, 0); // Rundbogen oben
+      ctx.lineTo(75, 114);
+      ctx.lineTo(35, 114);
+      ctx.closePath();
+      ctx.fill();
+
+      // Torbogen-Einfassung aus behauenen Quadern
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.arc(55, 75, 20.5, Math.PI, 0);
+      ctx.lineTo(75.5, 114);
+      ctx.moveTo(34.5, 75);
+      ctx.lineTo(34.5, 114);
+      ctx.stroke();
+
+      // Schlussstein im Torbogen
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(52, 52, 6, 6);
+
+      // Hochgezogenes eisernes Fallgitter über der Durchfahrt
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      for (let gx = 39; gx <= 71; gx += 5) {
+        ctx.beginPath();
+        ctx.moveTo(gx, 58);
+        ctx.lineTo(gx, 76);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(36, 65);
+      ctx.lineTo(74, 65);
+      ctx.moveTo(36, 72);
+      ctx.lineTo(74, 72);
+      ctx.stroke();
+
+      // Rote Königs-Banner an den Bastionen
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(10, 48, 6, 26);
+      ctx.fillRect(94, 48, 6, 26);
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(10, 48, 6, 3);
+      ctx.fillRect(94, 48, 6, 3);
+    });
+
+    // Das Schatten-Dimensionsportal (Start des Weges - hier strömen die Feinde hervor)
+    create('fortress_spawn_rift', 100, 110, (ctx) => {
+      // 1. Bodenschatten
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.beginPath();
+      ctx.ellipse(50, 102, 46, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Linker Obsidian-Monolith
+      const monoL = ctx.createLinearGradient(12, 10, 30, 105);
+      monoL.addColorStop(0, '#3b0764');
+      monoL.addColorStop(0.5, '#0f051d');
+      monoL.addColorStop(1, '#020617');
+      ctx.fillStyle = monoL;
+      ctx.beginPath();
+      ctx.moveTo(18, 8);
+      ctx.lineTo(29, 22);
+      ctx.lineTo(27, 105);
+      ctx.lineTo(13, 105);
+      ctx.lineTo(11, 28);
+      ctx.closePath();
+      ctx.fill();
+
+      // Leuchtende Runen linker Pfeiler
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(20, 35); ctx.lineTo(23, 44); ctx.lineTo(17, 52); ctx.lineTo(23, 62);
+      ctx.moveTo(18, 75); ctx.lineTo(24, 82);
+      ctx.stroke();
+
+      // 3. Rechter Obsidian-Monolith
+      const monoR = ctx.createLinearGradient(70, 10, 88, 105);
+      monoR.addColorStop(0, '#3b0764');
+      monoR.addColorStop(0.5, '#0f051d');
+      monoR.addColorStop(1, '#020617');
+      ctx.fillStyle = monoR;
+      ctx.beginPath();
+      ctx.moveTo(82, 8);
+      ctx.lineTo(89, 28);
+      ctx.lineTo(87, 105);
+      ctx.lineTo(73, 105);
+      ctx.lineTo(71, 22);
+      ctx.closePath();
+      ctx.fill();
+
+      // Leuchtende Runen rechter Pfeiler
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(80, 35); ctx.lineTo(77, 44); ctx.lineTo(83, 52); ctx.lineTo(77, 62);
+      ctx.moveTo(82, 75); ctx.lineTo(76, 82);
+      ctx.stroke();
+
+      // 4. Oberer Ruinen-Bogen
+      ctx.fillStyle = '#1e1b4b';
+      ctx.beginPath();
+      ctx.moveTo(18, 8);
+      ctx.lineTo(50, 2);
+      ctx.lineTo(82, 8);
+      ctx.lineTo(76, 22);
+      ctx.lineTo(24, 22);
+      ctx.closePath();
+      ctx.fill();
+
+      // 5. Wirbelnder Hyperraum-Vortex im Tor
+      const vortex = ctx.createRadialGradient(50, 64, 2, 50, 64, 26);
+      vortex.addColorStop(0, '#ffffff');
+      vortex.addColorStop(0.25, '#38bdf8');
+      vortex.addColorStop(0.55, '#9333ea');
+      vortex.addColorStop(0.85, '#3b0764');
+      vortex.addColorStop(1, 'transparent');
+      ctx.fillStyle = vortex;
+      ctx.beginPath();
+      ctx.arc(50, 64, 26, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Spiral-Arme & Entladungs-Blitze
+      ctx.strokeStyle = '#e9d5ff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(50, 64, 18, 0.4, Math.PI * 1.6);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(50, 64); ctx.lineTo(42, 88);
+      ctx.moveTo(50, 64); ctx.lineTo(58, 88);
+      ctx.stroke();
+    });
+
+    // Stabile Stein- & Titan-Brücke (Querung über Flüsse)
+    create('decor_bridge_arch', 52, 52, (ctx) => {
+      // Wasserschatten
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillRect(0, 0, 52, 52);
+
+      // Brücken-Fahrbahn (Mitte)
+      const roadGrad = ctx.createLinearGradient(0, 8, 0, 44);
+      roadGrad.addColorStop(0, '#334155');
+      roadGrad.addColorStop(0.5, '#475569');
+      roadGrad.addColorStop(1, '#334155');
+      ctx.fillStyle = roadGrad;
+      ctx.fillRect(0, 8, 52, 36);
+
+      // Obere massive Steinbrüstung
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(0, 4, 52, 6);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 4, 52, 1.5);
+
+      // Untere massive Steinbrüstung
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(0, 42, 52, 6);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 46.5, 52, 1.5);
+
+      // Brückenpfeiler-Konsolen (Kragsteine)
+      ctx.fillStyle = '#94a3b8';
+      [8, 26, 44].forEach(bx => {
+        ctx.fillRect(bx - 2, 2, 4, 3);
+        ctx.fillRect(bx - 2, 47, 4, 3);
+      });
+
+      // Leuchtende Brücken-Laternen
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(26, 4, 2, 0, Math.PI * 2);
+      ctx.arc(26, 48, 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // ==========================================
     // 6. MODERNE FANTASY-GEGNER (VEKTOR-ILLUSTRATION)
     // ==========================================
     create('enemy_goblin', 34, 34, (ctx) => {
@@ -1746,149 +2031,450 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
-    // 8. MODERNE 3D-TÜRME (STUFE 1, 2, 3 + SPEZIALISIERUNGEN)
+    // 8. HOCHWERTIGE 2.5D RTS-TÜRME (REALISTISCHES MILITÄR-DESIGN)
     // ==========================================
     const towerTypes = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
 
-    const modernTierColors: Record<number, { ring: string; trim: string; glow: string }> = {
-      1: { ring: '#f1c40f', trim: '#fef160', glow: 'rgba(241, 196, 15, 0.4)' },
-      2: { ring: '#e67e22', trim: '#ffb142', glow: 'rgba(230, 126, 34, 0.5)' },
-      3: { ring: '#e74c3c', trim: '#ff7675', glow: 'rgba(231, 76, 60, 0.6)' }
+    const modernTierThemes: Record<number, { ring: string; trim: string; glow: string; armor: string; dark: string }> = {
+      1: { ring: '#38bdf8', trim: '#7dd3fc', glow: 'rgba(56, 189, 248, 0.45)', armor: '#334155', dark: '#0f172a' },
+      2: { ring: '#f59e0b', trim: '#fcd34d', glow: 'rgba(245, 158, 11, 0.55)', armor: '#475569', dark: '#1e293b' },
+      3: { ring: '#ef4444', trim: '#fca5a5', glow: 'rgba(239, 68, 68, 0.65)', armor: '#1e293b', dark: '#090d16' }
     };
 
     towerTypes.forEach((type) => {
       for (let lvl = 1; lvl <= 3; lvl++) {
         const key = `tower_${type}_${lvl}`;
-        const theme = modernTierColors[lvl];
+        const theme = modernTierThemes[lvl];
 
-        create(key, 40, 40, (ctx) => {
-          // 1. Zylindrisches Stein-Fundament mit Radialschattierung
-          const baseGrad = ctx.createRadialGradient(20, 26, 4, 20, 26, 18);
-          baseGrad.addColorStop(0, '#3d384d');
-          baseGrad.addColorStop(0.7, '#242031');
-          baseGrad.addColorStop(1, '#15131f');
-
-          ctx.fillStyle = baseGrad;
+        create(key, 44, 44, (ctx) => {
+          // 1. Weicher Bodenschatten
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
           ctx.beginPath();
-          ctx.ellipse(20, 27, 16, 9, 0, 0, Math.PI * 2);
+          ctx.ellipse(22, 32, 18, 9, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          // 2. Bevel-Zierring der Ausbaustufe (Gelb / Orange / Rot)
-          ctx.strokeStyle = theme.ring;
-          ctx.lineWidth = lvl >= 2 ? 2.5 : 1.8;
+          // 2. Titan-Turmfundament (Abgeschrägte 2.5D-Panzerplatte)
+          const baseGrad = ctx.createRadialGradient(22, 28, 3, 22, 28, 18);
+          baseGrad.addColorStop(0, '#475569');
+          baseGrad.addColorStop(0.6, theme.armor);
+          baseGrad.addColorStop(1, theme.dark);
+          ctx.fillStyle = baseGrad;
           ctx.beginPath();
-          ctx.ellipse(20, 27, 14, 7.5, 0, 0, Math.PI * 2);
+          ctx.ellipse(22, 28, 18, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Turmfundament-Kantenfase mit Ausbaustufen-Zierring
+          ctx.strokeStyle = theme.ring;
+          ctx.lineWidth = lvl >= 2 ? 2.2 : 1.5;
+          ctx.beginPath();
+          ctx.ellipse(22, 28, 16.5, 8.8, 0, 0, Math.PI * 2);
           ctx.stroke();
 
-          // 3. Waffensystem
+          // Befestigungsbolzen am Fundamentrand
+          ctx.fillStyle = '#94a3b8';
+          [ {x: 8, y: 28}, {x: 36, y: 28}, {x: 15, y: 34}, {x: 29, y: 34} ].forEach(b => {
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          // 3. Drehbare Turmhaube / Drehkranz (Mitte)
+          const turretRingGrad = ctx.createLinearGradient(14, 16, 30, 26);
+          turretRingGrad.addColorStop(0, '#64748b');
+          turretRingGrad.addColorStop(0.5, '#334155');
+          turretRingGrad.addColorStop(1, '#1e293b');
+          ctx.fillStyle = turretRingGrad;
+          ctx.beginPath();
+          ctx.ellipse(22, 23, 11, 6.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 4. Waffen-System je nach Turmart
           if (type === 'archer') {
-            // Balliste mit gespanntem Bogen
-            ctx.fillStyle = '#654124';
-            ctx.fillRect(17, 12, 6, 12);
+            // VULCAN FLAK / KINETISCHES SCHNELLFEUER-GESCHÜTZ
+            if (lvl === 1) {
+              // Stufe 1: Motorisierte Doppel-Kinetikkanone mit Munitionskasten
+              ctx.fillStyle = '#1e293b';
+              ctx.fillRect(17, 7, 3.5, 16);
+              ctx.fillRect(23.5, 7, 3.5, 16);
 
-            ctx.strokeStyle = theme.ring;
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.arc(20, 15, 11, -Math.PI / 1.3, -Math.PI / 4);
-            ctx.stroke();
+              // Mündungsfeuerdämpfer
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(16, 5, 5.5, 2.5);
+              ctx.fillRect(22.5, 5, 5.5, 2.5);
 
-            // Bogensehne & Pfeilspitze
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.moveTo(20, 5); ctx.lineTo(17, 11); ctx.lineTo(23, 11);
-            ctx.closePath();
-            ctx.fill();
+              // Seitliche Munitionsbox
+              ctx.fillStyle = '#b45309';
+              ctx.fillRect(10, 18, 5, 7);
+            } else if (lvl === 2) {
+              // Stufe 2: Verstärktes Zwillings-Rotationsgeschütz mit Munitionsgurt
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(16, 4, 4, 19);
+              ctx.fillRect(24, 4, 4, 19);
+
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(15, 3, 6, 3);
+              ctx.fillRect(23, 3, 6, 3);
+
+              // Gelbe Munitions-Zuführungsglieder
+              ctx.fillStyle = '#f59e0b';
+              ctx.fillRect(9, 16, 6, 8);
+              ctx.fillStyle = '#fbbf24';
+              ctx.fillRect(10, 17, 4, 2);
+              ctx.fillRect(10, 20, 4, 2);
+            } else {
+              // Stufe 3: Quad-Vulcan Phalanx (4 schwere Läufe & Laserzielgerät)
+              ctx.fillStyle = '#090d16';
+              ctx.fillRect(14, 3, 3, 20);
+              ctx.fillRect(18, 2, 3, 21);
+              ctx.fillRect(23, 2, 3, 21);
+              ctx.fillRect(27, 3, 3, 20);
+
+              // Verbund-Mündungsbremse in Meister-Rot
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(13, 1, 18, 3);
+
+              // Roter Laserziel-Projektor
+              ctx.fillStyle = '#ef4444';
+              ctx.beginPath();
+              ctx.arc(22, 13, 2.2, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Doppelte Trommelmagazine
+              ctx.fillStyle = '#1e293b';
+              ctx.beginPath();
+              ctx.arc(10, 21, 4, 0, Math.PI * 2);
+              ctx.arc(34, 21, 4, 0, Math.PI * 2);
+              ctx.fill();
+            }
           } else if (type === 'cannon') {
-            // Schwere Gusseisen-Kanone
-            const tubeGrad = ctx.createLinearGradient(14, 6, 26, 22);
-            tubeGrad.addColorStop(0, '#747d8c');
-            tubeGrad.addColorStop(0.5, '#2f3542');
-            tubeGrad.addColorStop(1, '#1e272e');
+            // BELAGERUNGS-GAUSS-KANONE / ARTILLERIE
+            if (lvl === 1) {
+              // Stufe 1: Schweres 120mm Haubitzenrohr mit Rückstoßzylinder
+              const tubeGrad = ctx.createLinearGradient(17, 3, 27, 21);
+              tubeGrad.addColorStop(0, '#64748b');
+              tubeGrad.addColorStop(0.5, '#334155');
+              tubeGrad.addColorStop(1, '#0f172a');
+              ctx.fillStyle = tubeGrad;
+              ctx.fillRect(18, 5, 8, 17);
 
-            ctx.fillStyle = tubeGrad;
-            ctx.beginPath();
-            ctx.roundRect(14, 6, 12, 17, 3);
-            ctx.fill();
+              // Mündungsbremse
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(16.5, 3, 11, 3.5);
 
-            // Mündungsring
-            ctx.fillStyle = theme.ring;
-            ctx.beginPath();
-            ctx.ellipse(20, 6, 7, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
+              // Hydraulischer Rückstoßdämpfer
+              ctx.fillStyle = '#94a3b8';
+              ctx.fillRect(16, 15, 2.5, 6);
+              ctx.fillRect(25.5, 15, 2.5, 6);
+            } else if (lvl === 2) {
+              // Stufe 2: Langes verstärktes Belagerungsrohr mit Kühlrippen
+              const tubeGrad = ctx.createLinearGradient(16, 2, 28, 22);
+              tubeGrad.addColorStop(0, '#94a3b8');
+              tubeGrad.addColorStop(0.5, '#475569');
+              tubeGrad.addColorStop(1, '#1e293b');
+              ctx.fillStyle = tubeGrad;
+              ctx.fillRect(17, 3, 10, 20);
+
+              // Doppelblenden-Mündungsbremse
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(15, 1, 14, 4);
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(18, 2, 8, 2);
+
+              // Seitliche Panzerungsschürzen
+              ctx.fillStyle = '#334155';
+              ctx.fillRect(11, 14, 4, 10);
+              ctx.fillRect(29, 14, 4, 10);
+            } else {
+              // Stufe 3: Kolossale Zwillings-Gauss-Belagerungskanone (StarCraft Siege Style)
+              // Linker Lauf
+              const t1 = ctx.createLinearGradient(13, 0, 19, 22);
+              t1.addColorStop(0, '#64748b');
+              t1.addColorStop(0.5, '#1e293b');
+              t1.addColorStop(1, '#090d16');
+              ctx.fillStyle = t1;
+              ctx.fillRect(14, 1, 6.5, 22);
+
+              // Rechter Lauf
+              ctx.fillStyle = t1;
+              ctx.fillRect(23.5, 1, 6.5, 22);
+
+              // Massive Mündungsdämpfer
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(13, 0, 8.5, 4);
+              ctx.fillRect(22.5, 0, 8.5, 4);
+
+              // Schwere Turm-Blende mit Warn-Chevrons
+              ctx.fillStyle = '#1e293b';
+              ctx.fillRect(12, 13, 20, 10);
+              ctx.fillStyle = '#facc15';
+              ctx.fillRect(14, 17, 3, 3);
+              ctx.fillRect(20, 17, 3, 3);
+              ctx.fillRect(26, 17, 3, 3);
+            }
           } else if (type === 'ice') {
-            // Schwebender Prismen-Eisdiamant
-            const iceGrad = ctx.createLinearGradient(12, 4, 28, 24);
-            iceGrad.addColorStop(0, '#ffffff');
-            iceGrad.addColorStop(0.4, '#74b9ff');
-            iceGrad.addColorStop(1, '#0984e3');
+            // KRYO-NULLIFIKATOR / QUANTEN-FROSTPROJEKTOR
+            if (lvl === 1) {
+              // Stufe 1: Facettierter Saphir-Kryokristall in Messingfassung
+              const iceGrad = ctx.createLinearGradient(14, 4, 30, 24);
+              iceGrad.addColorStop(0, '#ffffff');
+              iceGrad.addColorStop(0.4, '#7dd3fc');
+              iceGrad.addColorStop(1, '#0284c7');
+              ctx.fillStyle = iceGrad;
+              ctx.beginPath();
+              ctx.moveTo(22, 3);
+              ctx.lineTo(29, 14);
+              ctx.lineTo(22, 23);
+              ctx.lineTo(15, 14);
+              ctx.closePath();
+              ctx.fill();
 
-            ctx.fillStyle = iceGrad;
-            ctx.beginPath();
-            ctx.moveTo(20, 3);
-            ctx.lineTo(29, 15);
-            ctx.lineTo(20, 26);
-            ctx.lineTo(11, 15);
-            ctx.closePath();
-            ctx.fill();
+              ctx.strokeStyle = '#bae6fd';
+              ctx.lineWidth = 1.2;
+              ctx.stroke();
+            } else if (lvl === 2) {
+              // Stufe 2: Kryo-Kondensator mit Stickstoff-Tanks & Eiskern
+              ctx.fillStyle = '#0284c7';
+              ctx.fillRect(11, 11, 5, 12);
+              ctx.fillRect(28, 11, 5, 12);
 
-            // Facettenlinie in Stufenfarbe
-            ctx.strokeStyle = theme.ring;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
+              const iceGrad = ctx.createRadialGradient(22, 13, 2, 22, 13, 9);
+              iceGrad.addColorStop(0, '#ffffff');
+              iceGrad.addColorStop(0.5, '#38bdf8');
+              iceGrad.addColorStop(1, '#0369a1');
+              ctx.fillStyle = iceGrad;
+              ctx.beginPath();
+              ctx.arc(22, 13, 7.5, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.strokeStyle = theme.ring;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(22, 13, 7.5, 0, Math.PI * 2);
+              ctx.stroke();
+            } else {
+              // Stufe 3: Absoluter Nullpunkt Matrix (Schwebender Kryo-Diamant mit Energieringen)
+              ctx.strokeStyle = theme.ring;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.ellipse(22, 13, 14, 6, 0.25, 0, Math.PI * 2);
+              ctx.stroke();
+
+              const diamondGrad = ctx.createLinearGradient(16, 2, 28, 22);
+              diamondGrad.addColorStop(0, '#ffffff');
+              diamondGrad.addColorStop(0.3, '#bae6fd');
+              diamondGrad.addColorStop(0.7, '#0284c7');
+              diamondGrad.addColorStop(1, '#082f49');
+              ctx.fillStyle = diamondGrad;
+              ctx.beginPath();
+              ctx.moveTo(22, 1);
+              ctx.lineTo(31, 13);
+              ctx.lineTo(22, 24);
+              ctx.lineTo(13, 13);
+              ctx.closePath();
+              ctx.fill();
+
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+            }
           } else if (type === 'poison') {
-            // Alchemie-Glasblase mit leuchtendem Gift
-            const flaskGrad = ctx.createRadialGradient(20, 16, 2, 20, 16, 10);
-            flaskGrad.addColorStop(0, '#55efc4');
-            flaskGrad.addColorStop(0.7, '#00b894');
-            flaskGrad.addColorStop(1, '#006266');
+            // BIO-TOXIN SÄURE-MÖRSER / SEUCHEN-REAKTOR
+            if (lvl === 1) {
+              // Stufe 1: Druck-Chemiebehälter mit gerippten Schläuchen
+              ctx.fillStyle = '#14532d';
+              ctx.beginPath();
+              ctx.arc(22, 14, 8, 0, Math.PI * 2);
+              ctx.fill();
 
-            ctx.fillStyle = flaskGrad;
-            ctx.beginPath();
-            ctx.arc(20, 16, 10, 0, Math.PI * 2);
-            ctx.fill();
+              ctx.fillStyle = '#22c55e';
+              ctx.beginPath();
+              ctx.arc(22, 14, 5, 0, Math.PI * 2);
+              ctx.fill();
 
-            ctx.strokeStyle = theme.ring;
-            ctx.lineWidth = 2;
-            ctx.stroke();
+              ctx.fillStyle = '#eab308';
+              ctx.fillRect(20, 4, 4, 6);
+            } else if (lvl === 2) {
+              // Stufe 2: Doppelter Säure-Mörser mit blubberndem Gift-Zylinder
+              ctx.fillStyle = '#166534';
+              ctx.fillRect(15, 5, 4.5, 16);
+              ctx.fillRect(24.5, 5, 4.5, 16);
+
+              const bioGrad = ctx.createRadialGradient(22, 16, 1, 22, 16, 7);
+              bioGrad.addColorStop(0, '#86efac');
+              bioGrad.addColorStop(0.6, '#16a34a');
+              bioGrad.addColorStop(1, '#052e16');
+              ctx.fillStyle = bioGrad;
+              ctx.beginPath();
+              ctx.arc(22, 16, 6.5, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.strokeStyle = theme.ring;
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            } else {
+              // Stufe 3: Virulenter Bio-Reaktor (Seuchen-Zitadelle mit Auslass-Kaminen)
+              ctx.fillStyle = '#052e16';
+              ctx.fillRect(12, 3, 5, 18);
+              ctx.fillRect(27, 3, 5, 18);
+
+              // Kamin-Mündungen
+              ctx.fillStyle = '#22c55e';
+              ctx.beginPath();
+              ctx.arc(14.5, 3, 3, 0, Math.PI * 2);
+              ctx.arc(29.5, 3, 3, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Zentraler bioaktiver Kern
+              const toxicGrad = ctx.createRadialGradient(22, 14, 2, 22, 14, 8);
+              toxicGrad.addColorStop(0, '#ffffff');
+              toxicGrad.addColorStop(0.3, '#4ade80');
+              toxicGrad.addColorStop(0.7, '#15803d');
+              toxicGrad.addColorStop(1, '#052e16');
+              ctx.fillStyle = toxicGrad;
+              ctx.beginPath();
+              ctx.arc(22, 14, 8, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Biohazard-Dreieck
+              ctx.fillStyle = '#facc15';
+              ctx.beginPath();
+              ctx.moveTo(22, 11); ctx.lineTo(25, 16); ctx.lineTo(19, 16);
+              ctx.closePath();
+              ctx.fill();
+            }
           } else if (type === 'tesla') {
-            // Hochvolt-Spule mit Plasma-Kugel
-            ctx.fillStyle = '#2d3436';
-            ctx.fillRect(17, 14, 6, 12);
+            // TACHYON-PLASMA-RELAIS / PROTOSS-STIL PYLON
+            if (lvl === 1) {
+              // Stufe 1: Kupfer-Induktionsspule mit Elektrode
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(20, 8, 4, 15);
 
-            // Kupferspulen
-            ctx.strokeStyle = theme.ring;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.ellipse(20, 17, 7, 2.5, 0, 0, Math.PI * 2);
-            ctx.ellipse(20, 21, 8, 2.8, 0, 0, Math.PI * 2);
-            ctx.stroke();
+              ctx.strokeStyle = '#b45309';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(17, 12, 10, 8);
 
-            // Plasmakugel oben
-            const orbGrad = ctx.createRadialGradient(20, 8, 1, 20, 8, 6);
-            orbGrad.addColorStop(0, '#ffffff');
-            orbGrad.addColorStop(0.5, '#00cec9');
-            orbGrad.addColorStop(1, '#0984e3');
+              // Plasmakugel
+              const orbGrad = ctx.createRadialGradient(22, 7, 1, 22, 7, 5);
+              orbGrad.addColorStop(0, '#ffffff');
+              orbGrad.addColorStop(0.5, '#38bdf8');
+              orbGrad.addColorStop(1, '#0369a1');
+              ctx.fillStyle = orbGrad;
+              ctx.beginPath();
+              ctx.arc(22, 7, 5, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (lvl === 2) {
+              // Stufe 2: Doppel-Teslamast mit Hochvolt-Lichtbogen
+              ctx.fillStyle = '#1e293b';
+              ctx.fillRect(14, 6, 3.5, 17);
+              ctx.fillRect(26.5, 6, 3.5, 17);
 
-            ctx.fillStyle = orbGrad;
-            ctx.beginPath();
-            ctx.arc(20, 8, 6, 0, Math.PI * 2);
-            ctx.fill();
+              ctx.fillStyle = '#38bdf8';
+              ctx.beginPath();
+              ctx.arc(15.75, 5, 3.5, 0, Math.PI * 2);
+              ctx.arc(28.25, 5, 3.5, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Blitzbogen zwischen Polen
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.moveTo(16, 5);
+              ctx.lineTo(22, 7);
+              ctx.lineTo(28, 5);
+              ctx.stroke();
+            } else {
+              // Stufe 3: Protoss-Stil Tachyon Storm Obelisk (Schwebende Kristallspitze mit Magnetringen)
+              ctx.strokeStyle = theme.ring;
+              ctx.lineWidth = 2.2;
+              ctx.beginPath();
+              ctx.ellipse(22, 12, 15, 6, 0, 0, Math.PI * 2);
+              ctx.stroke();
+
+              // Vertikaler Obelisk
+              const pylonGrad = ctx.createLinearGradient(16, 0, 28, 22);
+              pylonGrad.addColorStop(0, '#ffffff');
+              pylonGrad.addColorStop(0.3, '#38bdf8');
+              pylonGrad.addColorStop(0.7, '#0284c7');
+              pylonGrad.addColorStop(1, '#082f49');
+              ctx.fillStyle = pylonGrad;
+              ctx.beginPath();
+              ctx.moveTo(22, 0);
+              ctx.lineTo(29, 13);
+              ctx.lineTo(22, 23);
+              ctx.lineTo(15, 13);
+              ctx.closePath();
+              ctx.fill();
+
+              // Energie-Lichtkante
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.moveTo(22, 0);
+              ctx.lineTo(22, 23);
+              ctx.stroke();
+            }
           } else if (type === 'sniper') {
-            // Präzisions-Gewehr auf Dreibein
-            ctx.fillStyle = '#2f3542';
-            ctx.beginPath();
-            ctx.roundRect(18, 2, 4, 22, 2);
-            ctx.fill();
+            // PRÄZISIONS-RAILGUN BUNKER
+            if (lvl === 1) {
+              // Stufe 1: Flache Bunkerkuppel mit langem Rail-Lauf
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(20, 2, 4, 21);
 
-            // Zieloptik
-            ctx.fillStyle = theme.ring;
-            ctx.beginPath();
-            ctx.arc(20, 11, 4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#ff4757';
-            ctx.beginPath();
-            ctx.arc(20, 11, 1.8, 0, Math.PI * 2);
-            ctx.fill();
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(19, 1, 6, 2.5);
+
+              // Visier-Optik
+              ctx.fillStyle = '#ef4444';
+              ctx.beginPath();
+              ctx.arc(22, 12, 2, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (lvl === 2) {
+              // Stufe 2: Schweres Gauss-Gewehr mit Kühlrippen & Laserstrahl
+              ctx.fillStyle = '#1e293b';
+              ctx.fillRect(19.5, 0, 5, 23);
+
+              // Kühlrippen
+              ctx.fillStyle = '#64748b';
+              ctx.fillRect(18, 6, 8, 2);
+              ctx.fillRect(18, 10, 8, 2);
+              ctx.fillRect(18, 14, 8, 2);
+
+              // Mündungs-Kompensator
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(17.5, 0, 9, 3);
+
+              // Roter Ziel-Laser
+              ctx.strokeStyle = '#ef4444';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(22, 0);
+              ctx.lineTo(22, -15);
+              ctx.stroke();
+            } else {
+              // Stufe 3: Orbitale Kinetik-Railgun Plattform (Verlängerte Zwillings-Beschleuniger)
+              ctx.fillStyle = '#090d16';
+              ctx.fillRect(18, -3, 8, 26);
+
+              // Magnetische Beschleuniger-Schienen
+              ctx.fillStyle = theme.ring;
+              ctx.fillRect(17, -4, 2, 24);
+              ctx.fillRect(25, -4, 2, 24);
+
+              // Mündungsstabilisator
+              ctx.fillStyle = '#f87171';
+              ctx.fillRect(16, -5, 12, 3);
+
+              // Multi-Spektral Zielradar-Kuppel
+              ctx.fillStyle = '#38bdf8';
+              ctx.beginPath();
+              ctx.arc(22, 14, 4, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.fillStyle = '#ef4444';
+              ctx.beginPath();
+              ctx.arc(22, 14, 1.8, 0, Math.PI * 2);
+              ctx.fill();
+            }
           }
         });
       }
@@ -1899,26 +2485,27 @@ export class PixelTextureGenerator {
       ['spec_a', 'spec_b'].forEach((specKey) => {
         const key = `tower_${type}_${specKey}`;
         const isPathA = specKey === 'spec_a';
-        const auraColor = isPathA ? '#00d2d3' : '#9b59b6';
+        const auraColor = isPathA ? '#00d2d3' : '#a855f7';
 
-        create(key, 40, 40, (ctx) => {
+        create(key, 44, 44, (ctx) => {
           // Basis-Stufe-3 Rendering
           const baseImg = tm.get(`tower_${type}_3`).getSourceImage() as CanvasImageSource;
           if (baseImg) {
-            ctx.drawImage(baseImg, 0, 0, 40, 40);
+            ctx.drawImage(baseImg, 0, 0, 44, 44);
           }
 
-          // Magische Meister-Aura
+          // Taktische Meister-Aura
           ctx.strokeStyle = auraColor;
           ctx.lineWidth = 2.5;
           ctx.beginPath();
-          ctx.arc(20, 20, 17, 0, Math.PI * 2);
+          ctx.ellipse(22, 28, 19, 10, 0, 0, Math.PI * 2);
           ctx.stroke();
 
-          // Meisterkrone
+          // Meister-Insignie
           ctx.fillStyle = auraColor;
           ctx.beginPath();
-          ctx.moveTo(17, 3); ctx.lineTo(20, 0); ctx.lineTo(23, 3);
+          ctx.moveTo(19, 4); ctx.lineTo(22, 0); ctx.lineTo(25, 4);
+          ctx.closePath();
           ctx.fill();
         });
       });

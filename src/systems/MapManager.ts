@@ -19,6 +19,8 @@ export class MapManager {
   private grassTufts: Map<string, Phaser.GameObjects.Image> = new Map();
   private ambientParticles: Phaser.GameObjects.GameObject[] = [];
   private streamTiles: GridPoint[] = [];
+  private bridgeTiles: GridPoint[] = [];
+  private fortressObjects: Phaser.GameObjects.GameObject[] = [];
   private treeTiles: { col: number; row: number; type: 'oak' | 'pine' | 'dead' | 'stalagmite' | 'dungeon_pillar' }[] = [];
   private rockTiles: { col: number; row: number; type: 'granite' | 'ore' | 'volcanic' | 'dungeon_torch' }[] = [];
   private critters: Phaser.GameObjects.GameObject[] = [];
@@ -247,38 +249,33 @@ export class MapManager {
     this.treeTiles = [];
     this.rockTiles = [];
 
-    // 1. Natürlicher Bach / Flussabschnitt (Hexenwald)
+    // 1. Authentischer, geschwungener Flusslauf (Nord nach Süd durch die Landschaft)
     if (this.worldId === 'witch_forest') {
-      const candidateRows = (variantIndex % 2 === 0) ? [14, 15, 1] : [1, 14, 15];
-      for (const r of candidateRows) {
-        let runStart = -1;
-        let runLength = 0;
-        let bestRunStart = -1;
-        let bestRunLen = 0;
+      this.streamTiles = [];
+      this.bridgeTiles = [];
 
-        for (let c = 1; c < GRID_COLS - 1; c++) {
-          const rowAboveFree = !this.grid[r - 1] || this.grid[r - 1][c] !== 1;
-          const rowBelowFree = !this.grid[r + 1] || this.grid[r + 1][c] !== 1;
-          if (this.grid[r][c] === 0 && rowAboveFree && rowBelowFree) {
-            if (runStart === -1) runStart = c;
-            runLength++;
-            if (runLength > bestRunLen) {
-              bestRunLen = runLength;
-              bestRunStart = runStart;
-            }
-          } else {
-            runStart = -1;
-            runLength = 0;
-          }
+      // Basis-Flussposition in der Kartenmitte (z.B. Spalte 14 bis 18)
+      const baseCol = 14 + (variantIndex % 4) * 2;
+      for (let r = 1; r < 16; r++) {
+        // Sanfte Mäander-S-Kurve
+        const curveOffset = Math.round(Math.sin((r / 15) * Math.PI * 2) * 2.2);
+        const c = Phaser.Math.Clamp(baseCol + curveOffset, 4, GRID_COLS - 5);
+
+        if (this.grid[r][c] === 1) {
+          // Pfad kreuzt Fluss: Hier entsteht eine Steinbrücke!
+          this.bridgeTiles.push({ col: c, row: r });
+        } else if (this.grid[r][c] === 0) {
+          this.grid[r][c] = 2; // Hindernis Wasser
+          this.streamTiles.push({ col: c, row: r });
         }
 
-        if (bestRunLen >= 5) {
-          const streamLen = Math.min(8, bestRunLen);
-          for (let c = bestRunStart; c < bestRunStart + streamLen; c++) {
-            this.grid[r][c] = 2; // Hindernis Wasser
-            this.streamTiles.push({ col: c, row: r });
-          }
-          break;
+        // Leichte Flussbreite: Nachbarkachel einbeziehen
+        const c2 = c + 1;
+        if (this.grid[r][c2] === 1) {
+          this.bridgeTiles.push({ col: c2, row: r });
+        } else if (this.grid[r][c2] === 0 && r % 3 !== 0) {
+          this.grid[r][c2] = 2;
+          this.streamTiles.push({ col: c2, row: r });
         }
       }
     }
@@ -559,6 +556,52 @@ export class MapManager {
       }
     }
 
+    // 2b. REALISTISCHER FLUSSLAUF (Natürliches Gewässer durch die Landschaft)
+    if (this.worldId === 'witch_forest' && (this.streamTiles.length > 0 || this.bridgeTiles.length > 0)) {
+      const riverPts: { x: number; y: number }[] = [];
+      for (let r = 1; r < 16; r++) {
+        const streamTile = this.streamTiles.find((t: GridPoint) => t.row === r) || this.bridgeTiles.find((t: GridPoint) => t.row === r);
+        if (streamTile) {
+          riverPts.push(this.gridToPixel(streamTile.col, streamTile.row));
+        }
+      }
+
+      if (riverPts.length > 2) {
+        // Pass 1: Schlammige Flussbett-Böschung
+        ctx.save();
+        ctx.strokeStyle = '#09131f';
+        ctx.lineWidth = 44;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(riverPts[0].x, 0);
+        for (let i = 0; i < riverPts.length; i++) {
+          ctx.lineTo(riverPts[i].x, riverPts[i].y);
+        }
+        ctx.lineTo(riverPts[riverPts.length - 1].x, GAME_HEIGHT);
+        ctx.stroke();
+
+        // Pass 2: Tiefblaues Flusswasser
+        const waterGrad = ctx.createLinearGradient(0, 0, GAME_WIDTH, 0);
+        waterGrad.addColorStop(0, '#0369a1');
+        waterGrad.addColorStop(0.5, '#0284c7');
+        waterGrad.addColorStop(1, '#0369a1');
+        ctx.strokeStyle = waterGrad;
+        ctx.lineWidth = 30;
+        ctx.stroke();
+
+        // Pass 3: Helle zentrale Wasserströmung & Schaum
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+        ctx.lineWidth = 12;
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
     // 3. ORGANISCHER FLIESSENDER PFAD (Multi-Pass Rendering mit runden Kurven)
     const pts = this.pathPoints.map((p) => this.gridToPixel(p.col, p.row));
     if (pts.length > 1) {
@@ -594,17 +637,17 @@ export class MapManager {
 
       // Pass 1: Tiefenschatten-Graben
       ctx.save();
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
-      ctx.lineWidth = 44;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.lineWidth = 46;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       tracePath(ctx, 16);
       ctx.stroke();
       ctx.restore();
 
-      // Pass 2: Weicher Wegrand / Böschung
+      // Pass 2: Feste Granit-Bordsteine beidseitig
       ctx.save();
-      ctx.strokeStyle = vergeColor;
+      ctx.strokeStyle = '#334155';
       ctx.lineWidth = 38;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -612,10 +655,10 @@ export class MapManager {
       ctx.stroke();
       ctx.restore();
 
-      // Pass 3: Haupt-Fahrbahn
+      // Pass 3: Solide gepflasterte Haupt-Fahrbahn
       ctx.save();
-      ctx.strokeStyle = roadColor;
-      ctx.lineWidth = 32;
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 30;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       tracePath(ctx, 14);
@@ -635,14 +678,34 @@ export class MapManager {
         const ny = ux;
 
         if (this.worldId === 'witch_forest') {
-          // Doppelte Kutschen-Wagenspuren
-          ctx.strokeStyle = '#54371e';
-          ctx.lineWidth = 3;
+          // Realistisches Kopfsteinpflaster mit Querfugen alle 14px
+          for (let d = 7; d < segDist - 4; d += 14) {
+            const fx = p1.x + ux * d;
+            const fy = p1.y + uy * d;
+            ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(fx - nx * 13, fy - ny * 13);
+            ctx.lineTo(fx + nx * 13, fy + ny * 13);
+            ctx.stroke();
+
+            // Feine Stein-Lichtkante
+            ctx.strokeStyle = 'rgba(100, 116, 139, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(fx - nx * 12, fy - ny * 12 + 1.5);
+            ctx.lineTo(fx + nx * 12, fy + ny * 12 + 1.5);
+            ctx.stroke();
+          }
+
+          // Leuchtende Bordsteinkanten in Cyan
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(p1.x + nx * 7, p1.y + ny * 7);
-          ctx.lineTo(p2.x + nx * 7, p2.y + ny * 7);
-          ctx.moveTo(p1.x - nx * 7, p1.y - ny * 7);
-          ctx.lineTo(p2.x - nx * 7, p2.y - ny * 7);
+          ctx.moveTo(p1.x + nx * 14, p1.y + ny * 14);
+          ctx.lineTo(p2.x + nx * 14, p2.y + ny * 14);
+          ctx.moveTo(p1.x - nx * 14, p1.y - ny * 14);
+          ctx.lineTo(p2.x - nx * 14, p2.y - ny * 14);
           ctx.stroke();
         } else if (this.worldId === 'goblin_caves') {
           // Authentische Minen-Gleise: 1. Holz-Schwellen
@@ -856,25 +919,11 @@ export class MapManager {
       });
     });
 
-    // 5. BÄCHE & WASSERLÄUFE (Hexenwald)
-    this.streamTiles.forEach((pt, i) => {
+    // 5. STEINBRÜCKEN ÜBER FLUSSÜBERQUERUNGEN
+    this.bridgeTiles.forEach((pt) => {
       const { x, y } = this.gridToPixel(pt.col, pt.row);
-      this.scene.add.image(x, y, 'decor_water_stream_h').setOrigin(0.5).setDepth(1);
-
-      // Auf jedem 3. Bachabschnitt schwimmt eine zarte Seerose
-      if (i % 3 === 1) {
-        const lily = this.scene.add.image(x + 2, y, 'decor_water_lily').setOrigin(0.5).setDepth(2);
-        this.scene.tweens.add({
-          targets: lily,
-          y: y - 2,
-          x: x - 1,
-          angle: { from: -4, to: 4 },
-          duration: 1600 + (i * 200),
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-      }
+      const bridge = this.scene.add.image(x, y, 'decor_bridge_arch').setOrigin(0.5).setDepth(2);
+      this.fortressObjects.push(bridge);
     });
 
     // 6. ENERGIE-PYLONEN, KRISTALLE & INDUSTRIE-GEBILDE
@@ -920,12 +969,21 @@ export class MapManager {
       }
     });
 
-    // 8. Startportal & Schloss
+    // 8. MONUMENTALES FESTUNGSTOR & ABYSSISCHER SPAWN-RISS (Der Weg führt direkt ins Schloss!)
     const startPos = this.gridToPixel(this.pathPoints[0].col, this.pathPoints[0].row);
     const endPos = this.gridToPixel(this.pathPoints[this.pathPoints.length - 1].col, this.pathPoints[this.pathPoints.length - 1].row);
 
-    this.scene.add.image(startPos.x, startPos.y, 'tile_portal').setOrigin(0.5).setDepth(4);
-    this.scene.add.image(endPos.x, endPos.y, 'tile_castle').setOrigin(0.5).setDepth(4);
+    // Ursprung: Abyssischer Spawn-Riss am Weganfang (Feinde strömen hervor)
+    const spawnRift = this.scene.add.image(startPos.x + 4, startPos.y - 12, 'fortress_spawn_rift')
+      .setOrigin(0.4, 0.5)
+      .setDepth(6);
+    this.fortressObjects.push(spawnRift);
+
+    // Zielort: Monumentales Königliches Festungstor (der Weg führt direkt hinein!)
+    const citadelGate = this.scene.add.image(endPos.x - 12, endPos.y - 14, 'fortress_citadel_gate')
+      .setOrigin(0.65, 0.5)
+      .setDepth(6);
+    this.fortressObjects.push(citadelGate);
 
     // 9. Aktive Umwelt-Partikel (Glühwürmchen / Funken / Sporen)
     this.spawnAmbientAtmosphere();
@@ -1141,6 +1199,8 @@ export class MapManager {
     this.critterTimers = [];
     this.ambientParticles.forEach((p) => p.destroy());
     this.ambientParticles = [];
+    this.fortressObjects.forEach((f) => f.destroy());
+    this.fortressObjects = [];
   }
 
   private spawnAmbientAtmosphere(): void {

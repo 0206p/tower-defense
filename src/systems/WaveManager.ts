@@ -166,7 +166,10 @@ export class WaveManager {
       const worldMult = this.worldId === 'dead_mountain' ? 4.2 : this.worldId === 'goblin_caves' ? 2.2 : 1.0;
       const progressRatio = Math.max(0, (this.missionNumber - 1) / 29);
       const missionMult = 1.0 + Math.pow(progressRatio, 1.3) * 2.5;
-      const waveMult = 1.0 + (waveNum - 1) * 0.08;
+
+      // Spürbare dynamische Steigerung pro Welle (kein AFK-Rumstehen mehr möglich!)
+      // Welle 1: 1.0x -> Welle 3: 1.6x -> Welle 6: 3.2x -> Welle 10: 7.2x
+      const waveMult = 1.0 + (waveNum - 1) * 0.24 + Math.pow((waveNum - 1) / 2.4, 1.6) * 0.50;
       hpMult = worldMult * missionMult * waveMult;
 
       const fullPool = worldDef.enemyPool as EnemyType[];
@@ -175,22 +178,24 @@ export class WaveManager {
       if (waveNum >= 5) allowedPoolLength = 4;
       if (waveNum >= 8) allowedPoolLength = fullPool.length;
       currentPool = fullPool.slice(0, allowedPoolLength);
-      spawnCount = 6 + waveNum;
+      spawnCount = 7 + Math.floor(waveNum * 1.3);
     }
 
     const extraEnemies = isBossWave ? 1 : isMiniBossWave ? 1 : 0;
     this.isSpawning = true;
     this.enemiesRemainingToSpawn = spawnCount + extraEnemies;
 
+    // Tempo-Steigerung mit späteren Wellen (+2% bis +22% Tempo)
+    const waveSpeedScale = 1.0 + Math.min(0.24, (waveNum - 1) * 0.026);
     let cumulativeDelay = 350;
 
     for (let i = 0; i < spawnCount; i++) {
-      cumulativeDelay += Math.max(400, 1000 - waveNum * 25);
+      cumulativeDelay += Math.max(380, 950 - waveNum * 35);
       const enemyType = currentPool[i % currentPool.length];
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy(enemyType, hpMult);
+          this.spawnEnemy(enemyType, hpMult, waveSpeedScale);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) {
             this.isSpawning = false;
@@ -206,7 +211,7 @@ export class WaveManager {
       cumulativeDelay += 1200;
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy('boss', hpMult * 1.8);
+          this.spawnEnemy('boss', hpMult * 2.2, 1.0);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) {
             this.isSpawning = false;
@@ -220,7 +225,7 @@ export class WaveManager {
       cumulativeDelay += 800;
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy('armored_troll', hpMult * 1.4);
+          this.spawnEnemy('armored_troll', hpMult * 1.6, 1.05);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) {
             this.isSpawning = false;
@@ -235,7 +240,7 @@ export class WaveManager {
     return true;
   }
 
-  private spawnEnemy(type: EnemyType, hpMultiplier: number): void {
+  private spawnEnemy(type: EnemyType, hpMultiplier: number, speedMultiplier: number = 1.0): void {
     const config = ENEMY_CONFIGS[type] || ENEMY_CONFIGS.goblin;
 
     // Hardcore-Powercreep: Im Dungeon und späten Welten erhalten Monster angeborene Schilde
@@ -248,9 +253,11 @@ export class WaveManager {
       extraShield = Math.max(config.shield || 0, 20) + this.missionNumber * 2;
     }
 
-    const enemyConfig: EnemyDefinition = extraShield > 0
-      ? { ...config, shield: extraShield }
-      : config;
+    const enemyConfig: EnemyDefinition = {
+      ...config,
+      speed: Math.round(config.speed * speedMultiplier),
+      shield: extraShield > 0 ? extraShield : config.shield
+    };
 
     const enemy = new Enemy(
       this.scene,
