@@ -311,3 +311,4 @@ export class UpgradeMenuScene extends Phaser.Scene {
     });
   }
 }
+

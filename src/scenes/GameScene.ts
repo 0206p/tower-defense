@@ -6,11 +6,13 @@ import { MapManager } from '../systems/MapManager';
 import { EconomySystem } from '../systems/EconomySystem';
 import { WaveManager } from '../systems/WaveManager';
 import { SaveSystem, WorldId } from '../systems/SaveSystem';
+import { SoundManager } from '../systems/SoundManager';
 import { Tower } from '../entities/Tower';
 import { Projectile } from '../entities/Projectile';
 import { HUD } from '../ui/HUD';
 import { TowerSelectionBar } from '../ui/TowerSelectionBar';
 import { TowerInfoModal } from '../ui/TowerInfoModal';
+import { PauseModal } from '../ui/PauseModal';
 
 export class GameScene extends Phaser.Scene {
   private worldId: WorldId = 'witch_forest';
@@ -22,6 +24,7 @@ export class GameScene extends Phaser.Scene {
   private hud!: HUD;
   private towerBar!: TowerSelectionBar;
   private infoModal!: TowerInfoModal;
+  private pauseModal!: PauseModal;
 
   private towers: Tower[] = [];
   private selectedTowerType: TowerType | null = null;
@@ -34,6 +37,7 @@ export class GameScene extends Phaser.Scene {
   private previewTileBox!: Phaser.GameObjects.Graphics;
 
   private isGameOver: boolean = false;
+  private isGamePaused: boolean = false;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -46,12 +50,16 @@ export class GameScene extends Phaser.Scene {
 
   public create(): void {
     this.isGameOver = false;
+    this.isGamePaused = false;
     this.towers = [];
     this.selectedTowerType = null;
     this.selectedPlacedTower = null;
     this.time.timeScale = 1.0;
 
-    // 1. Ökonomie initialisieren
+    // Soundtrack starten
+    SoundManager.startMusic();
+
+    // 1. Ökonomie
     this.economy = new EconomySystem({
       onGoldChanged: (gold) => {
         this.hud.updateGold(gold);
@@ -69,20 +77,19 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 2. Map rendern (spezifisch für die gewählte Welt und Mission)
+    // 2. Map
     this.mapManager = new MapManager(this, this.worldId, this.missionNumber);
     this.mapManager.renderMap();
-
-    // 3. Stimmungs-Partikel passend zur Welt (Hexenwelt, Höhlen, Tote Berg)
     this.spawnWorldAtmosphere();
 
-    // 4. Wellen-Manager initialisieren (10 Wellen pro Mission)
+    // 3. WaveManager
     this.waveManager = new WaveManager(this, this.mapManager, this.economy, this.worldId, this.missionNumber, {
       onWaveChange: (waveNum, total) => {
         this.hud.updateWave(waveNum, total);
         this.hud.setNextWaveButtonEnabled(false, `WELLE ${waveNum} LÄUFT`);
       },
       onWaveCompleted: (waveNum) => {
+        SoundManager.playCoin();
         if (waveNum < this.waveManager.getTotalWaves()) {
           this.hud.setNextWaveButtonEnabled(true, `WELLE ${waveNum + 1} STARTEN`);
           this.hud.showAnnouncement(`Welle ${waveNum} überstanden! +${30 + waveNum * 12} Bonusgold`);
@@ -96,19 +103,23 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 5. UI: HUD, TowerBar, Modal
+    // 4. HUD mit 1x, 2x, 3x und Pause
     this.hud = new HUD(this, this.economy.getLives(), this.economy.getGold(), {
       onSpeedChange: (speed) => {
         this.time.timeScale = speed;
       },
       onNextWaveClicked: () => {
         this.waveManager.startNextWave();
+      },
+      onPauseClicked: () => {
+        this.togglePause();
       }
     });
 
     const worldDef = WORLDS_CONFIG[this.worldId];
     this.hud.showAnnouncement(`${worldDef.name.toUpperCase()} - MISSION ${this.missionNumber}`);
 
+    // 5. Tower Bar mit Stats-Hover-Panel
     this.towerBar = new TowerSelectionBar(this, this.economy, (type) => {
       this.selectedTowerType = type;
       if (type && this.selectedPlacedTower) {
@@ -117,15 +128,18 @@ export class GameScene extends Phaser.Scene {
       this.updatePlacementPreviewVisibility();
     });
 
+    // 6. Tower Info Modal
     this.infoModal = new TowerInfoModal(this, this.economy, {
       onClose: () => {
         this.deselectPlacedTower();
       },
       onUpgrade: (tower) => {
+        SoundManager.playUpgrade();
         tower.upgrade();
         this.towerBar.updateAffordability();
       },
       onSell: (tower) => {
+        SoundManager.playCoin();
         this.mapManager.removeTowerAt(tower.gridCol, tower.gridRow);
         const idx = this.towers.indexOf(tower);
         if (idx !== -1) {
@@ -137,15 +151,32 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 6. Ghost-Vorschau
+    // 7. Pause-Modal
+    this.pauseModal = new PauseModal(this, {
+      onResume: () => {
+        this.togglePause();
+      },
+      onQuit: () => {
+        SoundManager.stopMusic();
+        this.scene.start('MissionSelectScene', { worldId: this.worldId });
+      }
+    });
+
+    // ESC oder P Taste für Pause
+    this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
+    this.input.keyboard?.on('keydown-P', () => this.togglePause());
+
+    // 8. Ghost Preview
     this.createPlacementPreview();
 
-    // 7. Inputs
+    // 9. Input Pointer
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (this.isGamePaused) return;
       this.handlePointerMove(pointer);
     });
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.isGamePaused) return;
       if (pointer.button === 0) {
         this.handlePointerDown(pointer);
       } else if (pointer.button === 2) {
@@ -155,6 +186,19 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.input.mouse?.disableContextMenu();
+  }
+
+  private togglePause(): void {
+    if (this.isGameOver) return;
+    this.isGamePaused = !this.isGamePaused;
+
+    if (this.isGamePaused) {
+      this.time.timeScale = 0;
+      this.pauseModal.show();
+    } else {
+      this.time.timeScale = 1.0;
+      this.pauseModal.hide();
+    }
   }
 
   private spawnWorldAtmosphere(): void {
@@ -259,6 +303,7 @@ export class GameScene extends Phaser.Scene {
       const def = TOWER_CONFIGS[this.selectedTowerType];
       if (this.mapManager.canBuildAt(gridPos.col, gridPos.row)) {
         if (this.economy.spendGold(def.baseCost)) {
+          SoundManager.playShoot(this.selectedTowerType);
           this.placeTower(gridPos.col, gridPos.row, this.selectedTowerType);
 
           if (!this.economy.canAfford(def.baseCost)) {
@@ -338,6 +383,7 @@ export class GameScene extends Phaser.Scene {
     if (this.isGameOver) return;
     this.isGameOver = true;
 
+    SoundManager.stopMusic();
     this.time.timeScale = 1.0;
     this.cameras.main.fade(600, 40, 10, 15, false, (cam: any, progress: number) => {
       if (progress === 1) {
@@ -356,12 +402,12 @@ export class GameScene extends Phaser.Scene {
     if (this.isGameOver) return;
     this.isGameOver = true;
 
+    SoundManager.stopMusic();
     this.time.timeScale = 1.0;
     const livesLeft = this.economy.getLives();
     const starsEarned = livesLeft >= 18 ? 3 : livesLeft >= 8 ? 2 : 1;
     const scoreEarned = this.economy.getScore();
 
-    // Speichern
     SaveSystem.completeMission(this.worldId, this.missionNumber, starsEarned, scoreEarned);
 
     this.cameras.main.fade(700, 15, 40, 25, false, (cam: any, progress: number) => {
@@ -379,7 +425,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   public update(time: number, delta: number): void {
-    if (this.isGameOver) return;
+    if (this.isGameOver || this.isGamePaused) return;
 
     this.waveManager.update(time, delta);
 

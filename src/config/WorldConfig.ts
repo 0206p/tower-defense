@@ -63,3 +63,4 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     bossKey: 'boss_mountain_titan'
   }
 };
+

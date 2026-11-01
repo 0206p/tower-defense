@@ -26,14 +26,14 @@ export class WorldSelectScene extends Phaser.Scene {
       color: '#9e97b0'
     }).setOrigin(0.5);
 
-    // Kristall-Anzeige oben rechts
+    // Kristall-Anzeige oben rechts sauber formatiert
     const crystals = SaveSystem.getCrystals();
-    this.add.image(GAME_WIDTH - 150, 45, 'icon_crystal').setScale(1.2);
-    this.add.text(GAME_WIDTH - 130, 45, `${crystals}`, {
+    const crystalLabel = this.add.text(GAME_WIDTH - 80, 45, `${crystals}`, {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '14px',
       color: '#be2edd'
-    }).setOrigin(0, 0.5);
+    }).setOrigin(1, 0.5);
+    this.add.image(crystalLabel.x - crystalLabel.width - 16, 45, 'icon_crystal').setScale(1.2);
 
     // 3 Welten-Karten nebeneinander
     const worldIds: WorldId[] = ['witch_forest', 'goblin_caves', 'dead_mountain'];
@@ -202,3 +202,4 @@ export class WorldSelectScene extends Phaser.Scene {
     btn.on('pointerdown', onClick);
   }
 }
+

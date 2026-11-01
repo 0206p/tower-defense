@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, PALETTE } from '../config/GameConfig';
+import { SoundManager } from '../systems/SoundManager';
 
 export class HUD extends Phaser.GameObjects.Container {
   private livesText: Phaser.GameObjects.Text;
@@ -7,8 +8,8 @@ export class HUD extends Phaser.GameObjects.Container {
   private waveText: Phaser.GameObjects.Text;
   private scoreText: Phaser.GameObjects.Text;
 
-  private btnSpeed1: Phaser.GameObjects.Container;
-  private btnSpeed2: Phaser.GameObjects.Container;
+  private speedButtons: Map<number, Phaser.GameObjects.Container> = new Map();
+  private btnPause: Phaser.GameObjects.Container;
   private btnNextWave: Phaser.GameObjects.Container;
   private nextWaveLabel!: Phaser.GameObjects.Text;
 
@@ -17,6 +18,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
   private onSpeedChange: (multiplier: number) => void;
   private onNextWaveClicked: () => void;
+  private onPauseClicked: () => void;
 
   constructor(
     scene: Phaser.Scene,
@@ -25,74 +27,91 @@ export class HUD extends Phaser.GameObjects.Container {
     callbacks: {
       onSpeedChange: (multiplier: number) => void;
       onNextWaveClicked: () => void;
+      onPauseClicked: () => void;
     }
   ) {
     super(scene, 0, 0);
     this.onSpeedChange = callbacks.onSpeedChange;
     this.onNextWaveClicked = callbacks.onNextWaveClicked;
+    this.onPauseClicked = callbacks.onPauseClicked;
 
-    // Top Bar Hintergrund (Höhe 40px, Breite 1280px)
+    // Top Bar Hintergrund
     const topBar = scene.add.graphics();
-    topBar.fillStyle(PALETTE.uiBg, 0.92);
-    topBar.fillRect(0, 0, GAME_WIDTH, 42);
+    topBar.fillStyle(PALETTE.uiBg, 0.95);
+    topBar.fillRect(0, 0, GAME_WIDTH, 44);
     topBar.lineStyle(2, PALETTE.uiBorder, 1);
-    topBar.lineBetween(0, 42, GAME_WIDTH, 42);
+    topBar.lineBetween(0, 44, GAME_WIDTH, 44);
     this.add(topBar);
 
     // 1. LEBEN
-    const heartIcon = scene.add.image(24, 21, 'icon_heart');
+    const heartIcon = scene.add.image(26, 22, 'icon_heart');
     this.add(heartIcon);
 
-    this.livesText = scene.add.text(42, 13, `${initialLives}`, {
+    this.livesText = scene.add.text(44, 13, `${initialLives}`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '14px',
-      color: PALETTE.uiTextRed
+      fontSize: '13px',
+      color: PALETTE.uiTextRed,
+      stroke: '#000000',
+      strokeThickness: 3
     });
     this.add(this.livesText);
 
     // 2. GOLD
-    const goldIcon = scene.add.image(140, 21, 'icon_gold');
+    const goldIcon = scene.add.image(130, 22, 'icon_gold');
     this.add(goldIcon);
 
-    this.goldText = scene.add.text(158, 13, `${initialGold}`, {
+    this.goldText = scene.add.text(148, 13, `${initialGold}`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '14px',
-      color: PALETTE.uiTextGold
+      fontSize: '13px',
+      color: PALETTE.uiTextGold,
+      stroke: '#000000',
+      strokeThickness: 3
     });
     this.add(this.goldText);
 
     // 3. WELLE
-    const waveIcon = scene.add.image(300, 21, 'icon_wave');
+    const waveIcon = scene.add.image(265, 22, 'icon_wave');
     this.add(waveIcon);
 
-    this.waveText = scene.add.text(320, 13, 'Welle: 0 / 10', {
+    this.waveText = scene.add.text(285, 13, 'Welle: 0 / 10', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
-      color: PALETTE.uiTextWhite
+      fontSize: '11px',
+      color: PALETTE.uiTextWhite,
+      stroke: '#000000',
+      strokeThickness: 2
     });
     this.add(this.waveText);
 
     // 4. SCORE
-    this.scoreText = scene.add.text(540, 13, 'Punkte: 0', {
+    this.scoreText = scene.add.text(465, 13, 'Punkte: 0', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
-      color: PALETTE.uiTextBlue
+      fontSize: '11px',
+      color: PALETTE.uiTextBlue,
+      stroke: '#000000',
+      strokeThickness: 2
     });
     this.add(this.scoreText);
 
-    // 5. SPEED BUTTONS (1x und 2x)
-    this.btnSpeed1 = this.createSpeedButton(860, 21, '1x', 1.0, true);
-    this.btnSpeed2 = this.createSpeedButton(920, 21, '2x', 2.0, false);
-    this.add(this.btnSpeed1);
-    this.add(this.btnSpeed2);
+    // 5. PAUSE-BUTTON
+    this.btnPause = this.createPauseButton(675, 22);
+    this.add(this.btnPause);
 
-    // 6. NÄCHSTE WELLE BUTTON
-    this.btnNextWave = this.createNextWaveButton(1120, 21);
+    // 6. SPEED BUTTONS (1x, 2x, 3x)
+    const speeds = [1.0, 2.0, 3.0];
+    const speedLabels = ['1x', '2x', '3x'];
+    speeds.forEach((sp, i) => {
+      const btn = this.createSpeedButton(760 + i * 50, 22, speedLabels[i], sp, sp === 1.0);
+      this.speedButtons.set(sp, btn);
+      this.add(btn);
+    });
+
+    // 7. NÄCHSTE WELLE BUTTON
+    this.btnNextWave = this.createNextWaveButton(1120, 22);
     this.add(this.btnNextWave);
 
-    // 7. ANNOUNCEMENT OVERLAY
+    // 8. ANNOUNCEMENT OVERLAY
     this.announcementBg = scene.add.graphics();
-    this.announcementBg.fillStyle(0x0e0d14, 0.88);
+    this.announcementBg.fillStyle(0x0e0d14, 0.9);
     this.announcementBg.fillRoundedRect(GAME_WIDTH / 2 - 380, 52, 760, 40, 6);
     this.announcementBg.lineStyle(2, 0xd4af37, 0.9);
     this.announcementBg.strokeRoundedRect(GAME_WIDTH / 2 - 380, 52, 760, 40, 6);
@@ -101,14 +120,58 @@ export class HUD extends Phaser.GameObjects.Container {
 
     this.announcementText = scene.add.text(GAME_WIDTH / 2, 72, '', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '12px',
+      fontSize: '10px',
       color: '#ffd13b',
-      align: 'center'
+      align: 'center',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0.5).setAlpha(0);
     this.add(this.announcementText);
 
     this.setDepth(100);
     scene.add.existing(this);
+  }
+
+  private createPauseButton(x: number, y: number): Phaser.GameObjects.Container {
+    const container = this.scene.add.container(x, y);
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x3d354a, 1);
+    bg.fillRoundedRect(-35, -14, 70, 28, 4);
+    bg.lineStyle(2, 0x8a78a5, 1);
+    bg.strokeRoundedRect(-35, -14, 70, 28, 4);
+    container.add(bg);
+
+    const text = this.scene.add.text(0, 0, 'PAUSE', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '9px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+    container.add(text);
+
+    container.setSize(70, 28);
+    container.setInteractive({ useHandCursor: true });
+
+    container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pointer.event.stopPropagation();
+      SoundManager.playClick();
+      this.onPauseClicked();
+    });
+
+    container.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(0x564969, 1);
+      bg.fillRoundedRect(-35, -14, 70, 28, 4);
+    });
+
+    container.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(0x3d354a, 1);
+      bg.fillRoundedRect(-35, -14, 70, 28, 4);
+      bg.lineStyle(2, 0x8a78a5, 1);
+      bg.strokeRoundedRect(-35, -14, 70, 28, 4);
+    });
+
+    return container;
   }
 
   private createSpeedButton(x: number, y: number, label: string, speedVal: number, isActive: boolean): Phaser.GameObjects.Container {
@@ -117,26 +180,27 @@ export class HUD extends Phaser.GameObjects.Container {
     const bg = this.scene.add.graphics();
     const drawBg = (active: boolean) => {
       bg.clear();
-      bg.fillStyle(active ? 0x483d5a : 0x221f2d, 1);
-      bg.fillRoundedRect(-22, -14, 44, 28, 4);
-      bg.lineStyle(2, active ? 0x8a78a5 : 0x3d354a, 1);
-      bg.strokeRoundedRect(-22, -14, 44, 28, 4);
+      bg.fillStyle(active ? 0x27ae60 : 0x221f2d, 1);
+      bg.fillRoundedRect(-20, -14, 40, 28, 4);
+      bg.lineStyle(2, active ? 0x2ecc71 : 0x3d354a, 1);
+      bg.strokeRoundedRect(-20, -14, 40, 28, 4);
     };
     drawBg(isActive);
     container.add(bg);
 
     const text = this.scene.add.text(0, 0, label, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontSize: '10px',
       color: isActive ? '#ffffff' : '#8c829e'
     }).setOrigin(0.5);
     container.add(text);
 
-    container.setSize(44, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-22, -14, 44, 28), Phaser.Geom.Rectangle.Contains);
+    container.setSize(40, 28);
+    container.setInteractive({ useHandCursor: true });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      SoundManager.playClick();
       this.setActiveSpeedButton(speedVal);
       this.onSpeedChange(speedVal);
     });
@@ -144,26 +208,18 @@ export class HUD extends Phaser.GameObjects.Container {
     return container;
   }
 
-  private setActiveSpeedButton(speed: number): void {
-    // Buttons optisch aktualisieren
-    const is1 = speed === 1.0;
-    const bg1 = this.btnSpeed1.getAt(0) as Phaser.GameObjects.Graphics;
-    const text1 = this.btnSpeed1.getAt(1) as Phaser.GameObjects.Text;
-    bg1.clear();
-    bg1.fillStyle(is1 ? 0x483d5a : 0x221f2d, 1);
-    bg1.fillRoundedRect(-22, -14, 44, 28, 4);
-    bg1.lineStyle(2, is1 ? 0x8a78a5 : 0x3d354a, 1);
-    bg1.strokeRoundedRect(-22, -14, 44, 28, 4);
-    text1.setColor(is1 ? '#ffffff' : '#8c829e');
-
-    const bg2 = this.btnSpeed2.getAt(0) as Phaser.GameObjects.Graphics;
-    const text2 = this.btnSpeed2.getAt(1) as Phaser.GameObjects.Text;
-    bg2.clear();
-    bg2.fillStyle(!is1 ? 0x483d5a : 0x221f2d, 1);
-    bg2.fillRoundedRect(-22, -14, 44, 28, 4);
-    bg2.lineStyle(2, !is1 ? 0x8a78a5 : 0x3d354a, 1);
-    bg2.strokeRoundedRect(-22, -14, 44, 28, 4);
-    text2.setColor(!is1 ? '#ffffff' : '#8c829e');
+  private setActiveSpeedButton(activeSpeed: number): void {
+    this.speedButtons.forEach((btn, sp) => {
+      const isCur = sp === activeSpeed;
+      const bg = btn.getAt(0) as Phaser.GameObjects.Graphics;
+      const text = btn.getAt(1) as Phaser.GameObjects.Text;
+      bg.clear();
+      bg.fillStyle(isCur ? 0x27ae60 : 0x221f2d, 1);
+      bg.fillRoundedRect(-20, -14, 40, 28, 4);
+      bg.lineStyle(2, isCur ? 0x2ecc71 : 0x3d354a, 1);
+      bg.strokeRoundedRect(-20, -14, 40, 28, 4);
+      text.setColor(isCur ? '#ffffff' : '#8c829e');
+    });
   }
 
   private createNextWaveButton(x: number, y: number): Phaser.GameObjects.Container {
@@ -171,40 +227,41 @@ export class HUD extends Phaser.GameObjects.Container {
 
     const bg = this.scene.add.graphics();
     bg.fillStyle(0x2d6323, 1);
-    bg.fillRoundedRect(-90, -14, 180, 28, 4);
+    bg.fillRoundedRect(-95, -15, 190, 30, 4);
     bg.lineStyle(2, 0x518233, 1);
-    bg.strokeRoundedRect(-90, -14, 180, 28, 4);
+    bg.strokeRoundedRect(-95, -15, 190, 30, 4);
     container.add(bg);
 
     this.nextWaveLabel = this.scene.add.text(0, 0, 'WELLE STARTEN', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontSize: '10px',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(this.nextWaveLabel);
 
-    container.setSize(180, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-90, -14, 180, 28), Phaser.Geom.Rectangle.Contains);
+    container.setSize(190, 30);
+    container.setInteractive({ useHandCursor: true });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      SoundManager.playClick();
       this.onNextWaveClicked();
     });
 
     container.on('pointerover', () => {
       bg.clear();
       bg.fillStyle(0x38782c, 1);
-      bg.fillRoundedRect(-90, -14, 180, 28, 4);
+      bg.fillRoundedRect(-95, -15, 190, 30, 4);
       bg.lineStyle(2, 0x6bb844, 1);
-      bg.strokeRoundedRect(-90, -14, 180, 28, 4);
+      bg.strokeRoundedRect(-95, -15, 190, 30, 4);
     });
 
     container.on('pointerout', () => {
       bg.clear();
       bg.fillStyle(0x2d6323, 1);
-      bg.fillRoundedRect(-90, -14, 180, 28, 4);
+      bg.fillRoundedRect(-95, -15, 190, 30, 4);
       bg.lineStyle(2, 0x518233, 1);
-      bg.strokeRoundedRect(-90, -14, 180, 28, 4);
+      bg.strokeRoundedRect(-95, -15, 190, 30, 4);
     });
 
     return container;
@@ -215,20 +272,20 @@ export class HUD extends Phaser.GameObjects.Container {
     const bg = this.btnNextWave.getAt(0) as Phaser.GameObjects.Graphics;
 
     if (enabled) {
-      this.btnNextWave.setInteractive();
+      this.btnNextWave.setInteractive({ useHandCursor: true });
       bg.clear();
       bg.fillStyle(0x2d6323, 1);
-      bg.fillRoundedRect(-90, -14, 180, 28, 4);
+      bg.fillRoundedRect(-95, -15, 190, 30, 4);
       bg.lineStyle(2, 0x518233, 1);
-      bg.strokeRoundedRect(-90, -14, 180, 28, 4);
+      bg.strokeRoundedRect(-95, -15, 190, 30, 4);
       this.nextWaveLabel.setColor('#ffffff');
     } else {
       this.btnNextWave.disableInteractive();
       bg.clear();
       bg.fillStyle(0x221f2d, 1);
-      bg.fillRoundedRect(-90, -14, 180, 28, 4);
+      bg.fillRoundedRect(-95, -15, 190, 30, 4);
       bg.lineStyle(2, 0x3d354a, 1);
-      bg.strokeRoundedRect(-90, -14, 180, 28, 4);
+      bg.strokeRoundedRect(-95, -15, 190, 30, 4);
       this.nextWaveLabel.setColor('#686075');
     }
   }
