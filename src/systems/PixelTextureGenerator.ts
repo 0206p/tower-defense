@@ -1383,6 +1383,68 @@ export class PixelTextureGenerator {
       ctx.fill();
     });
 
+    // Eis-Nova / Frost-Explosion (Kristalline Eiskrone)
+    create('effect_frost', 48, 48, (ctx) => {
+      const grad = ctx.createRadialGradient(24, 24, 2, 24, 24, 22);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.35, '#70a1ff');
+      grad.addColorStop(0.7, '#00d2d3');
+      grad.addColorStop(1, 'transparent');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(24, 24, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 8 Frostkristall-Strahlen
+      ctx.strokeStyle = '#e0f7fa';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI) / 4;
+        const x1 = 24 + Math.cos(angle) * 4;
+        const y1 = 24 + Math.sin(angle) * 4;
+        const x2 = 24 + Math.cos(angle) * 20;
+        const y2 = 24 + Math.sin(angle) * 20;
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+      }
+      ctx.stroke();
+
+      // Diamantene Eissplitter
+      ctx.fillStyle = '#ffffff';
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * Math.PI) / 2 + Math.PI / 8;
+        const sx = 24 + Math.cos(angle) * 12;
+        const sy = 24 + Math.sin(angle) * 12;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    // Giftgas-Wolke / Toxische Explosion
+    create('effect_poison', 48, 48, (ctx) => {
+      const grad = ctx.createRadialGradient(24, 24, 2, 24, 24, 22);
+      grad.addColorStop(0, '#7bed9f');
+      grad.addColorStop(0.4, '#2ed573');
+      grad.addColorStop(0.75, '#10ac84');
+      grad.addColorStop(1, 'transparent');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(24, 24, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Giftige Gasbläschen
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      [ {x: 18, y: 18, r: 3}, {x: 30, y: 22, r: 2.5}, {x: 22, y: 30, r: 2} ].forEach(b => {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    });
+
     // ==========================================
     // 8. MODERNE 3D-TÜRME (STUFE 1, 2, 3 + SPEZIALISIERUNGEN)
     // ==========================================

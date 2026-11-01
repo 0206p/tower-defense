@@ -162,12 +162,17 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(60, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-30, -14, 60, 28), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(-32, -16, 64, 32), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      container.setScale(0.93);
       SoundManager.playClick();
       this.onPauseClicked();
+    });
+
+    container.on('pointerup', () => {
+      container.setScale(1.0);
     });
 
     container.on('pointerover', () => {
@@ -177,6 +182,7 @@ export class HUD extends Phaser.GameObjects.Container {
     });
 
     container.on('pointerout', () => {
+      container.setScale(1.0);
       bg.clear();
       bg.fillStyle(0x3d354a, 1);
       bg.fillRoundedRect(-30, -14, 60, 28, 4);
@@ -210,13 +216,22 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(36, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-18, -14, 36, 28), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(-20, -16, 40, 32), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      container.setScale(0.92);
       SoundManager.playClick();
       this.setActiveSpeedButton(speedVal);
       this.onSpeedChange(speedVal);
+    });
+
+    container.on('pointerup', () => {
+      container.setScale(1.0);
+    });
+
+    container.on('pointerout', () => {
+      container.setScale(1.0);
     });
 
     return container;
@@ -260,14 +275,23 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(label);
 
     container.setSize(72, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-36, -14, 72, 28), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(-38, -16, 76, 32), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      container.setScale(0.94);
       const muted = SoundManager.toggleMute();
       drawBg(muted);
       label.setText(muted ? '🔇 AUS' : '🔊 AN');
       label.setColor(muted ? '#ff7675' : '#55efc4');
+    });
+
+    container.on('pointerup', () => {
+      container.setScale(1.0);
+    });
+
+    container.on('pointerout', () => {
+      container.setScale(1.0);
     });
 
     return container;
@@ -291,16 +315,21 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(88, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-44, -14, 88, 28), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(-46, -16, 92, 32), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      container.setScale(0.94);
       SoundManager.playClick();
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
         document.exitFullscreen().catch(() => {});
       }
+    });
+
+    container.on('pointerup', () => {
+      container.setScale(1.0);
     });
 
     container.on('pointerover', () => {
@@ -312,6 +341,7 @@ export class HUD extends Phaser.GameObjects.Container {
     });
 
     container.on('pointerout', () => {
+      container.setScale(1.0);
       bg.clear();
       bg.fillStyle(0x272438, 1);
       bg.fillRoundedRect(-44, -14, 88, 28, 4);
@@ -343,12 +373,17 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(this.nextWaveLabel);
 
     container.setSize(190, 30);
-    container.setInteractive(new Phaser.Geom.Rectangle(-95, -15, 190, 30), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(-98, -17, 196, 34), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      container.setScale(0.96);
       SoundManager.playClick();
       this.onNextWaveClicked();
+    });
+
+    container.on('pointerup', () => {
+      container.setScale(1.0);
     });
 
     container.on('pointerover', () => {
@@ -360,6 +395,7 @@ export class HUD extends Phaser.GameObjects.Container {
     });
 
     container.on('pointerout', () => {
+      container.setScale(1.0);
       bg.clear();
       bg.fillStyle(0x2d6323, 1);
       bg.fillRoundedRect(-95, -15, 190, 30, 4);
@@ -375,7 +411,7 @@ export class HUD extends Phaser.GameObjects.Container {
     const bg = this.btnNextWave.getAt(0) as Phaser.GameObjects.Graphics;
 
     if (enabled) {
-      this.btnNextWave.setInteractive({ useHandCursor: true });
+      this.btnNextWave.setInteractive(new Phaser.Geom.Rectangle(-98, -17, 196, 34), Phaser.Geom.Rectangle.Contains);
       bg.clear();
       bg.fillStyle(0x2d6323, 1);
       bg.fillRoundedRect(-95, -15, 190, 30, 4);
