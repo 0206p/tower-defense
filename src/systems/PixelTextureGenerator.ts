@@ -1640,216 +1640,412 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
-    // 6. MODERNE FANTASY-GEGNER (VEKTOR-ILLUSTRATION)
+    // 6. MENACING RTS MONSTER & ALIEN BIO-CREATURES
     // ==========================================
-    create('enemy_goblin', 34, 34, (ctx) => {
-      // Schattierter Goblin-Krieger
-      const skinGrad = ctx.createRadialGradient(17, 16, 2, 17, 16, 12);
-      skinGrad.addColorStop(0, '#5cd670');
-      skinGrad.addColorStop(0.7, '#27ae60');
-      skinGrad.addColorStop(1, '#1b6330');
 
-      ctx.fillStyle = skinGrad;
+    // ZERGLING STALKER (Feral Chitin Hunter)
+    create('enemy_goblin', 36, 36, (ctx) => {
+      // Dunkler Chitin-Rumpf mit Segmentpanzerung
+      const bodyGrad = ctx.createRadialGradient(18, 18, 2, 18, 18, 13);
+      bodyGrad.addColorStop(0, '#581c87');
+      bodyGrad.addColorStop(0.6, '#3b0764');
+      bodyGrad.addColorStop(1, '#1e0538');
+
+      ctx.fillStyle = bodyGrad;
       ctx.beginPath();
-      ctx.arc(17, 16, 9, 0, Math.PI * 2);
+      ctx.ellipse(18, 18, 10, 13, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Spitze Goblin-Ohren
+      // Panzerplatten-Rückenrippen
+      ctx.fillStyle = '#7e22ce';
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.ellipse(18, 11 + i * 5, 8 - i * 1.2, 2.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Tödliche Sensen-Klauen (Zergling Blades)
+      ctx.fillStyle = '#e2e8f0';
       ctx.beginPath();
-      ctx.moveTo(8, 16); ctx.lineTo(1, 11); ctx.lineTo(8, 19);
-      ctx.moveTo(26, 16); ctx.lineTo(33, 11); ctx.lineTo(26, 19);
+      // Linke Sichel
+      ctx.moveTo(9, 14);
+      ctx.quadraticCurveTo(2, 6, 1, 1);
+      ctx.quadraticCurveTo(5, 10, 11, 20);
+      ctx.fill();
+      // Rechte Sichel
+      ctx.beginPath();
+      ctx.moveTo(27, 14);
+      ctx.quadraticCurveTo(34, 6, 35, 1);
+      ctx.quadraticCurveTo(31, 10, 25, 20);
       ctx.fill();
 
-      // Glühende rote Augen
-      ctx.fillStyle = '#ff4757';
+      // Zähnefletschende Mandibeln
+      ctx.fillStyle = '#f8fafc';
       ctx.beginPath();
-      ctx.arc(14, 15, 2, 0, Math.PI * 2);
-      ctx.arc(20, 15, 2, 0, Math.PI * 2);
+      ctx.moveTo(14, 28); ctx.lineTo(12, 34); ctx.lineTo(16, 30);
+      ctx.moveTo(22, 28); ctx.lineTo(24, 34); ctx.lineTo(20, 30);
       ctx.fill();
 
-      // Lederwams
-      ctx.fillStyle = '#654124';
+      // Giftig leuchtende Raubtier-Augen (Neon-Acid)
+      ctx.fillStyle = '#22c55e';
+      ctx.shadowColor = '#22c55e';
+      ctx.shadowBlur = 6;
       ctx.beginPath();
-      ctx.roundRect(11, 23, 12, 9, 3);
+      ctx.arc(14, 24, 2, 0, Math.PI * 2);
+      ctx.arc(22, 24, 2, 0, Math.PI * 2);
+      ctx.arc(18, 22, 1.5, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
     });
 
-    create('enemy_bat', 34, 34, (ctx) => {
-      // Nachtschwinge mit geschwungenen Lederflügeln
-      const wingGrad = ctx.createLinearGradient(2, 6, 32, 28);
-      wingGrad.addColorStop(0, '#3a1c57');
-      wingGrad.addColorStop(0.5, '#241038');
-      wingGrad.addColorStop(1, '#120520');
+    // MUTALISK WINGED FIEND (Geflügelte Bio-Bestie)
+    create('enemy_bat', 38, 38, (ctx) => {
+      // Reißende Flügel mit giftigen Leuchtadern
+      const wingGrad = ctx.createLinearGradient(0, 0, 38, 38);
+      wingGrad.addColorStop(0, '#4a044e');
+      wingGrad.addColorStop(0.5, '#2e1065');
+      wingGrad.addColorStop(1, '#0f172a');
 
       ctx.fillStyle = wingGrad;
-      // Linker Flügel
+      // Linker Flügel mit Dornen
       ctx.beginPath();
-      ctx.moveTo(17, 17);
-      ctx.quadraticCurveTo(8, 6, 2, 9);
-      ctx.quadraticCurveTo(7, 18, 4, 25);
-      ctx.quadraticCurveTo(11, 21, 17, 17);
+      ctx.moveTo(19, 19);
+      ctx.quadraticCurveTo(10, 3, 2, 4);
+      ctx.lineTo(6, 15);
+      ctx.lineTo(1, 22);
+      ctx.lineTo(8, 25);
+      ctx.lineTo(3, 33);
+      ctx.quadraticCurveTo(13, 26, 19, 19);
       ctx.fill();
 
-      // Rechter Flügel
+      // Rechter Flügel mit Dornen
       ctx.beginPath();
-      ctx.moveTo(17, 17);
-      ctx.quadraticCurveTo(26, 6, 32, 9);
-      ctx.quadraticCurveTo(27, 18, 30, 25);
-      ctx.quadraticCurveTo(23, 21, 17, 17);
+      ctx.moveTo(19, 19);
+      ctx.quadraticCurveTo(28, 3, 36, 4);
+      ctx.lineTo(32, 15);
+      ctx.lineTo(37, 22);
+      ctx.lineTo(30, 25);
+      ctx.lineTo(35, 33);
+      ctx.quadraticCurveTo(25, 26, 19, 19);
       ctx.fill();
 
-      // Rumpf & Augen
-      ctx.fillStyle = '#1e0c2b';
+      // Rumpf & Stachelpanzer
+      ctx.fillStyle = '#1e1b4b';
       ctx.beginPath();
-      ctx.ellipse(17, 17, 4, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(19, 19, 5, 10, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#ff3838';
-      ctx.fillRect(15, 14, 1.5, 2);
-      ctx.fillRect(18, 14, 1.5, 2);
+      // Giftstachel am Schwanz
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.moveTo(17, 28); ctx.lineTo(19, 36); ctx.lineTo(21, 28);
+      ctx.fill();
+
+      // Glühende Raubvogel-Augen
+      ctx.fillStyle = '#f43f5e';
+      ctx.shadowColor = '#f43f5e';
+      ctx.shadowBlur = 5;
+      ctx.fillRect(17, 12, 1.8, 3);
+      ctx.fillRect(20, 12, 1.8, 3);
+      ctx.shadowBlur = 0;
     });
 
-    create('enemy_witch', 34, 34, (ctx) => {
-      // Magische Sumpfhexe mit Zauberhut & Kugel
-      ctx.fillStyle = '#301934';
+    // VOID BROOD QUEEN (Psionische Brutmutter)
+    create('enemy_witch', 38, 38, (ctx) => {
+      // Schwebendes psionisches Alien-Wesen
+      const psionGrad = ctx.createRadialGradient(19, 19, 2, 19, 19, 16);
+      psionGrad.addColorStop(0, '#c084fc');
+      psionGrad.addColorStop(0.5, '#6b21a8');
+      psionGrad.addColorStop(1, '#1e0538');
+
+      ctx.fillStyle = psionGrad;
       ctx.beginPath();
-      ctx.moveTo(17, 4);
-      ctx.lineTo(26, 17);
-      ctx.lineTo(8, 17);
+      ctx.arc(19, 19, 11, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Gezackte Chitin-Krone
+      ctx.fillStyle = '#d8b4fe';
+      ctx.beginPath();
+      ctx.moveTo(11, 12); ctx.lineTo(7, 2); ctx.lineTo(14, 8);
+      ctx.lineTo(19, 0); ctx.lineTo(24, 8);
+      ctx.lineTo(31, 2); ctx.lineTo(27, 12);
       ctx.closePath();
       ctx.fill();
 
-      // Hutkrempe
-      ctx.fillStyle = '#1e0c22';
+      // Psionische Fang-Tentakel unten
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(17, 17, 11, 3.5, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(14, 27); ctx.quadraticCurveTo(10, 34, 12, 38);
+      ctx.moveTo(19, 28); ctx.quadraticCurveTo(19, 35, 19, 38);
+      ctx.moveTo(24, 27); ctx.quadraticCurveTo(28, 34, 26, 38);
+      ctx.stroke();
 
-      // Magische Kugel
-      const orbGrad = ctx.createRadialGradient(24, 24, 1, 24, 24, 6);
-      orbGrad.addColorStop(0, '#55efc4');
-      orbGrad.addColorStop(0.7, '#00b894');
-      orbGrad.addColorStop(1, 'transparent');
-      ctx.fillStyle = orbGrad;
+      // Leuchtender Void-Kern
+      ctx.fillStyle = '#38bdf8';
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 8;
       ctx.beginPath();
-      ctx.arc(24, 24, 6, 0, Math.PI * 2);
+      ctx.arc(19, 20, 4, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
     });
 
-    create('enemy_slime', 34, 34, (ctx) => {
-      // Glänzender Wackelschleim mit Lichtreflex
-      const slimeGrad = ctx.createRadialGradient(15, 15, 2, 17, 20, 14);
-      slimeGrad.addColorStop(0, '#55efc4');
-      slimeGrad.addColorStop(0.6, '#00cec9');
-      slimeGrad.addColorStop(1, '#0984e3');
+    // ACID BROOD ROACH (Säure-Kriecher)
+    create('enemy_slime', 36, 36, (ctx) => {
+      // Pulsierende eitrige Gift-Biomasse
+      const acidGrad = ctx.createRadialGradient(18, 18, 2, 18, 18, 15);
+      acidGrad.addColorStop(0, '#84cc16');
+      acidGrad.addColorStop(0.5, '#4d7c0f');
+      acidGrad.addColorStop(0.9, '#1a2e05');
+      acidGrad.addColorStop(1, '#051201');
 
-      ctx.fillStyle = slimeGrad;
+      ctx.fillStyle = acidGrad;
       ctx.beginPath();
-      ctx.moveTo(7, 27);
-      ctx.quadraticCurveTo(4, 15, 17, 8);
-      ctx.quadraticCurveTo(30, 15, 27, 27);
-      ctx.quadraticCurveTo(17, 29, 7, 27);
+      ctx.moveTo(7, 28);
+      ctx.quadraticCurveTo(3, 14, 18, 6);
+      ctx.quadraticCurveTo(33, 14, 29, 28);
+      ctx.quadraticCurveTo(18, 33, 7, 28);
       ctx.closePath();
       ctx.fill();
 
-      // Glanzlicht
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      // Ekelhafte giftige Säureblasen / Pusteln
+      ctx.fillStyle = '#facc15';
+      ctx.shadowColor = '#84cc16';
+      ctx.shadowBlur = 5;
       ctx.beginPath();
-      ctx.ellipse(13, 13, 4, 2.5, -Math.PI / 4, 0, Math.PI * 2);
+      ctx.arc(14, 16, 3.5, 0, Math.PI * 2);
+      ctx.arc(22, 15, 3, 0, Math.PI * 2);
+      ctx.arc(18, 23, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Scharfe Chitin-Beine
+      ctx.strokeStyle = '#14532d';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(6, 24); ctx.lineTo(1, 29);
+      ctx.moveTo(30, 24); ctx.lineTo(35, 29);
+      ctx.stroke();
+    });
+
+    // BANELING SPORE EXPLODER (Flüchtiger Säurebomber)
+    create('enemy_bomber', 36, 36, (ctx) => {
+      // Praller, giftig aufgedunsener Explosiv-Sack
+      const sacGrad = ctx.createRadialGradient(18, 19, 3, 18, 19, 14);
+      sacGrad.addColorStop(0, '#f97316');
+      sacGrad.addColorStop(0.5, '#dc2626');
+      sacGrad.addColorStop(0.9, '#7f1d1d');
+      sacGrad.addColorStop(1, '#450a0a');
+
+      ctx.fillStyle = sacGrad;
+      ctx.beginPath();
+      ctx.arc(18, 19, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Gefährlich glühende Säure-Venen
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 1.8;
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 7;
+      ctx.beginPath();
+      ctx.moveTo(11, 14); ctx.quadraticCurveTo(18, 16, 25, 13);
+      ctx.moveTo(13, 23); ctx.quadraticCurveTo(19, 21, 24, 25);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Gepanzerte Zähne am Unterkiefer
+      ctx.fillStyle = '#e2e8f0';
+      ctx.beginPath();
+      ctx.moveTo(13, 28); ctx.lineTo(11, 34); ctx.lineTo(15, 31);
+      ctx.moveTo(23, 28); ctx.lineTo(25, 34); ctx.lineTo(21, 31);
       ctx.fill();
     });
 
-    create('enemy_bomber', 34, 34, (ctx) => {
-      // Sprengmeister mit Gusseisen-Bombe & Lunte
-      ctx.fillStyle = '#e67e22';
+    // HYDRALISK ARMORED RAVAGER (Gepanzerter Killer)
+    create('enemy_orc', 40, 40, (ctx) => {
+      // Schwer gepanzerte Karapax-Platten
+      const ravGrad = ctx.createRadialGradient(20, 20, 3, 20, 20, 16);
+      ravGrad.addColorStop(0, '#991b1b');
+      ravGrad.addColorStop(0.6, '#450a0a');
+      ravGrad.addColorStop(1, '#180303');
+
+      ctx.fillStyle = ravGrad;
       ctx.beginPath();
-      ctx.arc(17, 15, 8, 0, Math.PI * 2);
+      ctx.arc(20, 20, 14, 0, Math.PI * 2);
       ctx.fill();
 
-      // Eisenbombe
-      const bombGrad = ctx.createRadialGradient(15, 22, 1, 17, 24, 7);
-      bombGrad.addColorStop(0, '#747d8c');
-      bombGrad.addColorStop(0.7, '#2f3542');
-      bombGrad.addColorStop(1, '#000000');
+      // Rückenpanzer-Stacheln
+      ctx.fillStyle = '#cbd5e1';
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(14 + i * 3, 7); ctx.lineTo(15 + i * 3, 1); ctx.lineTo(17 + i * 3, 7);
+        ctx.fill();
+      }
 
-      ctx.fillStyle = bombGrad;
+      // Massive Sichelklauen
+      ctx.fillStyle = '#f1f5f9';
       ctx.beginPath();
-      ctx.arc(17, 24, 7, 0, Math.PI * 2);
+      // Links
+      ctx.moveTo(10, 16); ctx.quadraticCurveTo(2, 8, 1, 3); ctx.lineTo(9, 24);
+      // Rechts
+      ctx.moveTo(30, 16); ctx.quadraticCurveTo(38, 8, 39, 3); ctx.lineTo(31, 24);
       ctx.fill();
 
-      // Funke
-      ctx.fillStyle = '#ffa502';
-      ctx.fillRect(19, 15, 3, 3);
+      // Blutrünstige Augen
+      ctx.fillStyle = '#f87171';
+      ctx.shadowColor = '#ef4444';
+      ctx.shadowBlur = 6;
+      ctx.fillRect(16, 21, 2.5, 2.5);
+      ctx.fillRect(22, 21, 2.5, 2.5);
+      ctx.shadowBlur = 0;
+    });
+
+    // APEX ULTRALISK LEVIATHAN (Monumentaler Boss 48x48)
+    create('enemy_boss', 48, 48, (ctx) => {
+      // Gigantischer gepanzerter Koloss
+      const bossGrad = ctx.createRadialGradient(24, 24, 4, 24, 24, 22);
+      bossGrad.addColorStop(0, '#dc2626');
+      bossGrad.addColorStop(0.4, '#7f1d1d');
+      bossGrad.addColorStop(0.8, '#2a0606');
+      bossGrad.addColorStop(1, '#0c0101');
+
+      ctx.fillStyle = bossGrad;
+      ctx.beginPath();
+      ctx.ellipse(24, 24, 18, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Kolossale Kaiser-Klingen (Ultralisk Scythes)
+      ctx.fillStyle = '#f8fafc';
+      ctx.shadowColor = '#ef4444';
+      ctx.shadowBlur = 8;
+      // Linke Riesenklinge
+      ctx.beginPath();
+      ctx.moveTo(13, 20);
+      ctx.quadraticCurveTo(3, 8, 1, 1);
+      ctx.quadraticCurveTo(8, 12, 12, 32);
+      ctx.fill();
+      // Rechte Riesenklinge
+      ctx.beginPath();
+      ctx.moveTo(35, 20);
+      ctx.quadraticCurveTo(45, 8, 47, 1);
+      ctx.quadraticCurveTo(40, 12, 36, 32);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Schweres geripptes Chitin-Schutzschild
+      ctx.fillStyle = '#991b1b';
+      for (let r = 0; r < 5; r++) {
+        ctx.beginPath();
+        ctx.ellipse(24, 14 + r * 5, 14 - r * 1.5, 3.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Glühender Plasma-Kern im Zentrum
+      ctx.fillStyle = '#facc15';
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(24, 26, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    // Eigene detaillierte Designs für alle weiteren Spezial-Monster
+    create('enemy_swamp_troll', 38, 38, (ctx) => {
+      // Sumpf-Goliath mit Moos- und Giftpanzer
+      ctx.fillStyle = '#14532d';
+      ctx.beginPath(); ctx.arc(19, 19, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#84cc16';
+      ctx.beginPath(); ctx.arc(15, 15, 4, 0, Math.PI * 2); ctx.arc(23, 16, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(15, 22, 2.5, 2.5); ctx.fillRect(21, 22, 2.5, 2.5);
+    });
+
+    create('enemy_cave_goblin', 36, 36, (ctx) => {
+      // Unterirdischer Gräber mit langen Krallen
+      ctx.fillStyle = '#334155';
+      ctx.beginPath(); ctx.ellipse(18, 18, 10, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(14, 22, 2, 2); ctx.fillRect(20, 22, 2, 2);
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(8, 18); ctx.lineTo(1, 25); ctx.moveTo(28, 18); ctx.lineTo(35, 25); ctx.stroke();
+    });
+
+    create('enemy_bomber_tnt', 36, 36, (ctx) => {
+      const baseImg = tm.get('enemy_bomber').getSourceImage() as CanvasImageSource;
+      if (baseImg) ctx.drawImage(baseImg, 0, 0, 36, 36);
+    });
+
+    create('enemy_armored_troll', 38, 38, (ctx) => {
+      // Schwerer Panzer-Behemoth mit Stahlschilden
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath(); ctx.arc(19, 19, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(8, 11, 22, 5); ctx.fillRect(10, 18, 18, 5);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(14, 25, 3, 2.5); ctx.fillRect(21, 25, 3, 2.5);
+    });
+
+    create('enemy_golem', 38, 38, (ctx) => {
+      // Kristall-Golem mit Obsidian-Splittern
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath(); ctx.arc(19, 19, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.moveTo(19, 6); ctx.lineTo(24, 15); ctx.lineTo(14, 15); ctx.closePath();
+      ctx.moveTo(11, 16); ctx.lineTo(16, 26); ctx.lineTo(7, 24); ctx.closePath();
+      ctx.moveTo(27, 16); ctx.lineTo(31, 24); ctx.lineTo(22, 26); ctx.closePath();
+      ctx.fill();
+    });
+
+    create('enemy_fire_imp', 36, 36, (ctx) => {
+      // Feuer-Imp mit Flammenaura
+      ctx.fillStyle = '#ea580c';
+      ctx.beginPath(); ctx.arc(18, 18, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.moveTo(18, 2); ctx.lineTo(23, 12); ctx.lineTo(13, 12); ctx.closePath();
+      ctx.fill();
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(20, 16, 1.5, 1.5);
+      ctx.fillRect(15, 18, 2, 2); ctx.fillRect(19, 18, 2, 2);
     });
 
-    create('enemy_orc', 36, 36, (ctx) => {
-      // Massiver Ork mit Hörnerhelm
-      ctx.fillStyle = '#2f3640';
-      ctx.beginPath();
-      ctx.arc(18, 17, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Hörner
-      ctx.fillStyle = '#f5f6fa';
-      ctx.beginPath();
-      ctx.moveTo(9, 15); ctx.quadraticCurveTo(5, 7, 2, 8); ctx.lineTo(8, 17);
-      ctx.moveTo(27, 15); ctx.quadraticCurveTo(31, 7, 34, 8); ctx.lineTo(28, 17);
-      ctx.fill();
-
-      // Grimmiges Gesicht
-      ctx.fillStyle = '#ff4757';
-      ctx.fillRect(14, 16, 2, 2);
-      ctx.fillRect(20, 16, 2, 2);
+    create('enemy_magma_orc', 40, 40, (ctx) => {
+      ctx.fillStyle = '#7c2d12';
+      ctx.beginPath(); ctx.arc(20, 20, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f97316';
+      ctx.fillRect(14, 18, 12, 3);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(16, 23, 2.5, 2.5); ctx.fillRect(22, 23, 2.5, 2.5);
     });
 
-    create('enemy_boss', 42, 42, (ctx) => {
-      // Majestätischer Titanen-Boss mit feuriger Aura
-      const titanGrad = ctx.createRadialGradient(21, 21, 4, 21, 21, 20);
-      titanGrad.addColorStop(0, '#ff4757');
-      titanGrad.addColorStop(0.4, '#c0392b');
-      titanGrad.addColorStop(0.8, '#2c0c11');
-      titanGrad.addColorStop(1, '#110305');
-
-      ctx.fillStyle = titanGrad;
+    create('enemy_hellhound', 38, 38, (ctx) => {
+      ctx.fillStyle = '#450a0a';
+      ctx.beginPath(); ctx.ellipse(19, 19, 9, 13, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ef4444';
       ctx.beginPath();
-      ctx.arc(21, 21, 19, 0, Math.PI * 2);
+      ctx.moveTo(12, 10); ctx.lineTo(8, 2); ctx.lineTo(15, 7);
+      ctx.moveTo(26, 10); ctx.lineTo(30, 2); ctx.lineTo(23, 7);
       ctx.fill();
-
-      // Dämonen-Hörner
-      ctx.fillStyle = '#f1c40f';
-      ctx.beginPath();
-      ctx.moveTo(11, 15); ctx.quadraticCurveTo(5, 3, 2, 5); ctx.lineTo(10, 19);
-      ctx.moveTo(31, 15); ctx.quadraticCurveTo(37, 3, 40, 5); ctx.lineTo(32, 19);
-      ctx.fill();
-
-      // Glühende Augen & Spalten
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(16, 19, 2.5, 0, Math.PI * 2);
-      ctx.arc(26, 19, 2.5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(14, 21, 2, 2); ctx.fillRect(22, 21, 2, 2);
     });
 
-    // Alias-Maps für alle weiteren Monster im Code
-    const aliasEnemy = (newKey: string, baseKey: string) => {
-      create(newKey, 34, 34, (ctx) => {
-        const baseImg = tm.get(baseKey).getSourceImage() as CanvasImageSource;
-        if (baseImg) ctx.drawImage(baseImg, 0, 0, 34, 34);
-      });
-    };
-    aliasEnemy('enemy_swamp_troll', 'enemy_orc');
-    aliasEnemy('enemy_cave_goblin', 'enemy_goblin');
-    aliasEnemy('enemy_bomber_tnt', 'enemy_bomber');
-    aliasEnemy('enemy_armored_troll', 'enemy_orc');
-    aliasEnemy('enemy_golem', 'enemy_orc');
-    aliasEnemy('enemy_fire_imp', 'enemy_goblin');
-    aliasEnemy('enemy_magma_orc', 'enemy_orc');
-    aliasEnemy('enemy_hellhound', 'enemy_bat');
-    aliasEnemy('enemy_lava_golem', 'enemy_boss');
-    aliasEnemy('enemy_colossus', 'enemy_boss');
-    aliasEnemy('enemy_titan', 'enemy_boss');
+    create('enemy_lava_golem', 46, 46, (ctx) => {
+      const baseImg = tm.get('enemy_boss').getSourceImage() as CanvasImageSource;
+      if (baseImg) ctx.drawImage(baseImg, 0, 0, 46, 46);
+    });
+
+    create('enemy_colossus', 46, 46, (ctx) => {
+      const baseImg = tm.get('enemy_boss').getSourceImage() as CanvasImageSource;
+      if (baseImg) ctx.drawImage(baseImg, 0, 0, 46, 46);
+    });
+
+    create('enemy_titan', 48, 48, (ctx) => {
+      const baseImg = tm.get('enemy_boss').getSourceImage() as CanvasImageSource;
+      if (baseImg) ctx.drawImage(baseImg, 0, 0, 48, 48);
+    });
 
     // ==========================================
     // 7. MODERNE GESCHOSSE & EFFEKTE

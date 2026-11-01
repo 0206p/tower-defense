@@ -282,25 +282,28 @@ export class UpgradeMenuScene extends Phaser.Scene {
   }
 
   private createBottomButtons(): void {
+    const btnW = 230;
+    const halfW = btnW / 2;
+
     // Reset-Button
-    const resetBtn = this.add.container(GAME_WIDTH / 2 - 160, 640);
+    const resetBtn = this.add.container(GAME_WIDTH / 2 - 260, 640);
     const rBg = this.add.graphics();
     rBg.fillStyle(0x7a2828, 1);
-    rBg.fillRoundedRect(-140, -18, 280, 36, 6);
+    rBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
     rBg.lineStyle(2, 0xa33b3b, 1);
-    rBg.strokeRoundedRect(-140, -18, 280, 36, 6);
+    rBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
     resetBtn.add(rBg);
 
-    const rLabel = this.add.text(0, 0, 'ALLE KRISTALLE ZURÜCKSETZEN', {
+    const rLabel = this.add.text(0, 0, 'KRISTALLE RESETTEN', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       color: '#ffffff'
     }).setOrigin(0.5);
     resetBtn.add(rLabel);
 
-    resetBtn.setSize(280, 36);
+    resetBtn.setSize(btnW, 36);
     resetBtn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-140, -18, 280, 36),
+      hitArea: new Phaser.Geom.Rectangle(-halfW, -18, btnW, 36),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -312,27 +315,69 @@ export class UpgradeMenuScene extends Phaser.Scene {
     resetBtn.on('pointerover', () => {
       rBg.clear();
       rBg.fillStyle(0x993535, 1);
-      rBg.fillRoundedRect(-140, -18, 280, 36, 6);
+      rBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
       rBg.lineStyle(2, 0xffffff, 1);
-      rBg.strokeRoundedRect(-140, -18, 280, 36, 6);
+      rBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
       resetBtn.setScale(1.03);
     });
     resetBtn.on('pointerout', () => {
       rBg.clear();
       rBg.fillStyle(0x7a2828, 1);
-      rBg.fillRoundedRect(-140, -18, 280, 36, 6);
+      rBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
       rBg.lineStyle(2, 0xa33b3b, 1);
-      rBg.strokeRoundedRect(-140, -18, 280, 36, 6);
+      rBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
       resetBtn.setScale(1.0);
     });
 
+    // Skins-Button
+    const skinsBtn = this.add.container(GAME_WIDTH / 2, 640);
+    const sBg = this.add.graphics();
+    sBg.fillStyle(0x1e3a8a, 1);
+    sBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
+    sBg.lineStyle(2, 0x3b82f6, 1);
+    sBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
+    skinsBtn.add(sBg);
+
+    const sLabel = this.add.text(0, 0, '🎨 TURM-SKINS (ARSENAL)', {
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
+      color: '#ffffff'
+    }).setOrigin(0.5);
+    skinsBtn.add(sLabel);
+
+    skinsBtn.setSize(btnW, 36);
+    skinsBtn.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-halfW, -18, btnW, 36),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
+    skinsBtn.on('pointerdown', () => {
+      this.scene.start('SkinShopScene');
+    });
+    skinsBtn.on('pointerover', () => {
+      sBg.clear();
+      sBg.fillStyle(0x2563eb, 1);
+      sBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
+      sBg.lineStyle(2, 0xffffff, 1);
+      sBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
+      skinsBtn.setScale(1.03);
+    });
+    skinsBtn.on('pointerout', () => {
+      sBg.clear();
+      sBg.fillStyle(0x1e3a8a, 1);
+      sBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
+      sBg.lineStyle(2, 0x3b82f6, 1);
+      sBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
+      skinsBtn.setScale(1.0);
+    });
+
     // Zurück-Button
-    const backBtn = this.add.container(GAME_WIDTH / 2 + 180, 640);
+    const backBtn = this.add.container(GAME_WIDTH / 2 + 260, 640);
     const bBg = this.add.graphics();
     bBg.fillStyle(0x2d3436, 1);
-    bBg.fillRoundedRect(-120, -18, 240, 36, 6);
+    bBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
     bBg.lineStyle(2, 0x636e72, 1);
-    bBg.strokeRoundedRect(-120, -18, 240, 36, 6);
+    bBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
     backBtn.add(bBg);
 
     const bLabel = this.add.text(0, 0, 'ZURÜCK ZU DEN WELTEN', {
@@ -342,9 +387,9 @@ export class UpgradeMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
     backBtn.add(bLabel);
 
-    backBtn.setSize(240, 36);
+    backBtn.setSize(btnW, 36);
     backBtn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-120, -18, 240, 36),
+      hitArea: new Phaser.Geom.Rectangle(-halfW, -18, btnW, 36),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -354,17 +399,17 @@ export class UpgradeMenuScene extends Phaser.Scene {
     backBtn.on('pointerover', () => {
       bBg.clear();
       bBg.fillStyle(0x404b50, 1);
-      bBg.fillRoundedRect(-120, -18, 240, 36, 6);
+      bBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
       bBg.lineStyle(2, 0xffffff, 1);
-      bBg.strokeRoundedRect(-120, -18, 240, 36, 6);
+      bBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
       backBtn.setScale(1.03);
     });
     backBtn.on('pointerout', () => {
       bBg.clear();
       bBg.fillStyle(0x2d3436, 1);
-      bBg.fillRoundedRect(-120, -18, 240, 36, 6);
+      bBg.fillRoundedRect(-halfW, -18, btnW, 36, 6);
       bBg.lineStyle(2, 0x636e72, 1);
-      bBg.strokeRoundedRect(-120, -18, 240, 36, 6);
+      bBg.strokeRoundedRect(-halfW, -18, btnW, 36, 6);
       backBtn.setScale(1.0);
     });
   }

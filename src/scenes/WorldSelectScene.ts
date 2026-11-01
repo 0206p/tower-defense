@@ -52,13 +52,18 @@ export class WorldSelectScene extends Phaser.Scene {
       this.createWorldCard(wId, startX + idx * (cardWidth + gap), 105, cardWidth, 470);
     });
 
-    // Unten: Upgrade-Menü Button & Menü Button mit großzügigem Abstand
-    this.createBottomButton(GAME_WIDTH / 2 - 180, 648, '💎 TURM-SCHMIEDE', 0x512b7a, 0x8e44ad, () => {
+    // Unten: Skins-Arsenal, Upgrade-Schmiede & Menü mit großzügigem Abstand
+    this.createBottomButton(GAME_WIDTH / 2 - 290, 648, '🎨 TURM-SKINS', 0x1e3a8a, 0x3b82f6, () => {
+      SoundManager.playClick();
+      this.scene.start('SkinShopScene');
+    });
+
+    this.createBottomButton(GAME_WIDTH / 2, 648, '💎 TURM-SCHMIEDE', 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       this.scene.start('UpgradeMenuScene');
     });
 
-    this.createBottomButton(GAME_WIDTH / 2 + 180, 648, 'HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
+    this.createBottomButton(GAME_WIDTH / 2 + 290, 648, 'HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
       SoundManager.playClick();
       this.scene.start('MenuScene');
     });
@@ -226,13 +231,14 @@ export class WorldSelectScene extends Phaser.Scene {
     }
   }
 
-  private createBottomButton(x: number, y: number, text: string, color: number, border: number, onClick: () => void): void {
+  private createBottomButton(x: number, y: number, text: string, color: number, border: number, onClick: () => void, btnWidth: number = 260): void {
     const btn = this.add.container(x, y);
     const bg = this.add.graphics();
+    const halfW = btnWidth / 2;
     bg.fillStyle(color, 1);
-    bg.fillRoundedRect(-160, -22, 320, 44, 6);
+    bg.fillRoundedRect(-halfW, -22, btnWidth, 44, 6);
     bg.lineStyle(2, border, 1);
-    bg.strokeRoundedRect(-160, -22, 320, 44, 6);
+    bg.strokeRoundedRect(-halfW, -22, btnWidth, 44, 6);
     btn.add(bg);
 
     const label = this.add.text(0, 0, text, {
@@ -244,9 +250,9 @@ export class WorldSelectScene extends Phaser.Scene {
     }).setOrigin(0.5);
     btn.add(label);
 
-    btn.setSize(320, 44);
+    btn.setSize(btnWidth, 44);
     btn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-160, -22, 320, 44),
+      hitArea: new Phaser.Geom.Rectangle(-halfW, -22, btnWidth, 44),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -254,17 +260,17 @@ export class WorldSelectScene extends Phaser.Scene {
     btn.on('pointerover', () => {
       bg.clear();
       bg.fillStyle(border, 1);
-      bg.fillRoundedRect(-160, -22, 320, 44, 6);
+      bg.fillRoundedRect(-halfW, -22, btnWidth, 44, 6);
       bg.lineStyle(2, 0xffffff, 1);
-      bg.strokeRoundedRect(-160, -22, 320, 44, 6);
+      bg.strokeRoundedRect(-halfW, -22, btnWidth, 44, 6);
       btn.setScale(1.03);
     });
     btn.on('pointerout', () => {
       bg.clear();
       bg.fillStyle(color, 1);
-      bg.fillRoundedRect(-160, -22, 320, 44, 6);
+      bg.fillRoundedRect(-halfW, -22, btnWidth, 44, 6);
       bg.lineStyle(2, border, 1);
-      bg.strokeRoundedRect(-160, -22, 320, 44, 6);
+      bg.strokeRoundedRect(-halfW, -22, btnWidth, 44, 6);
       btn.setScale(1.0);
     });
   }

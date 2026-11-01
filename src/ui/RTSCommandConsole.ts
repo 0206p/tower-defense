@@ -218,21 +218,24 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     this.selectionModeContainer.setVisible(false);
     this.add(this.selectionModeContainer);
 
-    // Inspektor-Rahmen links & Mitte (x: 40 bis 680)
+    // Inspektor-Rahmen links (x: 24 bis 534)
+    const inspX = 24;
+    const inspW = 510;
+
     const inspBg = this.scene.add.graphics();
     inspBg.fillStyle(0x050811, 0.92);
-    inspBg.fillRoundedRect(40, 8, 630, 64, 6);
+    inspBg.fillRoundedRect(inspX, 8, inspW, 64, 6);
     inspBg.lineStyle(1.5, 0x1e293b, 1);
-    inspBg.strokeRoundedRect(40, 8, 630, 64, 6);
+    inspBg.strokeRoundedRect(inspX, 8, inspW, 64, 6);
     this.selectionModeContainer.add(inspBg);
 
     // Turm-Vorschau-Icon
-    this.inspectorIcon = this.scene.add.sprite(78, 40, 'tower_cannon_1');
+    this.inspectorIcon = this.scene.add.sprite(inspX + 38, 40, 'tower_cannon_1');
     this.inspectorIcon.setDisplaySize(46, 46);
     this.selectionModeContainer.add(this.inspectorIcon);
 
     // Titel mit Stufe
-    this.inspectorTitleText = this.scene.add.text(118, 14, '', {
+    this.inspectorTitleText = this.scene.add.text(inspX + 76, 14, '', {
       fontFamily: GAME_FONT,
       fontSize: '13px',
       fontStyle: 'bold',
@@ -241,7 +244,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     this.selectionModeContainer.add(this.inspectorTitleText);
 
     // Kampfwert-Details
-    this.inspectorStatsText = this.scene.add.text(118, 33, '', {
+    this.inspectorStatsText = this.scene.add.text(inspX + 76, 33, '', {
       fontFamily: GAME_FONT,
       fontSize: '11px',
       color: '#f1f5f9'
@@ -249,7 +252,7 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
     this.selectionModeContainer.add(this.inspectorStatsText);
 
     // Spezial-Effekte & Priorität
-    this.inspectorDetailsText = this.scene.add.text(118, 51, '', {
+    this.inspectorDetailsText = this.scene.add.text(inspX + 76, 51, '', {
       fontFamily: GAME_FONT,
       fontSize: '11px',
       color: '#94a3b8'
@@ -450,11 +453,13 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
       }
     });
 
-    // Großzügige Aktions-Buttons rechts (x: 695 bis 1245)
-    const btnW = 125;
+    // Dynamisch berechnete Aktions-Buttons rechts (sicher innerhalb der 1280px Bildschirmbreite)
+    const numActions = actions.length;
+    const startX = 550;
+    const availableWidth = 1240 - startX; // 690px Gesamtbereich
+    const gap = 10;
+    const btnW = Math.min(130, Math.floor((availableWidth - (numActions - 1) * gap) / numActions));
     const btnH = 64;
-    const gap = 12;
-    const startX = 695;
 
     actions.forEach((act, idx) => {
       const x = startX + idx * (btnW + gap);

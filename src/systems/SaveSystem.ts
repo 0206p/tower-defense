@@ -1,5 +1,61 @@
 export type WorldId = 'witch_forest' | 'goblin_caves' | 'dead_mountain' | 'dungeon';
 
+export type TowerSkinId = 'default' | 'void' | 'zerg' | 'gold';
+
+export interface SkinDefinition {
+  id: TowerSkinId;
+  name: string;
+  theme: string;
+  cost: number;
+  themeColor: number;
+  glowColor: number;
+  tint: number;
+  description: string;
+}
+
+export const SKINS_CONFIG: Record<TowerSkinId, SkinDefinition> = {
+  default: {
+    id: 'default',
+    name: 'TERRAN VANGUARD',
+    theme: 'Militärischer Titan-Stahl',
+    cost: 0,
+    themeColor: 0x38bdf8,
+    glowColor: 0x0284c7,
+    tint: 0xffffff,
+    description: 'Klassische terranische RTS-Geschütze mit stahlblauer Panzerung & dualer Kadenz.'
+  },
+  void: {
+    id: 'void',
+    name: 'VOID PROTOSS',
+    theme: 'Obsidian & Plasma-Matrix',
+    cost: 120,
+    themeColor: 0x38bdf8,
+    glowColor: 0x818cf8,
+    tint: 0x67e8f9,
+    description: 'Außerirdische Obsidian-Geschütze mit pulsierendem Cyan- und Violett-Plasma.'
+  },
+  zerg: {
+    id: 'zerg',
+    name: 'ZERG BIO-MUTANT',
+    theme: 'Lebende Chitin-Mutation',
+    cost: 200,
+    themeColor: 0x22c55e,
+    glowColor: 0xef4444,
+    tint: 0x4ade80,
+    description: 'Mutierte biomechanische Chitin-Geschütze mit giftigen Säureadern & Organ-Aura.'
+  },
+  gold: {
+    id: 'gold',
+    name: 'CHRONO GOLD',
+    theme: 'Kaiserliche Mecha-Elite',
+    cost: 350,
+    themeColor: 0xfacc15,
+    glowColor: 0xeab308,
+    tint: 0xfef08a,
+    description: 'Prächtige Mecha-Panzerung aus reinem Chrono-Gold mit strahlender Lichtaura.'
+  }
+};
+
 export interface WorldProgress {
   unlocked: boolean;
   completedMissions: number; // 0 bis 30
@@ -23,6 +79,8 @@ export interface SaveData {
   dungeonHighScore?: number;
   dungeonMaxWave?: number;
   dungeonUnlocked?: boolean;
+  activeSkin?: TowerSkinId;
+  unlockedSkins?: TowerSkinId[];
   worlds: Record<WorldId, WorldProgress>;
   towerUpgrades: Record<string, TowerMetaUpgrade>;
 }
@@ -37,6 +95,8 @@ const DEFAULT_SAVE: SaveData = {
   dungeonHighScore: 0,
   dungeonMaxWave: 0,
   dungeonUnlocked: false,
+  activeSkin: 'default',
+  unlockedSkins: ['default'],
   worlds: {
     witch_forest: {
       unlocked: true,
@@ -107,6 +167,8 @@ export class SaveSystem {
         const data: SaveData = {
           ...DEFAULT_SAVE,
           ...parsed,
+          activeSkin: parsed.activeSkin || 'default',
+          unlockedSkins: parsed.unlockedSkins && parsed.unlockedSkins.length > 0 ? parsed.unlockedSkins : ['default'],
           worlds: {
             ...DEFAULT_SAVE.worlds,
             ...(parsed.worlds || {})
@@ -377,5 +439,46 @@ export class SaveSystem {
 
     this.save();
     return { isNewWaveRecord, isNewScoreRecord };
+  }
+
+  // --- TURM-SKIN MANAGEMENT ---
+  public static getActiveSkin(): TowerSkinId {
+    return this.data.activeSkin || 'default';
+  }
+
+  public static getUnlockedSkins(): TowerSkinId[] {
+    if (!this.data.unlockedSkins || this.data.unlockedSkins.length === 0) {
+      this.data.unlockedSkins = ['default'];
+    }
+    return this.data.unlockedSkins;
+  }
+
+  public static isSkinUnlocked(skinId: TowerSkinId): boolean {
+    if (this.adminMode || skinId === 'default') return true;
+    return this.getUnlockedSkins().includes(skinId);
+  }
+
+  public static unlockSkin(skinId: TowerSkinId, cost: number): boolean {
+    if (this.isSkinUnlocked(skinId)) return true;
+    if (this.data.crystals >= cost) {
+      this.data.crystals -= cost;
+      if (!this.data.unlockedSkins) this.data.unlockedSkins = ['default'];
+      if (!this.data.unlockedSkins.includes(skinId)) {
+        this.data.unlockedSkins.push(skinId);
+      }
+      this.data.activeSkin = skinId;
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  public static setActiveSkin(skinId: TowerSkinId): boolean {
+    if (this.isSkinUnlocked(skinId)) {
+      this.data.activeSkin = skinId;
+      this.save();
+      return true;
+    }
+    return false;
   }
 }

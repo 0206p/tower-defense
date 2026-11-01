@@ -290,7 +290,7 @@ export class WaveManager {
     balancing.finalizeWave(completedWaveNum);
     this.onWaveCompleted(completedWaveNum);
 
-    const waveBonus = 20 + completedWaveNum * 6;
+    const waveBonus = 12 + completedWaveNum * 3;
     this.economy.addGold(waveBonus);
 
     if (this.isEndless && completedWaveNum % 5 === 0) {

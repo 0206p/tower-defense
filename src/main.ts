@@ -9,13 +9,17 @@ import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { VictoryScene } from './scenes/VictoryScene';
 import { StarCraftPrototypeScene } from './scenes/StarCraftPrototypeScene';
+import { SkinShopScene } from './scenes/SkinShopScene';
 
-// Globaler Hook für gestochen scharfen Text in Phaser (2-fache interne Auflösung gegen Verpixelung)
+// Globaler Hook für gestochen scharfen Text in Phaser (Native High-DPI Auflösung 3x)
+const textResolution = Math.max(window.devicePixelRatio || 1, 2) * 1.5;
+
 if (!(Phaser.GameObjects.GameObjectFactory.prototype as any).__isTextPatched) {
   const origAddText = Phaser.GameObjects.GameObjectFactory.prototype.text;
   Phaser.GameObjects.GameObjectFactory.prototype.text = function (x, y, text, style) {
     const mergedStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-      resolution: 2,
+      resolution: textResolution,
+      padding: { x: 3, y: 2 },
       fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       ...(typeof style === 'object' ? style : {})
     };
@@ -32,7 +36,7 @@ const config: Phaser.Types.Core.GameConfig = {
   pixelArt: false,
   antialias: true,
   antialiasGL: true,
-  roundPixels: true,
+  roundPixels: false,
   backgroundColor: '#100d18',
   input: {
     activePointers: 1,
@@ -59,7 +63,8 @@ const config: Phaser.Types.Core.GameConfig = {
     GameScene,
     GameOverScene,
     VictoryScene,
-    StarCraftPrototypeScene
+    StarCraftPrototypeScene,
+    SkinShopScene
   ]
 };
 

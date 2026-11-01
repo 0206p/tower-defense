@@ -10,7 +10,7 @@ import {
 import { Enemy } from './Enemy';
 import { Projectile, ProjectileType } from './Projectile';
 import { EconomySystem } from '../systems/EconomySystem';
-import { SaveSystem } from '../systems/SaveSystem';
+import { SaveSystem, SKINS_CONFIG } from '../systems/SaveSystem';
 import { logger } from '../systems/GameLogger';
 import { balancing } from '../systems/BalancingTelemetry';
 
@@ -86,9 +86,24 @@ export class Tower extends Phaser.GameObjects.Container {
     this.rangeCircle.setDepth(4);
     this.updateRangeCircle();
 
+    // Skin-Aura unter dem Turm
+    const skinId = SaveSystem.getActiveSkin();
+    const skinDef = SKINS_CONFIG[skinId];
+    if (skinId !== 'default') {
+      const skinAura = scene.add.graphics();
+      skinAura.fillStyle(skinDef.glowColor, 0.35);
+      skinAura.fillCircle(0, 10, 16);
+      skinAura.lineStyle(1.5, skinDef.themeColor, 0.7);
+      skinAura.strokeCircle(0, 10, 16);
+      this.addAt(skinAura, 0);
+    }
+
     // Sprite
     const textureKey = `tower_${towerType}_1`;
     this.sprite = scene.add.sprite(0, 0, textureKey);
+    if (skinDef.tint !== 0xffffff) {
+      this.sprite.setTint(skinDef.tint);
+    }
     this.add(this.sprite);
 
     this.setSize(48, 56);
@@ -106,14 +121,15 @@ export class Tower extends Phaser.GameObjects.Container {
     this.on('pointerover', () => {
       if (!this.isSelected) {
         this.showRangePreview(true);
-        this.sprite.setTint(0xddf4ff);
+        this.sprite.setTint(0xffffff);
       }
     });
 
     this.on('pointerout', () => {
       if (!this.isSelected) {
         this.showRangePreview(false);
-        this.sprite.clearTint();
+        const skin = SKINS_CONFIG[SaveSystem.getActiveSkin()];
+        this.sprite.setTint(skin.tint);
       }
     });
 
@@ -214,6 +230,10 @@ export class Tower extends Phaser.GameObjects.Container {
     // Textur anpassen
     const textureKey = `tower_${this.towerType}_${this.currentLevel}`;
     this.sprite.setTexture(textureKey);
+    const skin = SKINS_CONFIG[SaveSystem.getActiveSkin()];
+    if (skin.tint !== 0xffffff) {
+      this.sprite.setTint(skin.tint);
+    }
 
     this.updateRangeCircle();
 
@@ -254,6 +274,10 @@ export class Tower extends Phaser.GameObjects.Container {
     const textureKey = `tower_${this.towerType}_${pathId === 'path_a' ? 'spec_a' : 'spec_b'}`;
     if (this.scene.textures.exists(textureKey)) {
       this.sprite.setTexture(textureKey);
+      const skin = SKINS_CONFIG[SaveSystem.getActiveSkin()];
+      if (skin.tint !== 0xffffff) {
+        this.sprite.setTint(skin.tint);
+      }
     }
 
     this.updateRangeCircle();

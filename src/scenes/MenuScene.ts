@@ -168,10 +168,16 @@ export class MenuScene extends Phaser.Scene {
       });
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 435, '💎 TURM-SCHMIEDE', 400, 42, 0x512b7a, 0x8e44ad, () => {
+    this.createMenuButton(GAME_WIDTH / 2 - 105, 435, '💎 TURM-SCHMIEDE', 190, 42, 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
+    });
+
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 435, '🎨 TURM-SKINS', 190, 42, 0x1e3a8a, 0x3b82f6, () => {
+      SoundManager.playClick();
+      logger.info('MenuScene', 'Turm-Skins Arsenal gewählt');
+      this.scene.start('SkinShopScene');
     });
 
     // Sound Toggle Button & Logs
