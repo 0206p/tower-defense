@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { SaveSystem } from '../systems/SaveSystem';
 import { SoundManager } from '../systems/SoundManager';
 
@@ -40,24 +40,24 @@ export class MenuScene extends Phaser.Scene {
 
     // Großer Titel mit deutlichem Abstand nach oben
     this.add.text(GAME_WIDTH / 2 + 3, 113, 'RETRO TOWER DEFENSE', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '34px',
+      fontFamily: GAME_FONT,
+      fontSize: '42px',
       color: '#0d0714',
       stroke: '#000000',
-      strokeThickness: 6
+      strokeThickness: 8
     }).setOrigin(0.5);
 
     this.add.text(GAME_WIDTH / 2, 110, 'RETRO TOWER DEFENSE', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '34px',
+      fontFamily: GAME_FONT,
+      fontSize: '42px',
       color: '#ffd13b',
       stroke: '#3d253b',
-      strokeThickness: 3
+      strokeThickness: 4
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 158, '- DIE DREI GROSSEN KAMPAGNEN-WELTEN -', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
+    this.add.text(GAME_WIDTH / 2, 160, '- DIE DREI GROSSEN KAMPAGNEN-WELTEN -', {
+      fontFamily: GAME_FONT,
+      fontSize: '16px',
       color: '#5eead4',
       stroke: '#000000',
       strokeThickness: 2
@@ -79,28 +79,28 @@ export class MenuScene extends Phaser.Scene {
       wCard.strokeRoundedRect(wx - 125, 205, 250, 105, 8);
 
       this.add.text(wx, 235, w.name, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '12px',
+        fontFamily: GAME_FONT,
+        fontSize: '16px',
         color: w.color,
         stroke: '#000000',
         strokeThickness: 2
       }).setOrigin(0.5);
 
       this.add.text(wx, 275, w.desc, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '10px',
+        fontFamily: GAME_FONT,
+        fontSize: '14px',
         lineSpacing: 5,
         color: '#f5f0e6',
         align: 'center'
       }).setOrigin(0.5);
     });
 
-    // Exakt zentrierte "Verfügbare Kristalle"-Anzeige mit 14px
+    // Exakt zentrierte "Verfügbare Kristalle"-Anzeige
     const crystals = SaveSystem.getCrystals();
     const crystalStr = `VERFÜGBARE KRISTALLE: ${crystals}`;
     const crystalText = this.add.text(GAME_WIDTH / 2 + 16, 348, crystalStr, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '14px',
+      fontFamily: GAME_FONT,
+      fontSize: '18px',
       color: '#be2edd',
       stroke: '#000000',
       strokeThickness: 3
@@ -109,7 +109,7 @@ export class MenuScene extends Phaser.Scene {
     const iconX = GAME_WIDTH / 2 - crystalText.width / 2 - 8;
     this.add.image(iconX, 348, 'icon_crystal').setScale(1.3);
 
-    // Haupt-Aktions-Buttons mit 14px Text
+    // Haupt-Aktions-Buttons
     this.createButton(GAME_WIDTH / 2, 420, 'KAMPAGNE WÄHLEN', 380, 58, 0x27ae60, 0x2ecc71, () => {
       SoundManager.playClick();
       this.scene.start('WorldSelectScene');
@@ -127,10 +127,10 @@ export class MenuScene extends Phaser.Scene {
       (soundBtn.getAt(1) as Phaser.GameObjects.Text).setText(muted ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN');
     });
 
-    // Hinweis mit 11px
+    // Hinweis
     const hint = this.add.text(GAME_WIDTH / 2, 630, '150 Missionen insgesamt. Schalte alle Welten frei!', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#f5f0e6',
       stroke: '#000000',
       strokeThickness: 2
@@ -165,8 +165,8 @@ export class MenuScene extends Phaser.Scene {
     container.add(bg);
 
     const label = this.add.text(0, 0, text, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
+      fontFamily: GAME_FONT,
+      fontSize: '16px',
       color: '#ffffff',
       stroke: '#000000',
       strokeThickness: 2
@@ -174,7 +174,7 @@ export class MenuScene extends Phaser.Scene {
     container.add(label);
 
     container.setSize(width, height);
-    container.setInteractive({ useHandCursor: true });
+    container.setInteractive(new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', onClick);
     container.on('pointerover', () => container.setScale(1.03));

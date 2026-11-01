@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { WORLDS_CONFIG } from '../config/WorldConfig';
 import { SaveSystem, WorldId } from '../systems/SaveSystem';
 import { SoundManager } from '../systems/SoundManager';
@@ -16,16 +16,16 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Header mit gut lesbarer Schrift
     this.add.text(GAME_WIDTH / 2, 45, 'KAMPAGNEN-WELTEN', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '28px',
+      fontFamily: GAME_FONT,
+      fontSize: '32px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 5
     }).setOrigin(0.5);
 
     this.add.text(GAME_WIDTH / 2, 85, 'Schließe 50 Missionen einer Welt ab, um die nächste Welt freizuschalten.', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#dcdde1',
       stroke: '#000000',
       strokeThickness: 2
@@ -34,8 +34,8 @@ export class WorldSelectScene extends Phaser.Scene {
     // Kristall-Anzeige oben rechts
     const crystals = SaveSystem.getCrystals();
     const crystalLabel = this.add.text(GAME_WIDTH - 60, 45, `${crystals}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '15px',
+      fontFamily: GAME_FONT,
+      fontSize: '18px',
       color: '#be2edd'
     }).setOrigin(1, 0.5);
     this.add.image(crystalLabel.x - crystalLabel.width - 16, 45, 'icon_crystal').setScale(1.3);
@@ -85,8 +85,8 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Titel (Groß & fett)
     const title = this.add.text(w / 2, 35, def.name.toUpperCase(), {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '15px',
+      fontFamily: GAME_FONT,
+      fontSize: '18px',
       color: isUnlocked ? def.textColor : '#7f8c8d',
       stroke: '#000000',
       strokeThickness: 3
@@ -95,8 +95,8 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Schwierigkeit Pill
     const diffText = this.add.text(w / 2, 70, `SCHWIERIGKEIT: ${def.difficulty}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: isUnlocked ? def.difficultyColor : '#57606f',
       stroke: '#000000',
       strokeThickness: 2
@@ -115,9 +115,9 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Beschreibung (Groß & lesbar)
     const desc = this.add.text(w / 2, 260, def.description, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
-      lineSpacing: 6,
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
+      lineSpacing: 5,
       color: isUnlocked ? '#f5f0e6' : '#57606f',
       align: 'center',
       wordWrap: { width: w - 36 }
@@ -126,9 +126,9 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Fortschritt
     const progressText = this.add.text(w / 2, 345, `FORTSCHRITT:\n${completed} / 50 MISSIONEN`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '12px',
-      lineSpacing: 6,
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
+      lineSpacing: 5,
       color: isUnlocked ? '#ffd13b' : '#57606f',
       align: 'center',
       stroke: '#000000',
@@ -147,14 +147,16 @@ export class WorldSelectScene extends Phaser.Scene {
       playBtn.add(btnBg);
 
       const btnLabel = this.add.text(0, 0, 'MISSIONEN ÖFFNEN', {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '11px',
-        color: '#ffffff'
+        fontFamily: GAME_FONT,
+        fontSize: '14px',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 2
       }).setOrigin(0.5);
       playBtn.add(btnLabel);
 
       playBtn.setSize(220, 44);
-      playBtn.setInteractive({ useHandCursor: true });
+      playBtn.setInteractive(new Phaser.Geom.Rectangle(-110, -22, 220, 44), Phaser.Geom.Rectangle.Contains);
 
       playBtn.on('pointerdown', () => {
         SoundManager.playClick();
@@ -175,8 +177,8 @@ export class WorldSelectScene extends Phaser.Scene {
     } else {
       const reqWorld = worldId === 'goblin_caves' ? 'der Hexenwelt' : 'den Goblinhöhlen';
       const lockText = this.add.text(w / 2, 420, `🔒 GESPERRT\nErfordert 50 Missionen\nin ${reqWorld}`, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '9px',
+        fontFamily: GAME_FONT,
+        fontSize: '13px',
         lineSpacing: 5,
         color: '#e74c3c',
         align: 'center',
@@ -197,14 +199,16 @@ export class WorldSelectScene extends Phaser.Scene {
     btn.add(bg);
 
     const label = this.add.text(0, 0, text, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
-      color: '#ffffff'
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
     btn.add(label);
 
     btn.setSize(320, 44);
-    btn.setInteractive({ useHandCursor: true });
+    btn.setInteractive(new Phaser.Geom.Rectangle(-160, -22, 320, 44), Phaser.Geom.Rectangle.Contains);
     btn.on('pointerdown', onClick);
     btn.on('pointerover', () => btn.setScale(1.03));
     btn.on('pointerout', () => btn.setScale(1.0));

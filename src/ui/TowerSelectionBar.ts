@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, PALETTE } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH, PALETTE } from '../config/GameConfig';
 import { TOWER_CONFIGS, TowerType } from '../config/TowerConfig';
 import { EconomySystem } from '../systems/EconomySystem';
 import { SoundManager } from '../systems/SoundManager';
@@ -35,8 +35,8 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     this.add(barBg);
 
     const title = scene.add.text(20, 33, 'TÜRME:', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '12px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 2
@@ -64,8 +64,8 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     this.statsHoverPanel.add(hBg);
 
     this.hoverTitle = scene.add.text(12, 10, 'TURM DETAILS', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 2
@@ -73,9 +73,9 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     this.statsHoverPanel.add(this.hoverTitle);
 
     this.hoverStats = scene.add.text(12, 32, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
-      lineSpacing: 6,
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      lineSpacing: 4,
       color: '#5eead4',
       stroke: '#000000',
       strokeThickness: 2
@@ -83,9 +83,9 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     this.statsHoverPanel.add(this.hoverStats);
 
     this.hoverDesc = scene.add.text(12, 75, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
-      lineSpacing: 4,
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      lineSpacing: 3,
       color: '#f5f0e6',
       wordWrap: { width: 280 }
     });
@@ -112,8 +112,8 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     container.add(icon);
 
     const nameText = this.scene.add.text(-24, -13, def.shortName, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#ffffff',
       stroke: '#000000',
       strokeThickness: 2
@@ -121,8 +121,8 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     container.add(nameText);
 
     const costText = this.scene.add.text(-24, 4, `${def.baseCost}G`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 2

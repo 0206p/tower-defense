@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { EnemyDefinition } from '../config/EnemyConfig';
 import { MapManager } from '../systems/MapManager';
 import { EconomySystem } from '../systems/EconomySystem';
+import { GAME_FONT } from '../config/GameConfig';
 
 export class Enemy extends Phaser.GameObjects.Container {
   public config: EnemyDefinition;
@@ -105,8 +106,8 @@ export class Enemy extends Phaser.GameObjects.Container {
       this.y - 18,
       isCrit ? `!${damage}!` : `-${damage}`,
       {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: isCrit ? '13px' : '10px',
+        fontFamily: GAME_FONT,
+        fontSize: isCrit ? '16px' : '13px',
         color: isCrit ? '#ff3838' : '#ffd13b',
         stroke: '#000000',
         strokeThickness: 3
@@ -163,9 +164,11 @@ export class Enemy extends Phaser.GameObjects.Container {
     this.economy.addScore(this.config.score);
 
     const goldText = this.scene.add.text(this.x, this.y - 12, `+${this.config.rewardGold}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
-      color: '#ffd13b'
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5).setDepth(20);
 
     this.scene.tweens.add({

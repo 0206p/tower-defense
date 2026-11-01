@@ -79,10 +79,22 @@ export class WaveManager {
       : `Welle ${waveNum} / 10 - Feindlicher Vorstoß!`;
     this.onWaveAnnouncement(announcement);
 
-    // Faire, progressive Skalierung
-    const worldMult = this.worldId === 'dead_mountain' ? 1.35 : this.worldId === 'goblin_caves' ? 1.18 : 1.0;
-    const missionMult = 1.0 + (this.missionNumber - 1) * 0.025;
-    const waveMult = 1.0 + (waveNum - 1) * 0.08;
+    // Welt-Grundskalierung
+    const worldMult = this.worldId === 'dead_mountain' ? 1.25 : this.worldId === 'goblin_caves' ? 1.12 : 1.0;
+
+    // Sanfte globale Missionsprogression über 150 Level:
+    const globalMission = this.worldId === 'dead_mountain'
+      ? 100 + this.missionNumber
+      : this.worldId === 'goblin_caves'
+      ? 50 + this.missionNumber
+      : this.missionNumber;
+
+    // Sehr kontrollierte Potenzkurve (1.0x bei Level 1 bis ~2.5x bei Level 150)
+    const progressRatio = Math.max(0, (globalMission - 1) / 149);
+    const missionMult = 1.0 + Math.pow(progressRatio, 1.2) * 1.5;
+
+    // Sanfte Wellen-Skalierung innerhalb einer Mission (Welle 1: 1.0x bis Welle 10: 1.40x)
+    const waveMult = 1.0 + (waveNum - 1) * 0.045;
     const hpMult = worldMult * missionMult * waveMult;
 
     // Nur leichte Gegner in den ersten Wellen!
@@ -93,14 +105,14 @@ export class WaveManager {
     if (waveNum >= 8) allowedPoolLength = fullPool.length; // Welle 8-10: schwere Trolle
 
     const currentPool = fullPool.slice(0, allowedPoolLength);
-    const spawnCount = 6 + waveNum * 2;
+    const spawnCount = 5 + waveNum;
     this.isSpawning = true;
     this.enemiesRemainingToSpawn = spawnCount + (isBossWave ? 1 : 0);
 
     let cumulativeDelay = 350;
 
     for (let i = 0; i < spawnCount; i++) {
-      cumulativeDelay += Math.max(500, 1100 - waveNum * 40);
+      cumulativeDelay += Math.max(600, 1200 - waveNum * 35);
       const enemyType = currentPool[i % currentPool.length];
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
@@ -158,7 +170,7 @@ export class WaveManager {
     const completedWaveNum = this.getCurrentWaveNumber();
     this.onWaveCompleted(completedWaveNum);
 
-    const waveBonus = 35 + completedWaveNum * 12;
+    const waveBonus = 20 + completedWaveNum * 6;
     this.economy.addGold(waveBonus);
 
     this.currentWaveIndex++;

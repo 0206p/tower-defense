@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { TOWER_CONFIGS, TowerType } from '../config/TowerConfig';
 import { SaveSystem, TowerMetaUpgrade } from '../systems/SaveSystem';
 
@@ -20,16 +20,16 @@ export class UpgradeMenuScene extends Phaser.Scene {
 
     // Header
     this.add.text(GAME_WIDTH / 2, 40, 'TURM-SCHMIEDE & AKADEMIE', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '26px',
+      fontFamily: GAME_FONT,
+      fontSize: '30px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 4
     }).setOrigin(0.5);
 
     this.add.text(GAME_WIDTH / 2, 75, 'Verstärke deine Türme dauerhaft in Schaden, Frequenz, Reichweite & Schnelligkeit!', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#dcdde1',
       stroke: '#000000',
       strokeThickness: 2
@@ -38,8 +38,8 @@ export class UpgradeMenuScene extends Phaser.Scene {
     // Kristalle oben rechts
     this.add.image(GAME_WIDTH - 240, 40, 'icon_crystal').setScale(1.4);
     this.crystalText = this.add.text(GAME_WIDTH - 215, 40, `${SaveSystem.getCrystals()} KRISTALLE`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
+      fontFamily: GAME_FONT,
+      fontSize: '16px',
       color: '#be2edd',
       stroke: '#000000',
       strokeThickness: 2
@@ -73,9 +73,9 @@ export class UpgradeMenuScene extends Phaser.Scene {
       const icon = this.add.image(24, 25, def.icon);
       btn.add(icon);
 
-      const label = this.add.text(60, 20, def.name, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '10px',
+      const label = this.add.text(60, 17, def.name, {
+        fontFamily: GAME_FONT,
+        fontSize: '14px',
         color: '#ffffff'
       });
       btn.add(label);
@@ -131,16 +131,16 @@ export class UpgradeMenuScene extends Phaser.Scene {
     this.contentContainer.add(panelBg);
 
     // Turm-Header im Panel
-    const title = this.add.text(30, 25, `${def.name.toUpperCase()} - FORSCHUNG`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '16px',
+    const title = this.add.text(30, 22, `${def.name.toUpperCase()} - FORSCHUNG`, {
+      fontFamily: GAME_FONT,
+      fontSize: '20px',
       color: '#ffd13b'
     });
     this.contentContainer.add(title);
 
-    const desc = this.add.text(30, 55, def.levels[0].description, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
+    const desc = this.add.text(30, 52, def.levels[0].description, {
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#a4b0be'
     });
     this.contentContainer.add(desc);
@@ -178,7 +178,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
     ];
 
     attributes.forEach((attr, idx) => {
-      this.createAttributeRow(attr, 30, 95 + idx * 90, upgrades[attr.key]);
+      this.createAttributeRow(attr, 30, 85 + idx * 95, upgrades[attr.key]);
     });
   }
 
@@ -190,29 +190,29 @@ export class UpgradeMenuScene extends Phaser.Scene {
   ): void {
     const rowBg = this.add.graphics();
     rowBg.fillStyle(0x252033, 0.9);
-    rowBg.fillRoundedRect(x, y, 750, 78, 6);
+    rowBg.fillRoundedRect(x, y, 750, 82, 6);
     rowBg.lineStyle(1, 0x483d5a, 1);
-    rowBg.strokeRoundedRect(x, y, 750, 78, 6);
+    rowBg.strokeRoundedRect(x, y, 750, 82, 6);
     this.contentContainer.add(rowBg);
 
     // Label & Icon
-    const label = this.add.text(x + 16, y + 14, `${attr.icon} ${attr.name}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+    const label = this.add.text(x + 16, y + 12, `${attr.icon} ${attr.name}`, {
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#f5f0e6'
     });
     this.contentContainer.add(label);
 
-    const bonus = this.add.text(x + 360, y + 14, attr.maxBonus, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+    const bonus = this.add.text(x + 360, y + 12, attr.maxBonus, {
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#5cd670'
     });
     this.contentContainer.add(bonus);
 
     const desc = this.add.text(x + 16, y + 36, attr.desc, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
       color: '#8c829e'
     });
     this.contentContainer.add(desc);
@@ -222,7 +222,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
       const pip = this.add.graphics();
       const isFilled = i <= currentLevel;
       pip.fillStyle(isFilled ? 0xf1c40f : 0x3d354a, 1);
-      pip.fillRoundedRect(x + 16 + (i - 1) * 36, y + 54, 30, 10, 2);
+      pip.fillRoundedRect(x + 16 + (i - 1) * 36, y + 58, 30, 10, 2);
       this.contentContainer.add(pip);
     }
 
@@ -231,7 +231,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
       const cost = SaveSystem.getUpgradeCost(currentLevel);
       const canAfford = SaveSystem.getCrystals() >= cost;
 
-      const upBtn = this.add.container(x + 630, y + 39);
+      const upBtn = this.add.container(x + 630, y + 41);
       const btnBg = this.add.graphics();
       btnBg.fillStyle(canAfford ? 0x27ae60 : 0x221f2d, 1);
       btnBg.fillRoundedRect(-85, -18, 170, 36, 4);
@@ -240,8 +240,8 @@ export class UpgradeMenuScene extends Phaser.Scene {
       upBtn.add(btnBg);
 
       const btnText = this.add.text(0, 0, `STUFE ${currentLevel + 1} (${cost}💎)`, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '8px',
+        fontFamily: GAME_FONT,
+        fontSize: '13px',
         color: canAfford ? '#ffffff' : '#686075'
       }).setOrigin(0.5);
       upBtn.add(btnText);
@@ -260,9 +260,9 @@ export class UpgradeMenuScene extends Phaser.Scene {
 
       this.contentContainer.add(upBtn);
     } else {
-      const maxText = this.add.text(x + 630, y + 39, '★ MAX STUFE 5', {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '10px',
+      const maxText = this.add.text(x + 630, y + 41, '★ MAX STUFE 5', {
+        fontFamily: GAME_FONT,
+        fontSize: '14px',
         color: '#ffd13b'
       }).setOrigin(0.5);
       this.contentContainer.add(maxText);
@@ -280,8 +280,8 @@ export class UpgradeMenuScene extends Phaser.Scene {
     resetBtn.add(rBg);
 
     const rLabel = this.add.text(0, 0, 'ALLE KRISTALLE ZURÜCKSETZEN', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
       color: '#ffffff'
     }).setOrigin(0.5);
     resetBtn.add(rLabel);
@@ -304,8 +304,8 @@ export class UpgradeMenuScene extends Phaser.Scene {
     backBtn.add(bBg);
 
     const bLabel = this.add.text(0, 0, '< ZURÜCK ZU DEN WELTEN', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
       color: '#ffd13b'
     }).setOrigin(0.5);
     backBtn.add(bLabel);

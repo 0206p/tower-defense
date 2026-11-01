@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, PALETTE } from '../config/GameConfig';
+import { GAME_FONT, GAME_WIDTH, PALETTE } from '../config/GameConfig';
 import { SoundManager } from '../systems/SoundManager';
 
 export class HUD extends Phaser.GameObjects.Container {
@@ -47,9 +47,9 @@ export class HUD extends Phaser.GameObjects.Container {
     const heartIcon = scene.add.image(26, 22, 'icon_heart');
     this.add(heartIcon);
 
-    this.livesText = scene.add.text(44, 13, `${initialLives}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
+    this.livesText = scene.add.text(44, 11, `${initialLives}`, {
+      fontFamily: GAME_FONT,
+      fontSize: '16px',
       color: PALETTE.uiTextRed,
       stroke: '#000000',
       strokeThickness: 3
@@ -60,9 +60,9 @@ export class HUD extends Phaser.GameObjects.Container {
     const goldIcon = scene.add.image(130, 22, 'icon_gold');
     this.add(goldIcon);
 
-    this.goldText = scene.add.text(148, 13, `${initialGold}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
+    this.goldText = scene.add.text(148, 11, `${initialGold}`, {
+      fontFamily: GAME_FONT,
+      fontSize: '16px',
       color: PALETTE.uiTextGold,
       stroke: '#000000',
       strokeThickness: 3
@@ -73,9 +73,9 @@ export class HUD extends Phaser.GameObjects.Container {
     const waveIcon = scene.add.image(265, 22, 'icon_wave');
     this.add(waveIcon);
 
-    this.waveText = scene.add.text(285, 13, 'Welle: 0 / 10', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+    this.waveText = scene.add.text(285, 11, 'Welle: 0 / 10', {
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: PALETTE.uiTextWhite,
       stroke: '#000000',
       strokeThickness: 2
@@ -83,9 +83,9 @@ export class HUD extends Phaser.GameObjects.Container {
     this.add(this.waveText);
 
     // 4. SCORE
-    this.scoreText = scene.add.text(465, 13, 'Punkte: 0', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+    this.scoreText = scene.add.text(465, 11, 'Punkte: 0', {
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: PALETTE.uiTextBlue,
       stroke: '#000000',
       strokeThickness: 2
@@ -119,8 +119,8 @@ export class HUD extends Phaser.GameObjects.Container {
     this.add(this.announcementBg);
 
     this.announcementText = scene.add.text(GAME_WIDTH / 2, 72, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#ffd13b',
       align: 'center',
       stroke: '#000000',
@@ -142,8 +142,8 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(bg);
 
     const text = this.scene.add.text(0, 0, 'PAUSE', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(text);
@@ -189,8 +189,8 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(bg);
 
     const text = this.scene.add.text(0, 0, label, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: isActive ? '#ffffff' : '#8c829e'
     }).setOrigin(0.5);
     container.add(text);
@@ -233,8 +233,8 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(bg);
 
     this.nextWaveLabel = this.scene.add.text(0, 0, 'WELLE STARTEN', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#ffffff',
       stroke: '#000000',
       strokeThickness: 2

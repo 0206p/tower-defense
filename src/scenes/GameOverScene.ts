@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { WorldId } from '../systems/SaveSystem';
 
 export interface GameOverData {
@@ -27,14 +27,16 @@ export class GameOverScene extends Phaser.Scene {
     panel.strokeRoundedRect(GAME_WIDTH / 2 - 320, 80, 640, 550, 10);
 
     this.add.text(GAME_WIDTH / 2, 140, 'NIEDERLAGE', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '36px',
-      color: '#e84a5f'
+      fontFamily: GAME_FONT,
+      fontSize: '40px',
+      color: '#e84a5f',
+      stroke: '#000000',
+      strokeThickness: 5
     }).setOrigin(0.5);
 
     this.add.text(GAME_WIDTH / 2, 185, `Mission ${data.missionNumber || 1} - Überrannt in Welle ${data.wave || 1}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#d4afb6'
     }).setOrigin(0.5);
 
@@ -46,42 +48,42 @@ export class GameOverScene extends Phaser.Scene {
     statBox.strokeRoundedRect(GAME_WIDTH / 2 - 200, 220, 400, 140, 6);
 
     this.add.text(GAME_WIDTH / 2 - 160, 245, `Erreichte Welle:`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#f5f0e6'
     });
     this.add.text(GAME_WIDTH / 2 + 160, 245, `${data.wave ?? 1} / 10`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#ffd13b'
     }).setOrigin(1, 0);
 
     this.add.text(GAME_WIDTH / 2 - 160, 280, `Punkte:`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#f5f0e6'
     });
     this.add.text(GAME_WIDTH / 2 + 160, 280, `${data.score ?? 0}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#4fc3f7'
     }).setOrigin(1, 0);
 
     this.add.text(GAME_WIDTH / 2 - 160, 315, `Gold:`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#f5f0e6'
     });
     this.add.text(GAME_WIDTH / 2 + 160, 315, `${data.gold ?? 0} G`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#ffd13b'
     }).setOrigin(1, 0);
 
     // Tipp
     this.add.text(GAME_WIDTH / 2, 385, 'Tipp: Rüste in der Turm-Schmiede Schaden & Kadenz auf!', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#ffd13b',
       align: 'center'
     }).setOrigin(0.5);
@@ -103,8 +105,8 @@ export class GameOverScene extends Phaser.Scene {
     });
 
     const worldBtn = this.add.text(GAME_WIDTH / 2, 600, '< ZURÜCK ZUR WELTENAUSWAHL', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#8a78a5'
     }).setOrigin(0.5).setInteractive();
 
@@ -133,8 +135,8 @@ export class GameOverScene extends Phaser.Scene {
     container.add(bg);
 
     const label = this.add.text(0, 0, text, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(label);

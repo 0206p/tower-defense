@@ -36,26 +36,26 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
       {
         level: 1,
         cost: 100,
-        damage: 46, // 1-Shot gegen Fledermäuse, 1-2 Shots gegen Goblins!
-        range: 185,
-        attackCooldown: 480,
-        description: 'Stufe 1 (Gelb): Schnelle Pfeilsalven (46 Schaden, 2+ Schüsse/s).'
+        damage: 22,
+        range: 165,
+        attackCooldown: 420,
+        description: 'Stufe 1 (Gelb): Schnelle Pfeilsalven (22 Schaden, ~2.4/s).'
       },
       {
         level: 2,
-        cost: 120,
-        damage: 110,
-        range: 220,
-        attackCooldown: 380,
-        description: 'Stufe 2 (Orange): Verstärkter Kompositbogen (110 Schaden).'
+        cost: 140,
+        damage: 48,
+        range: 195,
+        attackCooldown: 360,
+        description: 'Stufe 2 (Orange): Verstärkter Kompositbogen (48 Schaden).'
       },
       {
         level: 3,
-        cost: 200,
-        damage: 240,
-        range: 260,
-        attackCooldown: 260,
-        description: 'Stufe 3 (Rot): Meisterschütze mit Pfeilhagel (240 Schaden, fast 4 Schüsse/s)!'
+        cost: 240,
+        damage: 105,
+        range: 230,
+        attackCooldown: 270,
+        description: 'Stufe 3 (Rot): Meisterschütze mit Pfeilhagel (105 Schaden, fast 4/s)!'
       }
     ]
   },
@@ -64,34 +64,34 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
     name: 'Kanone',
     shortName: 'Kanone',
     icon: 'icon_cannon',
-    baseCost: 175,
+    baseCost: 150,
     levels: [
       {
         level: 1,
-        cost: 175,
-        damage: 135, // Krachender Flächenschaden!
-        range: 160,
-        attackCooldown: 1300,
-        splashRadius: 90,
-        description: 'Stufe 1 (Gelb): Schwere Artillerie (135 Flächenschaden).'
+        cost: 150,
+        damage: 65,
+        range: 150,
+        attackCooldown: 1400,
+        splashRadius: 75,
+        description: 'Stufe 1 (Gelb): Schwere Artillerie (65 Flächenschaden).'
       },
       {
         level: 2,
-        cost: 160,
-        damage: 280,
-        range: 190,
-        attackCooldown: 1100,
-        splashRadius: 115,
-        description: 'Stufe 2 (Orange): Belagerungsmörser (280 Flächenschaden).'
+        cost: 180,
+        damage: 140,
+        range: 175,
+        attackCooldown: 1200,
+        splashRadius: 95,
+        description: 'Stufe 2 (Orange): Belagerungsmörser (140 Flächenschaden).'
       },
       {
         level: 3,
-        cost: 280,
-        damage: 550,
-        range: 225,
-        attackCooldown: 900,
-        splashRadius: 145,
-        description: 'Stufe 3 (Rot): Titanische Erdbebenkanone (550 Flächenschaden zermalmt Gruppen)!'
+        cost: 290,
+        damage: 320,
+        range: 205,
+        attackCooldown: 1000,
+        splashRadius: 125,
+        description: 'Stufe 3 (Rot): Titanische Erdbebenkanone (320 Flächenschaden)!'
       }
     ]
   },
@@ -100,40 +100,40 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
     name: 'Eismagier',
     shortName: 'Eis',
     icon: 'icon_ice',
-    baseCost: 150,
+    baseCost: 130,
     levels: [
       {
         level: 1,
-        cost: 150,
-        damage: 40,
-        range: 160,
+        cost: 130,
+        damage: 18,
+        range: 150,
         attackCooldown: 900,
-        splashRadius: 80,
-        slowFactor: 0.55,
-        slowDuration: 2800,
-        description: 'Stufe 1 (Gelb): Gefriert Gruppen (40 Schaden, 55% Verlangsamung).'
+        splashRadius: 75,
+        slowFactor: 0.45,
+        slowDuration: 2500,
+        description: 'Stufe 1 (Gelb): Gefriert Gruppen (18 Schaden, 45% Slow).'
       },
       {
         level: 2,
-        cost: 140,
-        damage: 90,
-        range: 195,
+        cost: 160,
+        damage: 42,
+        range: 180,
         attackCooldown: 750,
-        splashRadius: 105,
-        slowFactor: 0.70,
-        slowDuration: 3500,
-        description: 'Stufe 2 (Orange): Tiefkristalle mit 70% Frostlähmung (90 Schaden).'
+        splashRadius: 95,
+        slowFactor: 0.60,
+        slowDuration: 3200,
+        description: 'Stufe 2 (Orange): Tiefkristalle mit 60% Frostlähmung (42 Schaden).'
       },
       {
         level: 3,
-        cost: 250,
-        damage: 180,
-        range: 235,
+        cost: 260,
+        damage: 95,
+        range: 215,
         attackCooldown: 600,
-        splashRadius: 135,
-        slowFactor: 0.85,
-        slowDuration: 4400,
-        description: 'Stufe 3 (Rot): Blizzard-Kathedrale: 85% Lähmung und 180 Kälteschaden!'
+        splashRadius: 125,
+        slowFactor: 0.75,
+        slowDuration: 4000,
+        description: 'Stufe 3 (Rot): Blizzard-Kathedrale: 75% Lähmung und 95 Kälteschaden!'
       }
     ]
   },
@@ -142,40 +142,40 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
     name: 'Gift-Alchemist',
     shortName: 'Gift',
     icon: 'icon_poison',
-    baseCost: 140,
+    baseCost: 135,
     levels: [
       {
         level: 1,
-        cost: 140,
-        damage: 35,
-        range: 165,
+        cost: 135,
+        damage: 18,
+        range: 155,
         attackCooldown: 1000,
-        splashRadius: 75,
-        dotDamage: 25,
-        dotDuration: 3200,
-        description: 'Stufe 1 (Gelb): Säurebombe (35 Aufprall + 25 Giftschaden pro Tick).'
+        splashRadius: 70,
+        dotDamage: 14,
+        dotDuration: 3000,
+        description: 'Stufe 1 (Gelb): Säurebombe (18 Schaden + 14 DoT).'
       },
       {
         level: 2,
-        cost: 130,
-        damage: 75,
-        range: 195,
+        cost: 170,
+        damage: 40,
+        range: 185,
         attackCooldown: 850,
-        splashRadius: 95,
-        dotDamage: 50,
-        dotDuration: 4000,
-        description: 'Stufe 2 (Orange): Schlangengift schmilzt Rüstung (50 DoT).'
+        splashRadius: 90,
+        dotDamage: 30,
+        dotDuration: 3800,
+        description: 'Stufe 2 (Orange): Schlangengift schmilzt Rüstung (30 DoT).'
       },
       {
         level: 3,
-        cost: 240,
-        damage: 160,
-        range: 235,
+        cost: 270,
+        damage: 90,
+        range: 220,
         attackCooldown: 700,
-        splashRadius: 125,
-        dotDamage: 110,
-        dotDuration: 5000,
-        description: 'Stufe 3 (Rot): Biozid-Kaskade: 160 Aufprall + 110 Giftschaden zersetzt Horden!'
+        splashRadius: 115,
+        dotDamage: 65,
+        dotDuration: 4500,
+        description: 'Stufe 3 (Rot): Biozid-Kaskade: 90 Schaden + 65 DoT zersetzt Horden!'
       }
     ]
   },
@@ -184,34 +184,34 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
     name: 'Tesla-Spule',
     shortName: 'Tesla',
     icon: 'icon_tesla',
-    baseCost: 200,
+    baseCost: 180,
     levels: [
       {
         level: 1,
-        cost: 200,
-        damage: 95,
-        range: 175,
-        attackCooldown: 1050,
+        cost: 180,
+        damage: 48,
+        range: 165,
+        attackCooldown: 1100,
         chainTargets: 3,
-        description: 'Stufe 1 (Gelb): Kettenblitze auf 3 Feinde (95 Schockschaden).'
+        description: 'Stufe 1 (Gelb): Kettenblitze auf 3 Feinde (48 Schockschaden).'
       },
       {
         level: 2,
-        cost: 170,
-        damage: 200,
-        range: 205,
-        attackCooldown: 900,
-        chainTargets: 5,
-        description: 'Stufe 2 (Orange): Hochfrequenz-Plasma auf 5 Ziele (200 Schaden).'
+        cost: 210,
+        damage: 105,
+        range: 195,
+        attackCooldown: 950,
+        chainTargets: 4,
+        description: 'Stufe 2 (Orange): Hochfrequenz-Plasma auf 4 Ziele (105 Schaden).'
       },
       {
         level: 3,
-        cost: 300,
-        damage: 420,
-        range: 235,
-        attackCooldown: 780,
-        chainTargets: 7,
-        description: 'Stufe 3 (Rot): Donnergott-Kondensator: 420 Blitzschaden auf 7 Feinde!'
+        cost: 320,
+        damage: 230,
+        range: 225,
+        attackCooldown: 800,
+        chainTargets: 6,
+        description: 'Stufe 3 (Rot): Donnergott-Kondensator: 230 Blitzschaden auf 6 Feinde!'
       }
     ]
   },
@@ -220,34 +220,34 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
     name: 'Scharfschütze',
     shortName: 'Sniper',
     icon: 'icon_sniper',
-    baseCost: 220,
+    baseCost: 210,
     levels: [
       {
         level: 1,
-        cost: 220,
-        damage: 280,
-        range: 350,
-        attackCooldown: 1800,
-        critChance: 0.25,
-        description: 'Stufe 1 (Gelb): Große Reichweite, 280 Schaden & 25% Kritischer Schuss (616 Dmg)!'
+        cost: 210,
+        damage: 140,
+        range: 340,
+        attackCooldown: 1900,
+        critChance: 0.20,
+        description: 'Stufe 1 (Gelb): Große Reichweite, 140 Schaden & 20% Kritisch (308 Dmg).'
       },
       {
         level: 2,
-        cost: 190,
-        damage: 560,
-        range: 420,
-        attackCooldown: 1500,
-        critChance: 0.40,
-        description: 'Stufe 2 (Orange): Panzerbrechendes Wolfram: 560 Schaden & 40% Kritisch.'
+        cost: 240,
+        damage: 300,
+        range: 400,
+        attackCooldown: 1600,
+        critChance: 0.35,
+        description: 'Stufe 2 (Orange): Panzerbrechendes Wolfram: 300 Schaden & 35% Kritisch.'
       },
       {
         level: 3,
-        cost: 340,
-        damage: 1150,
-        range: 520,
-        attackCooldown: 1250,
-        critChance: 0.55,
-        description: 'Stufe 3 (Rot): Orbital-Kaliber: 1150 Schaden & 55% Kritisch (über 2500 Schaden)!'
+        cost: 370,
+        damage: 680,
+        range: 480,
+        attackCooldown: 1300,
+        critChance: 0.50,
+        description: 'Stufe 3 (Rot): Orbital-Kaliber: 680 Schaden & 50% Kritisch (über 1500 Dmg)!'
       }
     ]
   }

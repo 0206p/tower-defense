@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { WORLDS_CONFIG } from '../config/WorldConfig';
 import { SaveSystem, WorldId } from '../systems/SaveSystem';
 import { SoundManager } from '../systems/SoundManager';
@@ -26,8 +26,8 @@ export class MissionSelectScene extends Phaser.Scene {
 
     // Header mit gut lesbarer Schrift
     this.add.text(GAME_WIDTH / 2, 40, `${worldDef.name.toUpperCase()} - MISSIONEN`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '24px',
+      fontFamily: GAME_FONT,
+      fontSize: '28px',
       color: worldDef.textColor,
       stroke: '#000000',
       strokeThickness: 4
@@ -35,8 +35,8 @@ export class MissionSelectScene extends Phaser.Scene {
 
     const progress = SaveSystem.getData().worlds[this.worldId] || { completedMissions: 0, stars: {} };
     this.add.text(GAME_WIDTH / 2, 75, `Abgeschlossen: ${progress.completedMissions} / 50 Missionen. Jede Mission dauert 10 Wellen.`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#dcdde1',
       stroke: '#000000',
       strokeThickness: 2
@@ -60,8 +60,8 @@ export class MissionSelectScene extends Phaser.Scene {
 
     // Zurück-Button
     const backBtn = this.add.text(GAME_WIDTH / 2, 630, '< ZURÜCK ZUR WELTENAUSWAHL', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
+      fontFamily: GAME_FONT,
+      fontSize: '16px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 3
@@ -121,8 +121,8 @@ export class MissionSelectScene extends Phaser.Scene {
 
     if (isUnlocked) {
       const numText = this.add.text(w / 2, 22, `MISSION ${missionNum}`, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '11px',
+        fontFamily: GAME_FONT,
+        fontSize: '14px',
         color: '#ffffff',
         stroke: '#000000',
         strokeThickness: 2
@@ -134,14 +134,14 @@ export class MissionSelectScene extends Phaser.Scene {
         starStr += s <= stars ? '★ ' : '☆ ';
       }
       const starText = this.add.text(w / 2, 50, starStr.trim(), {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '13px',
+        fontFamily: GAME_FONT,
+        fontSize: '16px',
         color: stars > 0 ? '#ffd13b' : '#686075'
       }).setOrigin(0.5);
       container.add(starText);
 
       container.setSize(w, h);
-      container.setInteractive({ useHandCursor: true });
+      container.setInteractive(new Phaser.Geom.Rectangle(0, 0, w, h), Phaser.Geom.Rectangle.Contains);
 
       container.on('pointerdown', () => {
         SoundManager.playClick();
@@ -170,8 +170,8 @@ export class MissionSelectScene extends Phaser.Scene {
       });
     } else {
       const lockText = this.add.text(w / 2, h / 2, `🔒 MISSION ${missionNum}`, {
-        fontFamily: '"Press Start 2P", monospace',
-        fontSize: '10px',
+        fontFamily: GAME_FONT,
+        fontSize: '13px',
         color: '#57606f'
       }).setOrigin(0.5);
       container.add(lockText);
@@ -188,14 +188,14 @@ export class MissionSelectScene extends Phaser.Scene {
     container.add(bg);
 
     const txt = this.add.text(0, 0, label, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: isActive ? '#ffffff' : '#8c829e'
     }).setOrigin(0.5);
     container.add(txt);
 
     container.setSize(110, 36);
-    container.setInteractive({ useHandCursor: true });
+    container.setInteractive(new Phaser.Geom.Rectangle(-55, -18, 110, 36), Phaser.Geom.Rectangle.Contains);
     container.on('pointerdown', onClick);
 
     return container;

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { SoundManager } from '../systems/SoundManager';
 
 export class PauseModal extends Phaser.GameObjects.Container {
@@ -41,15 +41,17 @@ export class PauseModal extends Phaser.GameObjects.Container {
 
     // Titel
     const title = scene.add.text(GAME_WIDTH / 2, boxY + 45, 'SPIEL PAUSIERT', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '20px',
-      color: '#ffd13b'
+      fontFamily: GAME_FONT,
+      fontSize: '24px',
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0.5);
     this.add(title);
 
     const sub = scene.add.text(GAME_WIDTH / 2, boxY + 80, 'Das Königreich wartet auf deine Befehle.', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#a4b0be'
     }).setOrigin(0.5);
     this.add(sub);
@@ -103,14 +105,14 @@ export class PauseModal extends Phaser.GameObjects.Container {
     container.add(bg);
 
     const label = this.scene.add.text(0, 0, text, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(label);
 
     container.setSize(w, h);
-    container.setInteractive({ useHandCursor: true });
+    container.setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', onClick);
     container.on('pointerover', () => container.setScale(1.03));

@@ -92,7 +92,7 @@ export class GameScene extends Phaser.Scene {
         SoundManager.playCoin();
         if (waveNum < this.waveManager.getTotalWaves()) {
           this.hud.setNextWaveButtonEnabled(true, `WELLE ${waveNum + 1} STARTEN`);
-          this.hud.showAnnouncement(`Welle ${waveNum} überstanden! +${30 + waveNum * 12} Bonusgold`);
+          this.hud.showAnnouncement(`Welle ${waveNum} überstanden! +${20 + waveNum * 6} Bonusgold`);
         }
       },
       onAllWavesCompleted: () => {

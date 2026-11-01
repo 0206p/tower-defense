@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { GAME_FONT, GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
 import { WorldId } from '../systems/SaveSystem';
 
 export interface VictoryData {
@@ -28,14 +28,16 @@ export class VictoryScene extends Phaser.Scene {
     panel.strokeRoundedRect(GAME_WIDTH / 2 - 340, 70, 680, 560, 10);
 
     this.add.text(GAME_WIDTH / 2, 130, 'MISSION ERFOLGREICH!', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '26px',
-      color: '#ffd13b'
+      fontFamily: GAME_FONT,
+      fontSize: '34px',
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 5
     }).setOrigin(0.5);
 
     this.add.text(GAME_WIDTH / 2, 170, `Mission ${data.missionNumber} - Alle 10 Wellen bezwungen!`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#a3e8b0'
     }).setOrigin(0.5);
 
@@ -45,17 +47,17 @@ export class VictoryScene extends Phaser.Scene {
       starStr += s <= (data.stars || 1) ? '★ ' : '☆ ';
     }
     this.add.text(GAME_WIDTH / 2, 215, starStr.trim(), {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '28px',
+      fontFamily: GAME_FONT,
+      fontSize: '34px',
       color: '#ffd13b'
     }).setOrigin(0.5);
 
     // Kristall-Belohnung
     const crystalsEarned = (data.stars || 1) * 25 + 50;
-    this.add.image(GAME_WIDTH / 2 - 100, 265, 'icon_crystal').setScale(1.2);
-    this.add.text(GAME_WIDTH / 2 - 80, 265, `+${crystalsEarned} Kristalle für die Turm-Schmiede!`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+    this.add.image(GAME_WIDTH / 2 - 120, 265, 'icon_crystal').setScale(1.2);
+    this.add.text(GAME_WIDTH / 2 - 100, 265, `+${crystalsEarned} Kristalle für die Turm-Schmiede!`, {
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#be2edd'
     }).setOrigin(0, 0.5);
 
@@ -67,35 +69,35 @@ export class VictoryScene extends Phaser.Scene {
     statBox.strokeRoundedRect(GAME_WIDTH / 2 - 220, 300, 440, 150, 6);
 
     this.add.text(GAME_WIDTH / 2 - 180, 325, `Verbliebene Leben:`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#f5f0e6'
     });
     this.add.text(GAME_WIDTH / 2 + 180, 325, `${data.lives ?? 20} / 20`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#e84a5f'
     }).setOrigin(1, 0);
 
     this.add.text(GAME_WIDTH / 2 - 180, 360, `Verbliebenes Gold:`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#f5f0e6'
     });
     this.add.text(GAME_WIDTH / 2 + 180, 360, `${data.gold ?? 0} G`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#ffd13b'
     }).setOrigin(1, 0);
 
     this.add.text(GAME_WIDTH / 2 - 180, 395, `Punkte:`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#f5f0e6'
     });
     this.add.text(GAME_WIDTH / 2 + 180, 395, `${data.score ?? 0}`, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '15px',
       color: '#4fc3f7'
     }).setOrigin(1, 0);
 
@@ -114,8 +116,8 @@ export class VictoryScene extends Phaser.Scene {
     });
 
     const menuBtn = this.add.text(GAME_WIDTH / 2, 605, '< ZURÜCK ZUR WELTENAUSWAHL', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
+      fontFamily: GAME_FONT,
+      fontSize: '13px',
       color: '#8a78a5'
     }).setOrigin(0.5).setInteractive();
 
@@ -144,8 +146,8 @@ export class VictoryScene extends Phaser.Scene {
     container.add(bg);
 
     const label = this.add.text(0, 0, text, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(label);

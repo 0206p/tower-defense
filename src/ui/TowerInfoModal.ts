@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Tower } from '../entities/Tower';
 import { EconomySystem } from '../systems/EconomySystem';
-import { PALETTE } from '../config/GameConfig';
+import { GAME_FONT, PALETTE } from '../config/GameConfig';
 
 export class TowerInfoModal extends Phaser.GameObjects.Container {
   private currentTower: Tower | null = null;
@@ -49,18 +49,18 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     header.fillRoundedRect(0, 0, 325, 40, { tl: 8, tr: 8, bl: 0, br: 0 });
     this.add(header);
 
-    this.titleText = scene.add.text(14, 12, 'TURM DETAILS', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+    this.titleText = scene.add.text(14, 10, 'TURM DETAILS', {
+      fontFamily: GAME_FONT,
+      fontSize: '14px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 2
     });
     this.add(this.titleText);
 
-    const closeBtn = scene.add.text(305, 12, 'X', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '14px',
+    const closeBtn = scene.add.text(305, 14, 'X', {
+      fontFamily: GAME_FONT,
+      fontSize: '16px',
       color: '#e84a5f',
       stroke: '#000000',
       strokeThickness: 2
@@ -73,10 +73,10 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(closeBtn);
 
     // Gut lesbare Stats
-    this.statsText = scene.add.text(16, 50, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
-      lineSpacing: 8,
+    this.statsText = scene.add.text(16, 48, '', {
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
+      lineSpacing: 6,
       color: '#f5f0e6',
       stroke: '#000000',
       strokeThickness: 2
@@ -84,9 +84,9 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(this.statsText);
 
     this.upgradeInfoText = scene.add.text(16, 160, '', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
-      lineSpacing: 6,
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
+      lineSpacing: 5,
       color: '#5cd670',
       stroke: '#000000',
       strokeThickness: 2,
@@ -139,8 +139,8 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     container.add(bg);
 
     const text = this.scene.add.text(w / 2, h / 2, label, {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
       color: '#ffffff',
       stroke: '#000000',
       strokeThickness: 2

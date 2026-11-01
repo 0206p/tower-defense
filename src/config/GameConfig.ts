@@ -4,9 +4,10 @@ export const TILE_SIZE = 40;
 export const GRID_COLS = 32; // 32 * 40 = 1280
 export const GRID_ROWS = 18; // 18 * 40 = 720
 
-export const INITIAL_GOLD = 500;
+export const INITIAL_GOLD = 250;
 export const INITIAL_LIVES = 20;
 export const TOTAL_WAVES = 10;
+export const GAME_FONT = '"Chakra Petch", "Segoe UI", sans-serif';
 
 export const PALETTE = {
   // Ground & Nature
