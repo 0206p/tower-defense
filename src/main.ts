@@ -68,19 +68,26 @@ const config: Phaser.Types.Core.GameConfig = {
   ]
 };
 
-window.addEventListener('load', async () => {
-  if (document.fonts && document.fonts.ready) {
-    try {
-      await document.fonts.ready;
-      await Promise.allSettled([
-        document.fonts.load('500 16px "Inter"'),
-        document.fonts.load('600 16px "Inter"'),
-        document.fonts.load('700 16px "Inter"'),
-        document.fonts.load('800 16px "Inter"')
-      ]);
-    } catch (e) {
-      console.warn('Font loading check:', e);
+  let game: Phaser.Game | null = null;
+  window.addEventListener('load', async () => {
+    if (document.fonts && document.fonts.ready) {
+      try {
+        await document.fonts.ready;
+        await Promise.allSettled([
+          document.fonts.load('500 16px "Inter"'),
+          document.fonts.load('600 16px "Inter"'),
+          document.fonts.load('700 16px "Inter"'),
+          document.fonts.load('800 16px "Inter"')
+        ]);
+      } catch (e) {
+        console.warn('Font loading check:', e);
+      }
     }
-  }
-  new Phaser.Game(config);
-});
+    game = new Phaser.Game(config);
+  });
+
+  window.addEventListener('resize', () => {
+    if (game && game.scale) {
+      game.scale.refresh();
+    }
+  });

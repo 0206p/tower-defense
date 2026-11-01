@@ -316,3 +316,4 @@ export class SkinShopScene extends Phaser.Scene {
     });
   }
 }
+
