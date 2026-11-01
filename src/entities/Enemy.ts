@@ -20,6 +20,7 @@ export class Enemy extends Phaser.GameObjects.Container {
   public currentShield: number = 0;
   public maxShield: number = 0;
   private isEnraged: boolean = false;
+  private stunTimer: number = 0;
 
   private slowMultiplier: number = 1.0;
   private slowTimer: number = 0;
@@ -108,13 +109,13 @@ export class Enemy extends Phaser.GameObjects.Container {
     }
   }
 
-  public takeDamage(damage: number, isCrit: boolean = false): void {
+  public takeDamage(damage: number, isCrit: boolean = false, shieldPiercing: boolean = false): void {
     if (this.isDead) return;
 
     let damageToHp = damage;
     let hitShield = false;
 
-    if (this.currentShield > 0) {
+    if (this.currentShield > 0 && !shieldPiercing) {
       hitShield = true;
       if (this.currentShield >= damage) {
         this.currentShield -= damage;
@@ -131,7 +132,10 @@ export class Enemy extends Phaser.GameObjects.Container {
     // Schadens-Popup
     let popupColor = isCrit ? '#ff3838' : '#ffd13b';
     let popupText = isCrit ? `!${damage}!` : `-${damage}`;
-    if (hitShield && damageToHp === 0) {
+    if (shieldPiercing) {
+      popupColor = '#a29bfe';
+      popupText = `⚡${damage}`;
+    } else if (hitShield && damageToHp === 0) {
       popupColor = '#00d2d3';
       popupText = `🛡${damage}`;
     }
@@ -164,7 +168,7 @@ export class Enemy extends Phaser.GameObjects.Container {
       duration: 60,
       yoyo: true,
       onComplete: () => {
-        if (!this.isDead) this.sprite.alpha = 1;
+        if (!this.isDead && this.stunTimer <= 0) this.sprite.alpha = 1;
       }
     });
 
@@ -182,6 +186,20 @@ export class Enemy extends Phaser.GameObjects.Container {
     if (this.currentHp <= 0) {
       this.die();
     }
+  }
+
+  public applyStun(durationMs: number): void {
+    if (this.isDead) return;
+    this.stunTimer = Math.max(this.stunTimer, durationMs);
+    this.sprite.setTint(0xffeaa7);
+    const stunIcon = this.scene.add.text(this.x, this.y - 26, '💫', { fontSize: '14px' }).setOrigin(0.5).setDepth(35);
+    this.scene.tweens.add({
+      targets: stunIcon,
+      y: stunIcon.y - 16,
+      alpha: 0,
+      duration: durationMs,
+      onComplete: () => stunIcon.destroy()
+    });
   }
 
   public applySlow(factor: number, durationMs: number): void {
@@ -251,6 +269,15 @@ export class Enemy extends Phaser.GameObjects.Container {
 
   public update(time: number, delta: number): void {
     if (this.isDead) return;
+
+    // Betäubung (Stun) aktualisieren
+    if (this.stunTimer > 0) {
+      this.stunTimer -= delta;
+      if (this.stunTimer <= 0) {
+        if (this.poisonTimer <= 0 && this.slowTimer <= 0) this.sprite.clearTint();
+      }
+      return; // Während Betäubung keine Bewegung!
+    }
 
     // Slow aktualisieren
     if (this.slowTimer > 0) {

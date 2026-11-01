@@ -562,10 +562,15 @@ export class GameScene extends Phaser.Scene {
             tower.gridRow = gridPos.row;
 
             const { x, y } = this.mapManager.gridToPixel(gridPos.col, gridPos.row);
+            tower.isRuneEmpowered = this.mapManager.isRuneTile(gridPos.col, gridPos.row);
             tower.updatePosition(x, y);
             this.spawnBuildDust(x, y);
             SoundManager.playClick();
-            this.hud.showAnnouncement('Turm erfolgreich verschoben!');
+            if (tower.isRuneEmpowered) {
+              this.hud.showAnnouncement('Runenstein besetzt! +20% Reichweite!');
+            } else {
+              this.hud.showAnnouncement('Turm erfolgreich verschoben!');
+            }
           } else {
             SoundManager.playDeny();
             this.hud.showAnnouncement('Ungültiges Feld zum Repositionieren!');
@@ -596,6 +601,12 @@ export class GameScene extends Phaser.Scene {
       () => this.waveManager.getActiveEnemies(),
       (selectedTower, pointer) => this.selectPlacedTower(selectedTower, pointer)
     );
+
+    if (this.mapManager.isRuneTile(col, row)) {
+      tower.isRuneEmpowered = true;
+      tower.updateRangeCircle();
+      this.hud.showAnnouncement('Runenstein aktiviert! +20% Reichweiten-Bonus.');
+    }
 
     this.towers.push(tower);
     this.spawnBuildDust(x, y);

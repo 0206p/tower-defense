@@ -271,6 +271,32 @@ export class PixelTextureGenerator {
       ctx.fillRect(18, 14, 4, 12);
     });
 
+    create('tile_runestone', 40, 40, (ctx) => {
+      // Magischer Runen-Bauplatz (+20% Reichweite)
+      ctx.fillStyle = '#151324';
+      ctx.fillRect(0, 0, 40, 40);
+      ctx.fillStyle = '#28233b';
+      ctx.fillRect(4, 4, 32, 32);
+
+      // Leuchtender Runenkreis
+      ctx.strokeStyle = '#00d2d3';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(20, 20, 13, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Zentraler Gold-Fokus
+      ctx.fillStyle = '#ffd13b';
+      ctx.fillRect(18, 18, 4, 4);
+
+      // 4 Runen-Ecken
+      ctx.fillStyle = '#55efc4';
+      ctx.fillRect(8, 8, 3, 3);
+      ctx.fillRect(29, 8, 3, 3);
+      ctx.fillRect(8, 29, 3, 3);
+      ctx.fillRect(29, 29, 3, 3);
+    });
+
     create('tile_portal', 40, 40, (ctx) => {
       ctx.fillStyle = '#110b1a';
       ctx.fillRect(2, 2, 36, 36);
@@ -750,6 +776,104 @@ export class PixelTextureGenerator {
           }
         });
       }
+
+      // Spezielle Stufe-4-Pfade (Pfad A = Smaragd/Cyan, Pfad B = Purpur/Gold)
+      const specThemes: Record<'spec_a' | 'spec_b', { accent: string; highlight: string; rune: string; name: string }> = {
+        spec_a: { accent: '#00d2d3', highlight: '#55efc4', rune: '#10ac84', name: 'Path A' },
+        spec_b: { accent: '#9b59b6', highlight: '#e056fd', rune: '#ffd13b', name: 'Path B' }
+      };
+
+      (['spec_a', 'spec_b'] as const).forEach((specKey) => {
+        const key = `tower_${type}_${specKey}`;
+        const theme = specThemes[specKey];
+
+        create(key, 40, 40, (ctx) => {
+          // Fundament mit leuchtenden Meisterrunen
+          ctx.fillStyle = '#120f1c';
+          ctx.fillRect(4, 16, 32, 20);
+          ctx.fillStyle = '#221c33';
+          ctx.fillRect(6, 18, 28, 16);
+
+          // Leuchtbänder
+          ctx.fillStyle = theme.accent;
+          ctx.fillRect(4, 33, 32, 3);
+          ctx.fillStyle = theme.highlight;
+          ctx.fillRect(6, 33, 28, 1);
+
+          // Eck-Runenpfeiler
+          ctx.fillStyle = theme.accent;
+          ctx.fillRect(4, 18, 3, 15);
+          ctx.fillRect(33, 18, 3, 15);
+
+          // Magische Runenmatrix im Sockel
+          ctx.fillStyle = theme.rune;
+          ctx.fillRect(14, 23, 12, 6);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(18, 24, 4, 4);
+
+          // Turmaufbau je nach Typ
+          if (type === 'archer') {
+            ctx.fillStyle = '#3a2719';
+            ctx.fillRect(12, 8, 16, 14);
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(23, 2, 4, 18); // Doppelsehnen-Bogen
+            ctx.fillRect(20, 4, 2, 14);
+            ctx.fillStyle = theme.highlight;
+            ctx.fillRect(25, 4, 2, 14);
+          } else if (type === 'cannon') {
+            ctx.fillStyle = '#1e272e';
+            ctx.fillRect(10, 6, 20, 16);
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(18, 0, 8, 16); // Zwillingslauf
+            ctx.fillStyle = theme.highlight;
+            ctx.fillRect(20, 0, 4, 4);
+          } else if (type === 'ice') {
+            ctx.fillStyle = '#1e272e';
+            ctx.fillRect(12, 12, 16, 10);
+            ctx.fillStyle = theme.accent;
+            ctx.beginPath();
+            ctx.moveTo(20, 0);
+            ctx.lineTo(28, 14);
+            ctx.lineTo(12, 14);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(18, 4, 4, 6);
+          } else if (type === 'poison') {
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(12, 14, 16, 10);
+            ctx.fillStyle = theme.accent;
+            ctx.beginPath();
+            ctx.arc(20, 10, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(18, 8, 4, 4);
+          } else if (type === 'tesla') {
+            ctx.fillStyle = '#1e272e';
+            ctx.fillRect(16, 10, 8, 14);
+            ctx.fillStyle = theme.accent;
+            ctx.beginPath();
+            ctx.arc(20, 6, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(18, 4, 4, 4);
+          } else if (type === 'sniper') {
+            ctx.fillStyle = '#1e272e';
+            ctx.fillRect(12, 8, 16, 14);
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(18, -3, 4, 20); // Extralanger Rail-Lauf
+            ctx.fillStyle = theme.highlight;
+            ctx.fillRect(17, -3, 6, 4);
+          }
+
+          // Spezifisches 4-Punkte-Meister-Emblem
+          ctx.fillStyle = theme.highlight;
+          ctx.fillRect(13, 30, 3, 3);
+          ctx.fillRect(17, 30, 3, 3);
+          ctx.fillRect(21, 30, 3, 3);
+          ctx.fillRect(25, 30, 3, 3);
+        });
+      });
     });
   }
 }

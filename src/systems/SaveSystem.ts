@@ -102,6 +102,35 @@ export class SaveSystem {
     }
   }
 
+  public static exportSave(): string {
+    return JSON.stringify(this.data, null, 2);
+  }
+
+  public static importSave(jsonString: string): boolean {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (parsed && typeof parsed.crystals === 'number' && parsed.worlds) {
+        this.data = {
+          ...DEFAULT_SAVE,
+          ...parsed,
+          worlds: {
+            ...DEFAULT_SAVE.worlds,
+            ...(parsed.worlds || {})
+          },
+          towerUpgrades: {
+            ...DEFAULT_SAVE.towerUpgrades,
+            ...(parsed.towerUpgrades || {})
+          }
+        };
+        this.save();
+        return true;
+      }
+    } catch (e) {
+      console.error('Import fehlgeschlagen:', e);
+    }
+    return false;
+  }
+
   public static getData(): SaveData {
     return this.data;
   }

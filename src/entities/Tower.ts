@@ -1,5 +1,12 @@
 import Phaser from 'phaser';
-import { TOWER_CONFIGS, TowerDefinition, TowerLevelData, TowerType } from '../config/TowerConfig';
+import {
+  TOWER_CONFIGS,
+  TowerDefinition,
+  TowerLevelData,
+  TowerSpecializationDef,
+  TowerSpecializationId,
+  TowerType
+} from '../config/TowerConfig';
 import { Enemy } from './Enemy';
 import { Projectile, ProjectileType } from './Projectile';
 import { EconomySystem } from '../systems/EconomySystem';
@@ -22,6 +29,9 @@ export class Tower extends Phaser.GameObjects.Container {
   public currentLevel: number = 1;
   public investedGold: number = 0;
   public targetPriority: TargetPriority = 'FIRST';
+  public specialization: TowerSpecializationId = 'none';
+  public specializationDef: TowerSpecializationDef | null = null;
+  public isRuneEmpowered: boolean = false;
 
   private definition: TowerDefinition;
   private currentStats: TowerLevelData;
@@ -114,18 +124,39 @@ export class Tower extends Phaser.GameObjects.Container {
   }
 
   public getEffectiveRange(): number {
-    return Math.round(this.currentStats.range * this.metaRangeMult);
+    const baseRange = this.specializationDef ? this.specializationDef.range : this.currentStats.range;
+    const runeMult = this.isRuneEmpowered ? 1.2 : 1.0;
+    return Math.round(baseRange * this.metaRangeMult * runeMult);
   }
 
   public getEffectiveDamage(): number {
-    return Math.round(this.currentStats.damage * this.metaDamageMult);
+    const baseDamage = this.specializationDef ? this.specializationDef.damage : this.currentStats.damage;
+    return Math.round(baseDamage * this.metaDamageMult);
   }
 
   public getEffectiveCooldown(): number {
-    return Math.round(this.currentStats.attackCooldown / this.metaFrequencyMult);
+    const baseCooldown = this.specializationDef ? this.specializationDef.attackCooldown : this.currentStats.attackCooldown;
+    return Math.round(baseCooldown / this.metaFrequencyMult);
   }
 
   public getStats(): TowerLevelData {
+    if (this.specializationDef) {
+      return {
+        level: 4,
+        cost: this.specializationDef.cost,
+        damage: this.specializationDef.damage,
+        range: this.specializationDef.range,
+        attackCooldown: this.specializationDef.attackCooldown,
+        splashRadius: this.specializationDef.splashRadius,
+        slowFactor: this.specializationDef.slowFactor,
+        slowDuration: this.specializationDef.slowDuration,
+        chainTargets: this.specializationDef.chainTargets,
+        dotDamage: this.specializationDef.dotDamage,
+        dotDuration: this.specializationDef.dotDuration,
+        critChance: this.specializationDef.critChance,
+        description: this.specializationDef.description
+      };
+    }
     return this.currentStats;
   }
 
@@ -135,6 +166,10 @@ export class Tower extends Phaser.GameObjects.Container {
 
   public canUpgrade(): boolean {
     return this.currentLevel < this.definition.levels.length;
+  }
+
+  public canSpecialize(): boolean {
+    return this.currentLevel === 3 && this.specialization === 'none';
   }
 
   public getNextLevelStats(): TowerLevelData | null {
@@ -178,6 +213,40 @@ export class Tower extends Phaser.GameObjects.Container {
       scaleY: 2.2,
       alpha: 0,
       duration: 350,
+      onComplete: () => glow.destroy()
+    });
+
+    return true;
+  }
+
+  public specialize(pathId: 'path_a' | 'path_b'): boolean {
+    if (!this.canSpecialize()) return false;
+    const spec = this.definition.specializations[pathId];
+    if (!spec) return false;
+
+    if (!this.economy.spendGold(spec.cost)) {
+      return false;
+    }
+
+    this.investedGold += spec.cost;
+    this.specialization = pathId;
+    this.specializationDef = spec;
+
+    const textureKey = `tower_${this.towerType}_${pathId === 'path_a' ? 'spec_a' : 'spec_b'}`;
+    if (this.scene.textures.exists(textureKey)) {
+      this.sprite.setTexture(textureKey);
+    }
+
+    this.updateRangeCircle();
+
+    const glowColor = pathId === 'path_a' ? 0x00d2d3 : 0x9b59b6;
+    const glow = this.scene.add.circle(this.x, this.y, 28, glowColor, 0.9).setDepth(15);
+    this.scene.tweens.add({
+      targets: glow,
+      scaleX: 2.8,
+      scaleY: 2.8,
+      alpha: 0,
+      duration: 450,
       onComplete: () => glow.destroy()
     });
 
@@ -277,26 +346,60 @@ export class Tower extends Phaser.GameObjects.Container {
   }
 
   private shoot(target: Enemy): void {
-    const proj = new Projectile(this.scene, {
-      type: this.towerType as ProjectileType,
-      startX: this.x,
-      startY: this.y - 4,
-      target: target,
-      damage: this.getEffectiveDamage(),
-      splashRadius: this.currentStats.splashRadius,
-      slowFactor: this.currentStats.slowFactor,
-      slowDuration: this.currentStats.slowDuration,
-      dotDamage: this.currentStats.dotDamage,
-      dotDuration: this.currentStats.dotDuration,
-      chainTargets: this.currentStats.chainTargets,
-      critChance: this.currentStats.critChance,
-      allEnemies: this.getEnemiesFn(),
-      speedMultiplier: this.metaSpeedMult
-    });
-
+    const effectiveDamage = this.getEffectiveDamage();
+    const stats = this.specializationDef || this.currentStats;
     const gameScene = this.scene as any;
-    if (gameScene && typeof gameScene.addProjectile === 'function') {
-      gameScene.addProjectile(proj);
+
+    const multishot = this.specializationDef?.multishotCount || 1;
+    if (multishot > 1) {
+      const enemies = this.getEnemiesFn();
+      const range = this.getEffectiveRange();
+      const inRange = enemies.filter((e) => !e.isDead && Math.hypot(e.x - this.x, e.y - this.y) <= range);
+      const targets = inRange.slice(0, multishot);
+      if (!targets.includes(target) && targets.length > 0) targets[0] = target;
+
+      targets.forEach((t) => {
+        const proj = new Projectile(this.scene, {
+          type: this.towerType as ProjectileType,
+          startX: this.x,
+          startY: this.y - 4,
+          target: t,
+          damage: effectiveDamage,
+          critChance: stats.critChance,
+          shieldPiercing: this.specializationDef?.shieldPiercing,
+          executeThreshold: this.specializationDef?.executeThreshold,
+          stunDuration: this.specializationDef?.stunDuration,
+          allEnemies: this.getEnemiesFn(),
+          speedMultiplier: this.metaSpeedMult
+        });
+        if (gameScene && typeof gameScene.addProjectile === 'function') {
+          gameScene.addProjectile(proj);
+        }
+      });
+    } else {
+      const proj = new Projectile(this.scene, {
+        type: this.towerType as ProjectileType,
+        startX: this.x,
+        startY: this.y - 4,
+        target: target,
+        damage: effectiveDamage,
+        splashRadius: stats.splashRadius,
+        slowFactor: stats.slowFactor,
+        slowDuration: stats.slowDuration,
+        dotDamage: stats.dotDamage,
+        dotDuration: stats.dotDuration,
+        chainTargets: stats.chainTargets,
+        critChance: stats.critChance,
+        stunDuration: this.specializationDef?.stunDuration,
+        shieldPiercing: this.specializationDef?.shieldPiercing,
+        executeThreshold: this.specializationDef?.executeThreshold,
+        allEnemies: this.getEnemiesFn(),
+        speedMultiplier: this.metaSpeedMult
+      });
+
+      if (gameScene && typeof gameScene.addProjectile === 'function') {
+        gameScene.addProjectile(proj);
+      }
     }
 
     this.scene.tweens.add({

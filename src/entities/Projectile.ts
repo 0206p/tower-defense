@@ -16,6 +16,9 @@ export interface ProjectileParams {
   dotDuration?: number;
   chainTargets?: number;
   critChance?: number;
+  stunDuration?: number;
+  shieldPiercing?: boolean;
+  executeThreshold?: number;
   allEnemies: Enemy[];
   speedMultiplier?: number;
 }
@@ -33,6 +36,9 @@ export class Projectile extends Phaser.GameObjects.Sprite {
   private dotDuration: number;
   private chainTargets: number;
   private critChance: number;
+  private stunDuration: number;
+  private shieldPiercing: boolean;
+  private executeThreshold: number;
   private allEnemies: Enemy[];
   private speed: number;
   private lifespan: number = 3500; // Schutz vor verirrten Geisterprojektilen
@@ -83,6 +89,9 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     this.dotDuration = params.dotDuration || 0;
     this.chainTargets = params.chainTargets || 1;
     this.critChance = params.critChance || 0;
+    this.stunDuration = params.stunDuration || 0;
+    this.shieldPiercing = params.shieldPiercing || false;
+    this.executeThreshold = params.executeThreshold || 0;
     this.allEnemies = params.allEnemies;
     this.speed = baseSpeed * (params.speedMultiplier || 1.0);
 
@@ -161,7 +170,17 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           hitTarget = bestCandidate;
         }
         if (hitTarget) {
-          hitTarget.takeDamage(finalDamage, isCrit);
+          if (this.executeThreshold > 0 && hitTarget.currentHp <= hitTarget.maxHp * this.executeThreshold) {
+            // Tödliche Exekution!
+            hitTarget.takeDamage(hitTarget.currentHp + 999, true, true);
+          } else {
+            hitTarget.takeDamage(finalDamage, isCrit, this.shieldPiercing);
+          }
+
+          if (this.stunDuration > 0) {
+            hitTarget.applyStun(this.stunDuration);
+          }
+
           this.spawnHitEffect(this.x, this.y);
         }
         break;
@@ -175,7 +194,13 @@ export class Projectile extends Phaser.GameObjects.Sprite {
             const dist = Math.hypot(e.x - this.x, e.y - this.y);
             if (dist <= this.splashRadius) {
               const ratio = Math.max(0.6, 1 - dist / this.splashRadius);
-              e.takeDamage(Math.round(finalDamage * ratio), isCrit);
+              e.takeDamage(Math.round(finalDamage * ratio), isCrit, this.shieldPiercing);
+              if (this.stunDuration > 0) {
+                e.applyStun(this.stunDuration);
+              }
+              if (this.dotDamage > 0) {
+                e.applyPoison(this.dotDamage, this.dotDuration);
+              }
             }
           }
         });
@@ -188,7 +213,10 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           if (!e.isDead) {
             const dist = Math.hypot(e.x - this.x, e.y - this.y);
             if (dist <= this.splashRadius) {
-              e.takeDamage(finalDamage);
+              e.takeDamage(finalDamage, isCrit, this.shieldPiercing);
+              if (this.stunDuration > 0) {
+                e.applyStun(this.stunDuration);
+              }
               if (this.slowFactor > 0) e.applySlow(this.slowFactor, this.slowDuration);
             }
           }

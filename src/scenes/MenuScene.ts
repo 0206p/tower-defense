@@ -122,9 +122,45 @@ export class MenuScene extends Phaser.Scene {
 
     // Sound Toggle Button
     const soundLabel = SoundManager.getIsMuted() ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN';
-    const soundBtn = this.createButton(GAME_WIDTH / 2, 565, soundLabel, 240, 42, 0x2d3436, 0x636e72, () => {
+    const soundBtn = this.createButton(GAME_WIDTH / 2 - 165, 565, soundLabel, 150, 40, 0x2d3436, 0x636e72, () => {
       const muted = SoundManager.toggleMute();
       (soundBtn.getAt(1) as Phaser.GameObjects.Text).setText(muted ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN');
+    });
+
+    // Savegame Export
+    this.createButton(GAME_WIDTH / 2, 565, '💾 EXPORT', 140, 40, 0x1e3799, 0x4a69bd, () => {
+      SoundManager.playClick();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(SaveSystem.exportSave());
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "tower_defense_save.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+
+    // Savegame Import
+    this.createButton(GAME_WIDTH / 2 + 165, 565, '📂 IMPORT', 140, 40, 0x4a1c1c, 0xe55039, () => {
+      SoundManager.playClick();
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          const content = re.target?.result as string;
+          if (content && SaveSystem.importSave(content)) {
+            SoundManager.playUpgrade();
+            this.scene.restart();
+          } else {
+            alert('Ungültiges Spielstand-Format!');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
     });
 
     // Hinweis
