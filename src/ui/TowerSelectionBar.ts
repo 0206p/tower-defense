@@ -17,7 +17,9 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
   private selectedTowerType: TowerType | null = null;
   private cards: Map<TowerType, { container: Phaser.GameObjects.Container; bg: Phaser.GameObjects.Graphics; costText: Phaser.GameObjects.Text; nameText: Phaser.GameObjects.Text }> = new Map();
   private callbacks: TowerSelectionBarCallbacks;
-  private titleText: Phaser.GameObjects.Text;
+  private statusBadge: Phaser.GameObjects.Graphics;
+  private statusTopText: Phaser.GameObjects.Text;
+  private statusSubText: Phaser.GameObjects.Text;
   private buildEnabled: boolean = true;
 
   // Hover-Stats-Box rechts unten
@@ -43,19 +45,36 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     barBg.lineBetween(0, 0, GAME_WIDTH, 0);
     this.add(barBg);
 
-    this.titleText = scene.add.text(20, 33, 'TÜRME:', {
+    // Status-Badge links (112 x 46 px, sauber getrennt von den Karten)
+    this.statusBadge = scene.add.graphics();
+    this.statusBadge.fillStyle(0x191624, 0.95);
+    this.statusBadge.fillRoundedRect(12, 10, 114, 46, 5);
+    this.statusBadge.lineStyle(2, 0x3d354f, 1);
+    this.statusBadge.strokeRoundedRect(12, 10, 114, 46, 5);
+    this.add(this.statusBadge);
+
+    this.statusTopText = scene.add.text(69, 21, 'BAUMENÜ', {
       fontFamily: GAME_FONT,
-      fontSize: '15px',
+      fontSize: '11px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 2
-    }).setOrigin(0, 0.5);
-    this.add(this.titleText);
+    }).setOrigin(0.5);
+    this.add(this.statusTopText);
 
-    // 6 Turm-Karten (Großzügiger Abstand, kein Überlappen)
+    this.statusSubText = scene.add.text(69, 41, 'BEREIT', {
+      fontFamily: GAME_FONT,
+      fontSize: '12px',
+      color: '#2ecc71',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5);
+    this.add(this.statusSubText);
+
+    // 6 Turm-Karten mit optimierten Abständen (absolut überschneidungsfrei)
     const towerTypes: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    const startX = 175;
-    const cardSpacing = 144;
+    const startX = 202;
+    const cardSpacing = 135;
 
     towerTypes.forEach((type, index) => {
       const card = this.createTowerCard(type, startX + index * cardSpacing, 33);
@@ -112,14 +131,26 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
   public setBuildEnabled(enabled: boolean): void {
     this.buildEnabled = enabled;
     if (!enabled) {
-      this.titleText.setText('🔒 GESPERRT:');
-      this.titleText.setColor('#ff4757');
+      this.statusBadge.clear();
+      this.statusBadge.fillStyle(0x2a141a, 0.95);
+      this.statusBadge.fillRoundedRect(12, 10, 114, 46, 5);
+      this.statusBadge.lineStyle(2, 0x8a2334, 1);
+      this.statusBadge.strokeRoundedRect(12, 10, 114, 46, 5);
+
+      this.statusSubText.setText('🔒 GESPERRT');
+      this.statusSubText.setColor('#ff4757');
       if (this.selectedTowerType) {
         this.clearSelection();
       }
     } else {
-      this.titleText.setText('TÜRME:');
-      this.titleText.setColor('#ffd13b');
+      this.statusBadge.clear();
+      this.statusBadge.fillStyle(0x191624, 0.95);
+      this.statusBadge.fillRoundedRect(12, 10, 114, 46, 5);
+      this.statusBadge.lineStyle(2, 0x3d354f, 1);
+      this.statusBadge.strokeRoundedRect(12, 10, 114, 46, 5);
+
+      this.statusSubText.setText('BEREIT');
+      this.statusSubText.setColor('#2ecc71');
     }
     this.updateCardVisuals();
   }

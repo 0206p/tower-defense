@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Enemy } from './Enemy';
 
-export type ProjectileType = 'arrow' | 'cannonball' | 'ice' | 'poison' | 'tesla' | 'sniper';
+export type ProjectileType = 'arrow' | 'cannonball' | 'ice' | 'poison' | 'tesla' | 'sniper' | 'archer' | 'cannon';
 
 export interface ProjectileParams {
   type: ProjectileType;
@@ -35,31 +35,38 @@ export class Projectile extends Phaser.GameObjects.Sprite {
   private critChance: number;
   private allEnemies: Enemy[];
   private speed: number;
+  private lifespan: number = 3500; // Schutz vor verirrten Geisterprojektilen
 
   constructor(scene: Phaser.Scene, params: ProjectileParams) {
     let textureKey = 'proj_arrow';
     let baseSpeed = 900;
 
     switch (params.type) {
+      case 'cannon':
       case 'cannonball':
         textureKey = 'proj_cannonball';
         baseSpeed = 650;
         break;
+      case 'archer':
+      case 'arrow':
+        textureKey = 'proj_arrow';
+        baseSpeed = 900;
+        break;
       case 'ice':
         textureKey = 'proj_ice';
-        baseSpeed = 650;
+        baseSpeed = 700;
         break;
       case 'poison':
         textureKey = 'proj_poison';
-        baseSpeed = 650;
+        baseSpeed = 700;
         break;
       case 'tesla':
         textureKey = 'proj_tesla';
-        baseSpeed = 1000;
+        baseSpeed = 1100;
         break;
       case 'sniper':
         textureKey = 'proj_sniper';
-        baseSpeed = 1500;
+        baseSpeed = 1600;
         break;
     }
 
@@ -84,13 +91,19 @@ export class Projectile extends Phaser.GameObjects.Sprite {
   }
 
   public update(time: number, delta: number): void {
+    this.lifespan -= delta;
+    if (this.lifespan <= 0) {
+      this.destroy();
+      return;
+    }
+
     // Zielverfolgung: Wenn Ziel stirbt, suche nächstgelegenen lebendigen Feind
     if (this.target && !this.target.isDead) {
       this.targetLastX = this.target.x;
       this.targetLastY = this.target.y;
     } else {
       let nearest: Enemy | null = null;
-      let minDist = 120;
+      let minDist = 140;
       for (const e of this.allEnemies) {
         if (!e.isDead) {
           const d = Math.hypot(e.x - this.x, e.y - this.y);
@@ -128,13 +141,14 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     const finalDamage = isCrit ? Math.round(this.damage * 2.2) : this.damage;
 
     switch (this.pType) {
+      case 'archer':
       case 'arrow':
       case 'sniper': {
         // Falls primäres Ziel noch lebt, trifft es; andernfalls beliebigen Feind im Umkreis
         let hitTarget: Enemy | null = (this.target && !this.target.isDead) ? this.target : null;
         if (!hitTarget) {
           let bestCandidate: Enemy | null = null;
-          let bestDist = 55;
+          let bestDist = 65;
           for (const e of this.allEnemies) {
             if (!e.isDead) {
               const d = Math.hypot(e.x - this.x, e.y - this.y);
@@ -153,6 +167,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
         break;
       }
 
+      case 'cannon':
       case 'cannonball': {
         this.spawnExplosionEffect(this.x, this.y);
         this.allEnemies.forEach((e) => {

@@ -5,12 +5,23 @@ import { Projectile, ProjectileType } from './Projectile';
 import { EconomySystem } from '../systems/EconomySystem';
 import { SaveSystem } from '../systems/SaveSystem';
 
+export type TargetPriority = 'FIRST' | 'LAST' | 'STRONGEST' | 'WEAKEST' | 'CLOSEST';
+
+export const TARGET_PRIORITY_LABELS: Record<TargetPriority, string> = {
+  FIRST: 'ERSTER (Pfad)',
+  LAST: 'LETZTER (Start)',
+  STRONGEST: 'STÄRKSTER (HP)',
+  WEAKEST: 'SCHWÄCHSTER (Finisher)',
+  CLOSEST: 'NÄCHSTER (Distanz)'
+};
+
 export class Tower extends Phaser.GameObjects.Container {
   public towerType: TowerType;
   public gridCol: number;
   public gridRow: number;
   public currentLevel: number = 1;
   public investedGold: number = 0;
+  public targetPriority: TargetPriority = 'FIRST';
 
   private definition: TowerDefinition;
   private currentStats: TowerLevelData;
@@ -231,28 +242,42 @@ export class Tower extends Phaser.GameObjects.Container {
     }
   }
 
+  public cycleTargetPriority(): TargetPriority {
+    const list: TargetPriority[] = ['FIRST', 'LAST', 'STRONGEST', 'WEAKEST', 'CLOSEST'];
+    const idx = list.indexOf(this.targetPriority);
+    this.targetPriority = list[(idx + 1) % list.length];
+    return this.targetPriority;
+  }
+
   private findTarget(): Enemy | null {
     const enemies = this.getEnemiesFn();
-    let bestTarget: Enemy | null = null;
-    let maxProgress = -1;
     const effectiveRange = this.getEffectiveRange();
+    const inRange = enemies.filter((e) => !e.isDead && Math.hypot(e.x - this.x, e.y - this.y) <= effectiveRange);
 
-    for (const enemy of enemies) {
-      if (enemy.isDead) continue;
-      const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
-      if (dist <= effectiveRange) {
-        if (enemy.pathProgress > maxProgress) {
-          maxProgress = enemy.pathProgress;
-          bestTarget = enemy;
-        }
-      }
+    if (inRange.length === 0) return null;
+
+    switch (this.targetPriority) {
+      case 'FIRST':
+        return inRange.reduce((prev, curr) => (curr.pathProgress > prev.pathProgress ? curr : prev));
+      case 'LAST':
+        return inRange.reduce((prev, curr) => (curr.pathProgress < prev.pathProgress ? curr : prev));
+      case 'STRONGEST':
+        return inRange.reduce((prev, curr) => (curr.currentHp > prev.currentHp ? curr : prev));
+      case 'WEAKEST':
+        return inRange.reduce((prev, curr) => (curr.currentHp < prev.currentHp ? curr : prev));
+      case 'CLOSEST':
+        return inRange.reduce((prev, curr) => {
+          const dCurr = Math.hypot(curr.x - this.x, curr.y - this.y);
+          const dPrev = Math.hypot(prev.x - this.x, prev.y - this.y);
+          return dCurr < dPrev ? curr : prev;
+        });
+      default:
+        return inRange[0];
     }
-
-    return bestTarget;
   }
 
   private shoot(target: Enemy): void {
-    new Projectile(this.scene, {
+    const proj = new Projectile(this.scene, {
       type: this.towerType as ProjectileType,
       startX: this.x,
       startY: this.y - 4,
@@ -268,6 +293,11 @@ export class Tower extends Phaser.GameObjects.Container {
       allEnemies: this.getEnemiesFn(),
       speedMultiplier: this.metaSpeedMult
     });
+
+    const gameScene = this.scene as any;
+    if (gameScene && typeof gameScene.addProjectile === 'function') {
+      gameScene.addProjectile(proj);
+    }
 
     this.scene.tweens.add({
       targets: this.sprite,

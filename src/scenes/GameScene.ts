@@ -8,6 +8,7 @@ import { WaveManager } from '../systems/WaveManager';
 import { SaveSystem, WorldId } from '../systems/SaveSystem';
 import { SoundManager } from '../systems/SoundManager';
 import { Tower } from '../entities/Tower';
+import { Projectile } from '../entities/Projectile';
 import { HUD } from '../ui/HUD';
 import { TowerSelectionBar } from '../ui/TowerSelectionBar';
 import { TowerInfoModal } from '../ui/TowerInfoModal';
@@ -26,6 +27,7 @@ export class GameScene extends Phaser.Scene {
   private pauseModal!: PauseModal;
 
   private towers: Tower[] = [];
+  private projectiles: Projectile[] = [];
   private selectedTowerType: TowerType | null = null;
   private selectedPlacedTower: Tower | null = null;
 
@@ -60,6 +62,7 @@ export class GameScene extends Phaser.Scene {
     this.isGameOver = false;
     this.isGamePaused = false;
     this.towers = [];
+    this.projectiles = [];
     this.selectedTowerType = null;
     this.selectedPlacedTower = null;
     this.draggedNewTowerType = null;
@@ -692,13 +695,36 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  public addProjectile(projectile: Projectile): void {
+    this.projectiles.push(projectile);
+  }
+
+  public removeProjectile(projectile: Projectile): void {
+    const idx = this.projectiles.indexOf(projectile);
+    if (idx !== -1) {
+      this.projectiles.splice(idx, 1);
+    }
+  }
+
   public update(time: number, delta: number): void {
     if (this.isGameOver || this.isGamePaused) return;
 
+    // 1. Wellen-Gegner
     this.waveManager.update(time, delta);
 
+    // 2. Türme zielerfassen & schiessen
     for (let i = 0; i < this.towers.length; i++) {
       this.towers[i].update(time, delta);
+    }
+
+    // 3. Projektile bewegen & Kollision ausführen
+    for (let i = this.projectiles.length - 1; i >= 0; i--) {
+      const p = this.projectiles[i];
+      if (p && p.active) {
+        p.update(time, delta);
+      } else {
+        this.projectiles.splice(i, 1);
+      }
     }
   }
 }

@@ -53,6 +53,24 @@ Jeder Turm besitzt eine feste Rolle und kann **während des laufenden Spiels in 
 | **Tesla-Spule** | Kettenblitz | `180 G` | Entlädt hochenergetische Blitzbögen, die automatisch auf bis zu **6 nahe Feinde** überspringen. |
 | **Scharfschütze** | Weitreichend / Kritisch | `210 G` | Extreme Reichweite (deckt halbe Karte ab), massiver Einzelschaden und bis zu **50% Chance auf kritische Treffer (2.2x Schaden)**. |
 
+### 🎯 Taktische Zielprioritäten (Targeting Priorities)
+Jeder platzierte Turm kann individuell über das Turm-Menü auf eine von fünf Zielstrategien eingestellt werden:
+* **ERSTER (Pfad)**: Greift den Gegner an, der dem Ziel am nächsten ist (Standard).
+* **LETZTER (Start)**: Konzentriert sich auf Nachzügler nahe dem Eingang.
+* **STÄRKSTER (HP)**: Attackiert den Feind mit den meisten aktuellen Lebenspunkten (ideal gegen Bosse und Golems).
+* **SCHWÄCHSTER (Finisher)**: Erledigt angeschlagene Feinde sofort, um Leckagen zu verhindern.
+* **NÄCHSTER (Distanz)**: Visiert das dem Turm am nächsten stehende Ziel an.
+
+### 🛡️ Dynamische Gegner-Mechaniken & Boss-Phasen
+* **Schildsystem**: Elite-Feinde (Panzertrolle, Kristall-Golems, Obsidian-Kolosse) und Bosse besitzen aktive Energieschilde (`0x00d2d3`), die vor den Lebenspunkten Schaden absorbieren.
+* **Mehrphasiger Titanen-Boss**: Fällt der Boss unter 50% HP, gerät er in **Phase 2 (Enrage)**: Schnelligkeitsbonus (+35%), regenerierter Notfallschild und glühende Zorn-Optik!
+
+### 🖱️ Drag & Drop, Repositionierung & Sofort-Löschen
+* **Drag & Drop**: Neue Türme werden per Maus- oder Touch-Zug direkt auf das Spielfeld gezogen.
+* **Repositionieren**: Platzierte Türme können in den Bauphasen auf andere freie Kacheln verschoben werden.
+* **Schnell-Verkauf**: Klick auf das rote `✕`-Symbol oben rechts am Turm verkauft ihn mit 70% Rückerstattung.
+* **Wellen-Bausperre**: Während einer laufenden Welle ist der Neubau gesperrt; bestehende Türme können jedoch weiterhin taktisch aufgewertet werden.
+
 ---
 
 ### 💎 Permanente Turm-Schmiede & Akademie

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { Tower } from '../entities/Tower';
+import { Tower, TARGET_PRIORITY_LABELS } from '../entities/Tower';
 import { EconomySystem } from '../systems/EconomySystem';
+import { SoundManager } from '../systems/SoundManager';
 import { GAME_FONT, PALETTE } from '../config/GameConfig';
 
 export class TowerInfoModal extends Phaser.GameObjects.Container {
@@ -11,6 +12,8 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
   private statsText: Phaser.GameObjects.Text;
   private upgradeInfoText: Phaser.GameObjects.Text;
 
+  private priorityBtn: Phaser.GameObjects.Container;
+  private priorityBtnText: Phaser.GameObjects.Text;
   private upgradeBtn: Phaser.GameObjects.Container;
   private upgradeBtnText: Phaser.GameObjects.Text;
   private sellBtn: Phaser.GameObjects.Container;
@@ -29,7 +32,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       onSell: (tower: Tower) => void;
     }
   ) {
-    super(scene, 940, 52);
+    super(scene, 940, 48);
     this.economy = economy;
     this.onCloseCallback = callbacks.onClose;
     this.onUpgradeCallback = callbacks.onUpgrade;
@@ -37,10 +40,10 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
 
     const bg = scene.add.graphics();
     bg.fillStyle(PALETTE.uiBgDark, 0.98);
-    bg.fillRoundedRect(0, 0, 325, 305, 8);
+    bg.fillRoundedRect(0, 0, 325, 342, 8);
     bg.lineStyle(2, PALETTE.uiBorderHighlight, 1);
-    bg.strokeRoundedRect(0, 0, 325, 305, 8);
-    bg.setInteractive(new Phaser.Geom.Rectangle(0, 0, 325, 305), Phaser.Geom.Rectangle.Contains);
+    bg.strokeRoundedRect(0, 0, 325, 342, 8);
+    bg.setInteractive(new Phaser.Geom.Rectangle(0, 0, 325, 342), Phaser.Geom.Rectangle.Contains);
     bg.on('pointerdown', (p: Phaser.Input.Pointer) => p.event.stopPropagation());
     this.add(bg);
 
@@ -76,17 +79,17 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.statsText = scene.add.text(16, 48, '', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
-      lineSpacing: 6,
+      lineSpacing: 5,
       color: '#f5f0e6',
       stroke: '#000000',
       strokeThickness: 2
     });
     this.add(this.statsText);
 
-    this.upgradeInfoText = scene.add.text(16, 160, '', {
+    this.upgradeInfoText = scene.add.text(16, 154, '', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
-      lineSpacing: 5,
+      lineSpacing: 4,
       color: '#5cd670',
       stroke: '#000000',
       strokeThickness: 2,
@@ -94,8 +97,19 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     });
     this.add(this.upgradeInfoText);
 
+    // Zielprioritäts-Umschalter
+    this.priorityBtn = this.createActionButton(16, 215, 293, 30, '🎯 ZIEL: ERSTER', 0x221f2d, 0x4d4263, () => {
+      if (this.currentTower) {
+        SoundManager.playClick();
+        this.currentTower.cycleTargetPriority();
+        this.refresh();
+      }
+    });
+    this.priorityBtnText = this.priorityBtn.getAt(1) as Phaser.GameObjects.Text;
+    this.add(this.priorityBtn);
+
     // Upgrade-Button
-    this.upgradeBtn = this.createActionButton(16, 222, 293, 34, 'UPGRADE', 0x2d6323, 0x518233, () => {
+    this.upgradeBtn = this.createActionButton(16, 252, 293, 34, 'UPGRADE', 0x2d6323, 0x518233, () => {
       if (this.currentTower) {
         this.onUpgradeCallback(this.currentTower);
         this.refresh();
@@ -105,7 +119,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.add(this.upgradeBtn);
 
     // Verkaufen-Button
-    this.sellBtn = this.createActionButton(16, 262, 293, 30, 'VERKAUFEN', 0x7a2828, 0xa33b3b, () => {
+    this.sellBtn = this.createActionButton(16, 294, 293, 30, 'VERKAUFEN', 0x7a2828, 0xa33b3b, () => {
       if (this.currentTower) {
         this.onSellCallback(this.currentTower);
         this.hide();
@@ -234,5 +248,6 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     }
 
     this.sellBtnText.setText(`VERKAUFEN (+${sellValue} G)`);
+    this.priorityBtnText.setText(`🎯 ZIEL: ${TARGET_PRIORITY_LABELS[tower.targetPriority]}`);
   }
 }

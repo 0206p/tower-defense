@@ -17,6 +17,10 @@ export class Enemy extends Phaser.GameObjects.Container {
   private healthBarBg: Phaser.GameObjects.Graphics;
   private healthBarFill: Phaser.GameObjects.Graphics;
 
+  public currentShield: number = 0;
+  public maxShield: number = 0;
+  private isEnraged: boolean = false;
+
   private slowMultiplier: number = 1.0;
   private slowTimer: number = 0;
   private poisonTimer: number = 0;
@@ -51,6 +55,8 @@ export class Enemy extends Phaser.GameObjects.Container {
 
     this.maxHp = Math.round(config.maxHp * hpMultiplier);
     this.currentHp = this.maxHp;
+    this.maxShield = config.shield ? Math.round(config.shield * hpMultiplier) : 0;
+    this.currentShield = this.maxShield;
 
     // Sprite
     const textureKey = scene.textures.exists(config.spriteKey) ? config.spriteKey : 'enemy_goblin';
@@ -92,23 +98,52 @@ export class Enemy extends Phaser.GameObjects.Container {
     const color = hpRatio > 0.5 ? 0x2ecc71 : hpRatio > 0.25 ? 0xf1c40f : 0xe74c3c;
     this.healthBarFill.fillStyle(color, 1);
     this.healthBarFill.fillRect(-barWidth / 2, barY, fillWidth, barHeight);
+
+    // Schild-Balken über dem Lebensbalken (Türkis)
+    if (this.maxShield > 0 && this.currentShield > 0) {
+      const shieldRatio = Phaser.Math.Clamp(this.currentShield / this.maxShield, 0, 1);
+      const shieldFill = Math.round(barWidth * shieldRatio);
+      this.healthBarFill.fillStyle(0x00d2d3, 1);
+      this.healthBarFill.fillRect(-barWidth / 2, barY - 4, shieldFill, 3);
+    }
   }
 
   public takeDamage(damage: number, isCrit: boolean = false): void {
     if (this.isDead) return;
 
-    this.currentHp -= damage;
+    let damageToHp = damage;
+    let hitShield = false;
+
+    if (this.currentShield > 0) {
+      hitShield = true;
+      if (this.currentShield >= damage) {
+        this.currentShield -= damage;
+        damageToHp = 0;
+      } else {
+        damageToHp = damage - this.currentShield;
+        this.currentShield = 0;
+      }
+    }
+
+    this.currentHp -= damageToHp;
     this.updateHealthBar();
 
-    // Schadens-Popup (deutlich sichtbar)
+    // Schadens-Popup
+    let popupColor = isCrit ? '#ff3838' : '#ffd13b';
+    let popupText = isCrit ? `!${damage}!` : `-${damage}`;
+    if (hitShield && damageToHp === 0) {
+      popupColor = '#00d2d3';
+      popupText = `🛡${damage}`;
+    }
+
     const dmgText = this.scene.add.text(
       this.x + Phaser.Math.Between(-8, 8),
       this.y - 18,
-      isCrit ? `!${damage}!` : `-${damage}`,
+      popupText,
       {
         fontFamily: GAME_FONT,
         fontSize: isCrit ? '16px' : '13px',
-        color: isCrit ? '#ff3838' : '#ffd13b',
+        color: popupColor,
         stroke: '#000000',
         strokeThickness: 3
       }
@@ -132,6 +167,17 @@ export class Enemy extends Phaser.GameObjects.Container {
         if (!this.isDead) this.sprite.alpha = 1;
       }
     });
+
+    // Boss Phase 2 Enrage
+    if (this.config.type === 'boss' && !this.isEnraged && this.currentHp <= this.maxHp * 0.5) {
+      this.isEnraged = true;
+      this.currentShield = Math.round(this.maxShield * 0.6);
+      this.sprite.setTint(0xff3333);
+      const gameScene = this.scene as any;
+      if (gameScene?.hud?.showAnnouncement) {
+        gameScene.hud.showAnnouncement('⚠ ACHTUNG: TITANEN-BOSS IST ERZÜRNT! (PHASE 2)');
+      }
+    }
 
     if (this.currentHp <= 0) {
       this.die();
@@ -230,7 +276,8 @@ export class Enemy extends Phaser.GameObjects.Container {
     }
 
     // Pfadbewegung
-    const currentSpeed = this.config.speed * this.slowMultiplier;
+    const enrageSpeedMult = this.isEnraged ? 1.35 : 1.0;
+    const currentSpeed = this.config.speed * this.slowMultiplier * enrageSpeedMult;
     const step = (currentSpeed * (delta / 1000)) / this.pathLength;
     this.pathProgress += step;
 

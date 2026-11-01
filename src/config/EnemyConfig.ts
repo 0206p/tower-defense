@@ -25,6 +25,7 @@ export interface EnemyDefinition {
   spriteKey: string;
   radius: number;
   damageToPlayer: number;
+  shield?: number;
 }
 
 export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
@@ -128,7 +129,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     score: 300,
     spriteKey: 'enemy_armored_troll',
     radius: 20,
-    damageToPlayer: 2
+    damageToPlayer: 2,
+    shield: 60
   },
   golem: {
     type: 'golem',
@@ -139,7 +141,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     score: 420,
     spriteKey: 'enemy_golem',
     radius: 20,
-    damageToPlayer: 3
+    damageToPlayer: 3,
+    shield: 80
   },
 
   // --- Der Tote Berg ---
@@ -185,7 +188,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     score: 380,
     spriteKey: 'enemy_lava_golem',
     radius: 23,
-    damageToPlayer: 4
+    damageToPlayer: 4,
+    shield: 100
   },
 
   // Boss
@@ -198,6 +202,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     score: 800,
     spriteKey: 'enemy_boss',
     radius: 24,
-    damageToPlayer: 5
+    damageToPlayer: 5,
+    shield: 140
   }
 };
