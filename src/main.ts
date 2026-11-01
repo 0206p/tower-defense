@@ -8,6 +8,7 @@ import { UpgradeMenuScene } from './scenes/UpgradeMenuScene';
 import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { VictoryScene } from './scenes/VictoryScene';
+import { StarCraftPrototypeScene } from './scenes/StarCraftPrototypeScene';
 
 // Globaler Hook für gestochen scharfen Text in Phaser (2-fache interne Auflösung gegen Verpixelung)
 if (!(Phaser.GameObjects.GameObjectFactory.prototype as any).__isTextPatched) {
@@ -53,7 +54,8 @@ const config: Phaser.Types.Core.GameConfig = {
     UpgradeMenuScene,
     GameScene,
     GameOverScene,
-    VictoryScene
+    VictoryScene,
+    StarCraftPrototypeScene
   ]
 };
 

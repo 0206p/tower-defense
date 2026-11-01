@@ -117,8 +117,12 @@ export class HUD extends Phaser.GameObjects.Container {
     const btnFullscreen = this.createFullscreenButton(885, 22);
     this.add(btnFullscreen);
 
+    // 8b. STARCRAFT II RTS PROTOTYP SCHALTER
+    const btnRts = this.createRtsPrototypeButton(995, 22);
+    this.add(btnRts);
+
     // 9. NÄCHSTE WELLE BUTTON
-    this.btnNextWave = this.createNextWaveButton(1130, 22);
+    this.btnNextWave = this.createNextWaveButton(1135, 22);
     this.add(this.btnNextWave);
 
     // 8. ANNOUNCEMENT OVERLAY
@@ -347,6 +351,51 @@ export class HUD extends Phaser.GameObjects.Container {
       bg.fillRoundedRect(-44, -14, 88, 28, 4);
       bg.lineStyle(2, 0x4d4766, 1);
       bg.strokeRoundedRect(-44, -14, 88, 28, 4);
+    });
+
+    return container;
+  }
+
+  private createRtsPrototypeButton(x: number, y: number): Phaser.GameObjects.Container {
+    const container = this.scene.add.container(x, y);
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x0369a1, 1);
+    bg.fillRoundedRect(-46, -14, 92, 28, 4);
+    bg.lineStyle(2, 0x38bdf8, 1);
+    bg.strokeRoundedRect(-46, -14, 92, 28, 4);
+    container.add(bg);
+
+    const text = this.scene.add.text(0, 0, '🛸 RTS 3D', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#e0f2fe'
+    }).setOrigin(0.5);
+    container.add(text);
+
+    container.setSize(92, 28);
+    container.setInteractive(new Phaser.Geom.Rectangle(-46, -14, 92, 28), Phaser.Geom.Rectangle.Contains);
+
+    container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pointer.event.stopPropagation();
+      SoundManager.playClick();
+      this.scene.scene.start('StarCraftPrototypeScene');
+    });
+
+    container.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(0x0284c7, 1);
+      bg.fillRoundedRect(-46, -14, 92, 28, 4);
+      bg.lineStyle(2, 0x7dd3fc, 1);
+      bg.strokeRoundedRect(-46, -14, 92, 28, 4);
+    });
+
+    container.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(0x0369a1, 1);
+      bg.fillRoundedRect(-46, -14, 92, 28, 4);
+      bg.lineStyle(2, 0x38bdf8, 1);
+      bg.strokeRoundedRect(-46, -14, 92, 28, 4);
     });
 
     return container;

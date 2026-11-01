@@ -131,18 +131,19 @@ export class WaveManager {
     let spawnCount = 6;
 
     if (this.isDungeon) {
-      // Dungeon: Brutaler Hardcore-Endgame-Modus
-      // Kammer 1 startet direkt bei 7.5x HP Multiplikator & Schilden!
-      // Ohne Schmiede-Upgrades ist kein Durchkommen möglich!
-      hpMult = 7.5 + (waveNum - 1) * 0.75 + Math.pow((waveNum - 1) / 29, 1.4) * 12.0;
-      spawnCount = Math.min(32, 10 + Math.floor(waveNum * 0.8));
+      // Dungeon: Extremer Hardcore-Endgame-Modus
+      // Kammer 1 startet bei 38.0x HP Multiplikator & 200+ Schilden!
+      // Kammer 30 skaliert bis auf 220.0x HP & Bosse bis zu 350.000 HP!
+      // Vollständige Turm-Schmiede-Upgrades und gezielte Synergien sind absolut zwingend!
+      hpMult = 38.0 + (waveNum - 1) * 3.8 + Math.pow((waveNum - 1) / 29, 1.5) * 110.0;
+      spawnCount = Math.min(36, 12 + Math.floor(waveNum * 0.9));
 
       const allDungeonTypes: EnemyType[] = [
         'cave_goblin', 'bat', 'witch', 'slime', 'bomber',
         'orc', 'armored_troll', 'golem', 'fire_imp', 'magma_orc',
         'hellhound', 'lava_golem'
       ];
-      const poolLen = Math.min(allDungeonTypes.length, 3 + Math.floor(waveNum / 2.5));
+      const poolLen = Math.min(allDungeonTypes.length, 4 + Math.floor(waveNum / 2.5));
       currentPool = allDungeonTypes.slice(0, poolLen);
     } else if (this.isEndless) {
       // Endlosmodus-Skalierung: graduell, fordernd, aber mathematisch fair
@@ -240,11 +241,11 @@ export class WaveManager {
     // Hardcore-Powercreep: Im Dungeon und späten Welten erhalten Monster angeborene Schilde
     let extraShield = 0;
     if (this.isDungeon) {
-      extraShield = Math.max(config.shield || 0, 45);
+      extraShield = Math.max(config.shield || 0, 180) + this.currentWaveIndex * 35;
     } else if (this.worldId === 'dead_mountain') {
-      extraShield = Math.max(config.shield || 0, 25);
+      extraShield = Math.max(config.shield || 0, 40) + this.missionNumber * 4;
     } else if (this.worldId === 'goblin_caves') {
-      extraShield = Math.max(config.shield || 0, 15);
+      extraShield = Math.max(config.shield || 0, 20) + this.missionNumber * 2;
     }
 
     const enemyConfig: EnemyDefinition = extraShield > 0

@@ -135,7 +135,8 @@ export class MissionSelectScene extends Phaser.Scene {
         SaveSystem.save();
         this.scene.start('GameScene', {
           worldId: this.worldId,
-          missionNumber: missionNum
+          missionNumber: missionNum,
+          isDungeon: this.worldId === 'dungeon'
         });
       });
 

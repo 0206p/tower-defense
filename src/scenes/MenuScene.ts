@@ -39,11 +39,11 @@ export class MenuScene extends Phaser.Scene {
     // 3. Zentrales, transparentes Glas-Panel für Menü-Inhalte
     const panel = this.add.graphics();
     panel.fillStyle(0x130e22, 0.78);
-    panel.fillRoundedRect(GAME_WIDTH / 2 - 280, 80, 560, 550, 16);
+    panel.fillRoundedRect(GAME_WIDTH / 2 - 280, 75, 560, 565, 16);
     panel.lineStyle(2, 0xd4af37, 0.85);
-    panel.strokeRoundedRect(GAME_WIDTH / 2 - 280, 80, 560, 550, 16);
+    panel.strokeRoundedRect(GAME_WIDTH / 2 - 280, 75, 560, 565, 16);
     panel.lineStyle(1, 0x8a78a5, 0.4);
-    panel.strokeRoundedRect(GAME_WIDTH / 2 - 272, 88, 544, 534, 12);
+    panel.strokeRoundedRect(GAME_WIDTH / 2 - 272, 83, 544, 549, 12);
 
     // 4. Logo & Titel
     this.add.text(GAME_WIDTH / 2 + 2, 142, 'RETRO TOWER DEFENSE', {
@@ -111,20 +111,17 @@ export class MenuScene extends Phaser.Scene {
       ? `🔥 ENDLOSMODUS (REKORD: WELLE ${maxEndlessWave})`
       : '🔥 ENDLOSMODUS (ENDLESS SURVIVAL)';
 
-    this.createMenuButton(GAME_WIDTH / 2, 270, '⚔️ KAMPAGNE STARTEN', 400, 44, 0x27ae60, 0x2ecc71, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 280, '⚔️ KAMPAGNE STARTEN (4 WELTEN)', 400, 40, 0x27ae60, 0x2ecc71, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Kampagne starten gewählt');
       this.scene.start('WorldSelectScene');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 322, endlessLabel, 400, 44, 0xb33939, 0xff5252, () => {
+    // NEU: STARCRAFT II 2.5D RTS PROTOTYP
+    this.createMenuButton(GAME_WIDTH / 2, 326, '🛸 STARCRAFT II RTS PROTOTYP (TESTEN)', 400, 40, 0x0369a1, 0x38bdf8, () => {
       SoundManager.playClick();
-      logger.info('MenuScene', 'Endlosmodus gestartet');
-      this.scene.start('GameScene', {
-        worldId: 'witch_forest',
-        missionNumber: 1,
-        isEndless: true
-      });
+      logger.info('MenuScene', 'StarCraft II RTS Prototyp gestartet');
+      this.scene.start('StarCraftPrototypeScene');
     });
 
     // Neuer Spielmodus: Dungeon (am Ende der Kampagne freigeschaltet)
@@ -136,10 +133,10 @@ export class MenuScene extends Phaser.Scene {
 
     this.createMenuButton(
       GAME_WIDTH / 2,
-      374,
+      372,
       dungeonLabel,
       400,
-      44,
+      40,
       isDungeonUnlocked ? 0x4a148c : 0x221a2e,
       isDungeonUnlocked ? 0x9c27b0 : 0x3d3250,
       () => {
@@ -167,7 +164,17 @@ export class MenuScene extends Phaser.Scene {
       }
     );
 
-    this.createMenuButton(GAME_WIDTH / 2, 426, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 42, 0x512b7a, 0x8e44ad, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 418, endlessLabel, 400, 40, 0xb33939, 0xff5252, () => {
+      SoundManager.playClick();
+      logger.info('MenuScene', 'Endlosmodus gestartet');
+      this.scene.start('GameScene', {
+        worldId: 'witch_forest',
+        missionNumber: 1,
+        isEndless: true
+      });
+    });
+
+    this.createMenuButton(GAME_WIDTH / 2, 464, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 40, 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
@@ -175,13 +182,13 @@ export class MenuScene extends Phaser.Scene {
 
     // Sound Toggle Button & Logs
     const soundLabel = SoundManager.getIsMuted() ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN';
-    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 476, soundLabel, 185, 36, 0x2d3436, 0x636e72, () => {
+    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 510, soundLabel, 185, 34, 0x2d3436, 0x636e72, () => {
       const muted = SoundManager.toggleMute();
       logger.info('Sound', `Musik umgeschaltet: ${muted ? 'AUS' : 'AN'}`);
       (soundBtn.getAt(1) as Phaser.GameObjects.Text).setText(muted ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 + 105, 476, '📜 LOGS EXPORT', 185, 36, 0x1e3799, 0x4a69bd, () => {
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 510, '📜 LOGS EXPORT', 185, 34, 0x1e3799, 0x4a69bd, () => {
       SoundManager.playClick();
       logger.downloadLogs(30);
     });
@@ -191,7 +198,7 @@ export class MenuScene extends Phaser.Scene {
       return active ? 'ADMIN-MODUS: AN' : 'ADMIN-MODUS: AUS';
     };
 
-    const adminBtn = this.add.container(GAME_WIDTH / 2, 524);
+    const adminBtn = this.add.container(GAME_WIDTH / 2, 552);
     const adminBg = this.add.graphics();
     const adminWidth = 210;
     const adminHeight = 36;
@@ -247,7 +254,7 @@ export class MenuScene extends Phaser.Scene {
     });
 
     // Subtiler Fußnoten-Text
-    const hint = this.add.text(GAME_WIDTH / 2, 572, 'Dungeon-Modus: 30 gnadenlose Kammern für Meister der Kampagne!', {
+    const hint = this.add.text(GAME_WIDTH / 2, 598, 'Dungeon: 30 gnadenlose Kammern • StarCraft II: Hochwertiger 2.5D RTS Prototyp', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       color: '#f5f0e6',

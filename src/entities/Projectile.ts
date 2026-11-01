@@ -298,8 +298,13 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           duration: 180,
           onComplete: () => beam.destroy()
         });
-        const chainDmg = Math.round(this.damage * Math.pow(0.85, hitList.length - 1));
+        const chainDmg = Math.round(this.damage * Math.pow(0.75, hitList.length - 1));
         nearest.takeDamage(chainDmg, false, false, this.sourceTowerType);
+
+        // Geerdete Erdwesen leiten den Kettenblitz ab und brechen die Kette ab!
+        if (['golem', 'lava_golem', 'armored_troll'].includes(nearest.config.type)) {
+          break;
+        }
       } else {
         break;
       }

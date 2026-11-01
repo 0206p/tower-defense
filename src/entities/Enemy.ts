@@ -119,21 +119,45 @@ export class Enemy extends Phaser.GameObjects.Container {
   public takeDamage(damage: number, isCrit: boolean = false, shieldPiercing: boolean = false, sourceTowerType?: TowerType): void {
     if (this.isDead) return;
 
-    if (sourceTowerType) {
-      this.lastDamagedByTower = sourceTowerType;
-      balancing.recordDamage(sourceTowerType, damage, isCrit, this.config.type);
+    // Taktisches Konter- & Resistenz-System
+    let effectiveDamage = damage;
+    let isResisted = false;
+    let isVulnerable = false;
+
+    // 1. Golems und gepanzerte Trolle sind geerdet: 75% Blitz-/Tesla-Resistenz
+    const isEarthArmored = ['golem', 'lava_golem', 'armored_troll'].includes(this.config.type);
+    if (isEarthArmored && sourceTowerType === 'tesla') {
+      effectiveDamage = Math.max(1, Math.round(damage * 0.25));
+      isResisted = true;
     }
 
-    let damageToHp = damage;
+    // 2. Erdwesen sind dafür extrem anfällig gegen schwere Kanonenschläge (+50% Bonusschaden)
+    if (isEarthArmored && sourceTowerType === 'cannon') {
+      effectiveDamage = Math.round(damage * 1.5);
+      isVulnerable = true;
+    }
+
+    // 3. Wenn Gegner unter Frost-Einfluss stehen: Zersplitterungs-Schwäche (+35% Extraschaden)
+    if (this.slowTimer > 0 && sourceTowerType !== 'ice') {
+      effectiveDamage = Math.round(effectiveDamage * 1.35);
+      isVulnerable = true;
+    }
+
+    if (sourceTowerType) {
+      this.lastDamagedByTower = sourceTowerType;
+      balancing.recordDamage(sourceTowerType, effectiveDamage, isCrit, this.config.type);
+    }
+
+    let damageToHp = effectiveDamage;
     let hitShield = false;
 
     if (this.currentShield > 0 && !shieldPiercing) {
       hitShield = true;
-      if (this.currentShield >= damage) {
-        this.currentShield -= damage;
+      if (this.currentShield >= effectiveDamage) {
+        this.currentShield -= effectiveDamage;
         damageToHp = 0;
       } else {
-        damageToHp = damage - this.currentShield;
+        damageToHp = effectiveDamage - this.currentShield;
         this.currentShield = 0;
       }
     }
@@ -143,13 +167,19 @@ export class Enemy extends Phaser.GameObjects.Container {
 
     // Schadens-Popup
     let popupColor = isCrit ? '#ff3838' : '#ffd13b';
-    let popupText = isCrit ? `!${damage}!` : `-${damage}`;
-    if (shieldPiercing) {
+    let popupText = isCrit ? `!${effectiveDamage}!` : `-${effectiveDamage}`;
+    if (isResisted) {
+      popupColor = '#74b9ff';
+      popupText = `⚡${effectiveDamage} (Resist)`;
+    } else if (isVulnerable) {
+      popupColor = '#ff9f43';
+      popupText = `💥${effectiveDamage}!`;
+    } else if (shieldPiercing) {
       popupColor = '#a29bfe';
-      popupText = `⚡${damage}`;
+      popupText = `⚡${effectiveDamage}`;
     } else if (hitShield && damageToHp === 0) {
       popupColor = '#00d2d3';
-      popupText = `🛡${damage}`;
+      popupText = `🛡${effectiveDamage}`;
     }
 
     const dmgText = this.scene.add.text(
