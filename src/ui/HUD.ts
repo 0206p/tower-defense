@@ -105,7 +105,11 @@ export class HUD extends Phaser.GameObjects.Container {
       this.add(btn);
     });
 
-    // 7. NÄCHSTE WELLE BUTTON
+    // 7. VOLLBILD BUTTON
+    const btnFullscreen = this.createFullscreenButton(950, 22);
+    this.add(btnFullscreen);
+
+    // 8. NÄCHSTE WELLE BUTTON
     this.btnNextWave = this.createNextWaveButton(1120, 22);
     this.add(this.btnNextWave);
 
@@ -220,6 +224,54 @@ export class HUD extends Phaser.GameObjects.Container {
       bg.strokeRoundedRect(-20, -14, 40, 28, 4);
       text.setColor(isCur ? '#ffffff' : '#8c829e');
     });
+  }
+
+  private createFullscreenButton(x: number, y: number): Phaser.GameObjects.Container {
+    const container = this.scene.add.container(x, y);
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x272438, 1);
+    bg.fillRoundedRect(-44, -14, 88, 28, 4);
+    bg.lineStyle(2, 0x4d4766, 1);
+    bg.strokeRoundedRect(-44, -14, 88, 28, 4);
+    container.add(bg);
+
+    const text = this.scene.add.text(0, 0, '⛶ VOLLBILD', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      color: '#e4deec'
+    }).setOrigin(0.5);
+    container.add(text);
+
+    container.setSize(88, 28);
+    container.setInteractive(new Phaser.Geom.Rectangle(-44, -14, 88, 28), Phaser.Geom.Rectangle.Contains);
+
+    container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      pointer.event.stopPropagation();
+      SoundManager.playClick();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    container.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(0x38344e, 1);
+      bg.fillRoundedRect(-44, -14, 88, 28, 4);
+      bg.lineStyle(2, 0x7c73a0, 1);
+      bg.strokeRoundedRect(-44, -14, 88, 28, 4);
+    });
+
+    container.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(0x272438, 1);
+      bg.fillRoundedRect(-44, -14, 88, 28, 4);
+      bg.lineStyle(2, 0x4d4766, 1);
+      bg.strokeRoundedRect(-44, -14, 88, 28, 4);
+    });
+
+    return container;
   }
 
   private createNextWaveButton(x: number, y: number): Phaser.GameObjects.Container {

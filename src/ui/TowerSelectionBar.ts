@@ -5,11 +5,20 @@ import { EconomySystem } from '../systems/EconomySystem';
 import { SoundManager } from '../systems/SoundManager';
 import { SaveSystem } from '../systems/SaveSystem';
 
+export interface TowerSelectionBarCallbacks {
+  onSelect: (type: TowerType | null) => void;
+  onStartDrag: (type: TowerType, pointer: Phaser.Input.Pointer) => void;
+  onLockedAttempt: () => void;
+  onNotEnoughGold: () => void;
+}
+
 export class TowerSelectionBar extends Phaser.GameObjects.Container {
   private economy: EconomySystem;
   private selectedTowerType: TowerType | null = null;
   private cards: Map<TowerType, { container: Phaser.GameObjects.Container; bg: Phaser.GameObjects.Graphics; costText: Phaser.GameObjects.Text; nameText: Phaser.GameObjects.Text }> = new Map();
-  private onSelectCallback: (type: TowerType | null) => void;
+  private callbacks: TowerSelectionBarCallbacks;
+  private titleText: Phaser.GameObjects.Text;
+  private buildEnabled: boolean = true;
 
   // Hover-Stats-Box rechts unten
   private statsHoverPanel: Phaser.GameObjects.Container;
@@ -20,11 +29,11 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
   constructor(
     scene: Phaser.Scene,
     economy: EconomySystem,
-    onSelect: (type: TowerType | null) => void
+    callbacks: TowerSelectionBarCallbacks
   ) {
     super(scene, 0, GAME_HEIGHT - 66);
     this.economy = economy;
-    this.onSelectCallback = onSelect;
+    this.callbacks = callbacks;
 
     // Leisten-Hintergrund
     const barBg = scene.add.graphics();
@@ -34,14 +43,14 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     barBg.lineBetween(0, 0, GAME_WIDTH, 0);
     this.add(barBg);
 
-    const title = scene.add.text(20, 33, 'TÜRME:', {
+    this.titleText = scene.add.text(20, 33, 'TÜRME:', {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#ffd13b',
       stroke: '#000000',
       strokeThickness: 2
     }).setOrigin(0, 0.5);
-    this.add(title);
+    this.add(this.titleText);
 
     // 6 Turm-Karten (Großzügiger Abstand, kein Überlappen)
     const towerTypes: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
@@ -100,6 +109,25 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     this.updateAffordability();
   }
 
+  public setBuildEnabled(enabled: boolean): void {
+    this.buildEnabled = enabled;
+    if (!enabled) {
+      this.titleText.setText('🔒 GESPERRT:');
+      this.titleText.setColor('#ff4757');
+      if (this.selectedTowerType) {
+        this.clearSelection();
+      }
+    } else {
+      this.titleText.setText('TÜRME:');
+      this.titleText.setColor('#ffd13b');
+    }
+    this.updateCardVisuals();
+  }
+
+  public isBuildEnabled(): boolean {
+    return this.buildEnabled;
+  }
+
   private createTowerCard(type: TowerType, x: number, y: number) {
     const def = TOWER_CONFIGS[type];
     const container = this.scene.add.container(x, y);
@@ -134,8 +162,23 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      if (!this.buildEnabled) {
+        SoundManager.playDeny();
+        this.callbacks.onLockedAttempt();
+        return;
+      }
+
+      if (!this.economy.canAfford(def.baseCost)) {
+        SoundManager.playDeny();
+        this.callbacks.onNotEnoughGold();
+        return;
+      }
+
       SoundManager.playClick();
-      this.toggleSelection(type);
+      this.selectedTowerType = type;
+      this.updateCardVisuals();
+      this.callbacks.onSelect(type);
+      this.callbacks.onStartDrag(type, pointer);
     });
 
     container.on('pointerover', () => {
@@ -178,6 +221,11 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
   }
 
   public toggleSelection(type: TowerType): void {
+    if (!this.buildEnabled) {
+      this.callbacks.onLockedAttempt();
+      return;
+    }
+
     if (this.selectedTowerType === type) {
       this.selectedTowerType = null;
     } else {
@@ -190,7 +238,7 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     }
 
     this.updateCardVisuals();
-    this.onSelectCallback(this.selectedTowerType);
+    this.callbacks.onSelect(this.selectedTowerType);
   }
 
   public getSelectedTowerType(): TowerType | null {
@@ -200,7 +248,7 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
   public clearSelection(): void {
     this.selectedTowerType = null;
     this.updateCardVisuals();
-    this.onSelectCallback(null);
+    this.callbacks.onSelect(null);
   }
 
   public updateAffordability(): void {
@@ -215,24 +263,34 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
 
       card.bg.clear();
 
-      if (isSelected) {
-        card.bg.fillStyle(0x384a28, 1);
-        card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
-        card.bg.lineStyle(2, 0x7eb34d, 1);
-        card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
-        card.nameText.setColor('#ffffff');
-      } else if (!canAfford) {
+      if (!this.buildEnabled) {
+        card.container.setAlpha(0.5);
         card.bg.fillStyle(0x191821, 0.7);
         card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
-        card.bg.lineStyle(2, 0x2e293a, 1);
+        card.bg.lineStyle(2, 0x3d2828, 1);
         card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
         card.nameText.setColor('#686075');
       } else {
-        card.bg.fillStyle(0x282337, 1);
-        card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
-        card.bg.lineStyle(2, 0x483d5a, 1);
-        card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
-        card.nameText.setColor('#f5f0e6');
+        card.container.setAlpha(1.0);
+        if (isSelected) {
+          card.bg.fillStyle(0x384a28, 1);
+          card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.lineStyle(2, 0x7eb34d, 1);
+          card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
+          card.nameText.setColor('#ffffff');
+        } else if (!canAfford) {
+          card.bg.fillStyle(0x191821, 0.7);
+          card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.lineStyle(2, 0x2e293a, 1);
+          card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
+          card.nameText.setColor('#686075');
+        } else {
+          card.bg.fillStyle(0x282337, 1);
+          card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.lineStyle(2, 0x483d5a, 1);
+          card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
+          card.nameText.setColor('#f5f0e6');
+        }
       }
     });
   }

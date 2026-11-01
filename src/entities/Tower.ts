@@ -21,7 +21,7 @@ export class Tower extends Phaser.GameObjects.Container {
 
   private economy: EconomySystem;
   private getEnemiesFn: () => Enemy[];
-  private onSelectCallback: (tower: Tower) => void;
+  private onSelectCallback: (tower: Tower, pointer?: Phaser.Input.Pointer) => void;
 
   // Stat Multipliers aus dem globalen Upgrade-Menü
   private metaDamageMult: number = 1.0;
@@ -38,7 +38,7 @@ export class Tower extends Phaser.GameObjects.Container {
     towerType: TowerType,
     economy: EconomySystem,
     getEnemies: () => Enemy[],
-    onSelect: (tower: Tower) => void
+    onSelect: (tower: Tower, pointer?: Phaser.Input.Pointer) => void
   ) {
     super(scene, x, y);
     this.gridCol = col;
@@ -73,7 +73,7 @@ export class Tower extends Phaser.GameObjects.Container {
 
     this.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
-      this.onSelectCallback(this);
+      this.onSelectCallback(this, pointer);
     });
 
     this.on('pointerover', () => {
@@ -202,7 +202,12 @@ export class Tower extends Phaser.GameObjects.Container {
     this.rangeCircle.setVisible(show);
   }
 
-  private updateRangeCircle(): void {
+  public updatePosition(x: number, y: number): void {
+    this.setPosition(x, y);
+    this.updateRangeCircle();
+  }
+
+  public updateRangeCircle(): void {
     this.rangeCircle.clear();
     const effectiveRange = this.getEffectiveRange();
     this.rangeCircle.fillStyle(0x4fc3f7, 0.18);
