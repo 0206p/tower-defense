@@ -15,12 +15,19 @@ export class MapManager {
   public runeTiles: GridPoint[] = [];
   public curvePath!: Phaser.Curves.Path;
   private worldId: WorldId;
+  private missionNumber: number;
   private grassTufts: Map<string, Phaser.GameObjects.Image> = new Map();
   private ambientParticles: Phaser.GameObjects.GameObject[] = [];
+  private streamTiles: GridPoint[] = [];
+  private treeTiles: { col: number; row: number; type: 'oak' | 'pine' | 'dead' | 'stalagmite' }[] = [];
+  private rockTiles: { col: number; row: number; type: 'granite' | 'ore' | 'volcanic' }[] = [];
+  private critters: Phaser.GameObjects.GameObject[] = [];
+  private critterTimers: Phaser.Time.TimerEvent[] = [];
 
   constructor(scene: Phaser.Scene, worldId: WorldId = 'witch_forest', missionNumber: number = 1) {
     this.scene = scene;
     this.worldId = worldId;
+    this.missionNumber = missionNumber;
     this.grid = [];
     for (let r = 0; r < GRID_ROWS; r++) {
       this.grid[r] = new Array(GRID_COLS).fill(0);
@@ -178,6 +185,7 @@ export class MapManager {
 
     this.markPathOnGrid();
     this.spawnRuneTiles(variantIndex);
+    this.generateNaturalLandscape(variantIndex);
     this.buildCurvePath();
   }
 
@@ -204,16 +212,94 @@ export class MapManager {
     const end = this.pathPoints[this.pathPoints.length - 1];
     this.grid[start.row][start.col] = 4;
     this.grid[end.row][end.col] = 4;
+  }
 
-    // Feste thematische Dekorationen abseits des Pfades
-    const decorPositions = [
-      { col: 2, row: 1 }, { col: 11, row: 1 }, { col: 14, row: 14 },
-      { col: 20, row: 1 }, { col: 27, row: 2 }, { col: 25, row: 14 }
+  private generateNaturalLandscape(variantIndex: number): void {
+    this.streamTiles = [];
+    this.treeTiles = [];
+    this.rockTiles = [];
+
+    // 1. Natürlicher Bach / Flussabschnitt (Hexenwald)
+    if (this.worldId === 'witch_forest') {
+      const candidateRows = (variantIndex % 2 === 0) ? [14, 15, 1] : [1, 14, 15];
+      for (const r of candidateRows) {
+        let runStart = -1;
+        let runLength = 0;
+        let bestRunStart = -1;
+        let bestRunLen = 0;
+
+        for (let c = 1; c < GRID_COLS - 1; c++) {
+          const rowAboveFree = !this.grid[r - 1] || this.grid[r - 1][c] !== 1;
+          const rowBelowFree = !this.grid[r + 1] || this.grid[r + 1][c] !== 1;
+          if (this.grid[r][c] === 0 && rowAboveFree && rowBelowFree) {
+            if (runStart === -1) runStart = c;
+            runLength++;
+            if (runLength > bestRunLen) {
+              bestRunLen = runLength;
+              bestRunStart = runStart;
+            }
+          } else {
+            runStart = -1;
+            runLength = 0;
+          }
+        }
+
+        if (bestRunLen >= 5) {
+          const streamLen = Math.min(8, bestRunLen);
+          for (let c = bestRunStart; c < bestRunStart + streamLen; c++) {
+            this.grid[r][c] = 2; // Hindernis Wasser
+            this.streamTiles.push({ col: c, row: r });
+          }
+          break;
+        }
+      }
+    }
+
+    // 2. Bäume & Baumgruppen platzieren (abseits des Pfades)
+    const treeCandidates: GridPoint[] = [
+      { col: 1, row: 1 }, { col: 2, row: 2 }, { col: 6, row: 1 },
+      { col: 13, row: 1 }, { col: 20, row: 1 }, { col: 29, row: 1 },
+      { col: 30, row: 2 }, { col: 1, row: 14 }, { col: 2, row: 15 },
+      { col: 15, row: 15 }, { col: 28, row: 14 }, { col: 30, row: 15 },
+      { col: 10, row: 6 }, { col: 24, row: 5 }, { col: 16, row: 11 },
+      { col: 4, row: 10 }, { col: 21, row: 10 }
     ];
 
-    decorPositions.forEach((d) => {
-      if (this.grid[d.row] && this.grid[d.row][d.col] === 0) {
-        this.grid[d.row][d.col] = 2;
+    let treesPlaced = 0;
+    const maxTrees = 9;
+    treeCandidates.forEach((cand, idx) => {
+      if (treesPlaced < maxTrees && this.grid[cand.row] && this.grid[cand.row][cand.col] === 0) {
+        this.grid[cand.row][cand.col] = 2;
+        let treeType: 'oak' | 'pine' | 'dead' | 'stalagmite' = 'oak';
+        if (this.worldId === 'witch_forest') {
+          treeType = (idx % 2 === 0) ? 'oak' : 'pine';
+        } else if (this.worldId === 'goblin_caves') {
+          treeType = 'stalagmite';
+        } else {
+          treeType = 'dead';
+        }
+        this.treeTiles.push({ col: cand.col, row: cand.row, type: treeType });
+        treesPlaced++;
+      }
+    });
+
+    // 3. Felsen & Felsformationen
+    const rockCandidates: GridPoint[] = [
+      { col: 3, row: 1 }, { col: 11, row: 2 }, { col: 18, row: 15 },
+      { col: 25, row: 2 }, { col: 7, row: 15 }, { col: 27, row: 13 },
+      { col: 12, row: 10 }, { col: 19, row: 5 }
+    ];
+
+    let rocksPlaced = 0;
+    const maxRocks = 6;
+    rockCandidates.forEach((cand) => {
+      if (rocksPlaced < maxRocks && this.grid[cand.row] && this.grid[cand.row][cand.col] === 0) {
+        this.grid[cand.row][cand.col] = 2;
+        let rockType: 'granite' | 'ore' | 'volcanic' = 'granite';
+        if (this.worldId === 'goblin_caves') rockType = 'ore';
+        else if (this.worldId === 'dead_mountain') rockType = 'volcanic';
+        this.rockTiles.push({ col: cand.col, row: cand.row, type: rockType });
+        rocksPlaced++;
       }
     });
   }
@@ -254,16 +340,13 @@ export class MapManager {
   public renderMap(): void {
     let groundKey = 'tile_ground_witch';
     let pathKey = 'tile_path_witch';
-    let decorKey = 'tile_decor_witch';
 
     if (this.worldId === 'goblin_caves') {
       groundKey = 'tile_ground_cave';
       pathKey = 'tile_path_cave';
-      decorKey = 'tile_decor_cave';
     } else if (this.worldId === 'dead_mountain') {
       groundKey = 'tile_ground_mountain';
       pathKey = 'tile_path_mountain';
-      decorKey = 'tile_decor_mountain';
     }
 
     // 1. Hintergrund-Kacheln mit optimierter Kachelschärfe
@@ -340,25 +423,250 @@ export class MapManager {
       });
     });
 
-    // 5. Thematische Dekorationen (Pilze, Kristalle, Vulkane)
-    for (let r = 0; r < GRID_ROWS; r++) {
-      for (let c = 0; c < GRID_COLS; c++) {
-        if (this.grid[r][c] === 2 && r > 0 && r < 16) {
-          const { x, y } = this.gridToPixel(c, r);
-          this.scene.add.image(x, y, decorKey).setOrigin(0.5).setDepth(2);
-        }
-      }
-    }
+    // 5. BÄCHE & WASSERLÄUFE (Hexenwald)
+    this.streamTiles.forEach((pt, i) => {
+      const { x, y } = this.gridToPixel(pt.col, pt.row);
+      this.scene.add.image(x, y, 'decor_water_stream_h').setOrigin(0.5).setDepth(1);
 
-    // 6. Startportal & Schloss
+      // Auf jedem 3. Bachabschnitt schwimmt eine zarte Seerose
+      if (i % 3 === 1) {
+        const lily = this.scene.add.image(x + 2, y, 'decor_water_lily').setOrigin(0.5).setDepth(2);
+        this.scene.tweens.add({
+          targets: lily,
+          y: y - 2,
+          x: x - 1,
+          angle: { from: -4, to: 4 },
+          duration: 1600 + (i * 200),
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
+    });
+
+    // 6. BÄUME MIT WIND-SCHWUNG & WURZELSCHATTEN
+    this.treeTiles.forEach((tree) => {
+      const { x, y } = this.gridToPixel(tree.col, tree.row);
+      let texKey = 'decor_tree_oak';
+      if (tree.type === 'pine') texKey = 'decor_tree_pine';
+      else if (tree.type === 'dead') texKey = 'decor_tree_dead';
+      else if (tree.type === 'stalagmite') texKey = 'decor_stalagmite_huge';
+
+      const treeImg = this.scene.add.image(x, y + TILE_SIZE / 2 - 2, texKey).setOrigin(0.5, 1.0).setDepth(3);
+
+      if (tree.type === 'oak' || tree.type === 'pine') {
+        this.scene.tweens.add({
+          targets: treeImg,
+          angle: { from: -2.5, to: 2.5 },
+          duration: 2200 + ((tree.col * 31) % 800),
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
+    });
+
+    // 7. FELSEN & KRISTALLE
+    this.rockTiles.forEach((rock) => {
+      const { x, y } = this.gridToPixel(rock.col, rock.row);
+      let texKey = 'decor_rock_granite';
+      if (rock.type === 'ore') texKey = 'decor_rock_ore';
+      else if (rock.type === 'volcanic') texKey = 'decor_rock_volcanic';
+
+      this.scene.add.image(x, y, texKey).setOrigin(0.5).setDepth(2);
+    });
+
+    // 8. Startportal & Schloss
     const startPos = this.gridToPixel(this.pathPoints[0].col, this.pathPoints[0].row);
     const endPos = this.gridToPixel(this.pathPoints[this.pathPoints.length - 1].col, this.pathPoints[this.pathPoints.length - 1].row);
 
     this.scene.add.image(startPos.x, startPos.y, 'tile_portal').setOrigin(0.5).setDepth(4);
     this.scene.add.image(endPos.x, endPos.y, 'tile_castle').setOrigin(0.5).setDepth(4);
 
-    // 7. Aktive Umwelt-Partikel (Glühwürmchen / Funken / Sporen)
+    // 9. Aktive Umwelt-Partikel (Glühwürmchen / Funken / Sporen)
     this.spawnAmbientAtmosphere();
+
+    // 10. LEBENDIGE VIECHER (ANIMIERTES WILDLIFE)
+    this.spawnWildlifeCritters();
+  }
+
+  private spawnWildlifeCritters(): void {
+    this.critters.forEach((c) => c.destroy());
+    this.critters = [];
+    this.critterTimers.forEach((t) => t.destroy());
+    this.critterTimers = [];
+
+    const freeTiles: GridPoint[] = [];
+    for (let r = 2; r < 15; r++) {
+      for (let c = 2; c < GRID_COLS - 2; c++) {
+        if (this.grid[r][c] === 0) {
+          freeTiles.push({ col: c, row: r });
+        }
+      }
+    }
+    if (freeTiles.length === 0) return;
+
+    if (this.worldId === 'witch_forest') {
+      // 1. SÜSSE WALD-KANINCHEN (Hüpfen herum & pausieren)
+      const rabbitCount = Math.min(3, freeTiles.length);
+      for (let i = 0; i < rabbitCount; i++) {
+        const tileIdx = (i * 7 + 3) % freeTiles.length;
+        const pt = freeTiles[tileIdx];
+        const { x, y } = this.gridToPixel(pt.col, pt.row);
+
+        const rabbit = this.scene.add.image(x, y, 'critter_rabbit').setOrigin(0.5).setDepth(4);
+        this.critters.push(rabbit);
+
+        this.scene.tweens.add({
+          targets: rabbit,
+          scaleY: { from: 1.0, to: 1.08 },
+          duration: 700 + i * 150,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+
+        const hopTimer = this.scene.time.addEvent({
+          delay: Phaser.Math.Between(3500, 6500),
+          loop: true,
+          callback: () => {
+            if (!rabbit.active || !this.scene || !this.scene.sys.isActive()) return;
+            const dx = Phaser.Math.Between(-35, 35);
+            const dy = Phaser.Math.Between(-20, 20);
+            const targetX = Phaser.Math.Clamp(rabbit.x + dx, 50, GRID_COLS * TILE_SIZE - 50);
+            const targetY = Phaser.Math.Clamp(rabbit.y + dy, 60, 15 * TILE_SIZE);
+
+            rabbit.setFlipX(dx < 0);
+
+            this.scene.tweens.add({
+              targets: rabbit,
+              x: targetX,
+              duration: 400,
+              ease: 'Quad.easeInOut'
+            });
+
+            this.scene.tweens.add({
+              targets: rabbit,
+              y: rabbit.y - 14,
+              duration: 200,
+              yoyo: true,
+              ease: 'Sine.easeOut',
+              onComplete: () => {
+                if (rabbit.active) rabbit.setY(targetY);
+              }
+            });
+          }
+        });
+        this.critterTimers.push(hopTimer);
+      }
+
+      // 2. SCHILLERNDE SCHMETTERLINGE (Flattern in weichen Kurven)
+      const butterflyCount = 4;
+      for (let i = 0; i < butterflyCount; i++) {
+        const pt = freeTiles[(i * 9 + 5) % freeTiles.length];
+        const { x, y } = this.gridToPixel(pt.col, pt.row);
+
+        const butterfly = this.scene.add.image(x, y - 8, 'critter_butterfly').setOrigin(0.5).setDepth(5);
+        this.critters.push(butterfly);
+
+        this.scene.tweens.add({
+          targets: butterfly,
+          scaleX: { from: 1.0, to: 0.15 },
+          duration: 90 + i * 15,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+
+        const driftX = Phaser.Math.Between(25, 45) * (i % 2 === 0 ? 1 : -1);
+        const driftY = Phaser.Math.Between(15, 30);
+        this.scene.tweens.add({
+          targets: butterfly,
+          x: butterfly.x + driftX,
+          y: butterfly.y - driftY,
+          duration: 3200 + i * 400,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
+    } else if (this.worldId === 'goblin_caves') {
+      // HÖHLEN-FLEDERMÄUSE (Flattern durch die Gewölbe)
+      const batCount = 3;
+      for (let i = 0; i < batCount; i++) {
+        const pt = freeTiles[(i * 8 + 2) % freeTiles.length];
+        const { x, y } = this.gridToPixel(pt.col, pt.row);
+
+        const bat = this.scene.add.image(x, y - 10, 'critter_bat').setOrigin(0.5).setDepth(5);
+        this.critters.push(bat);
+
+        this.scene.tweens.add({
+          targets: bat,
+          scaleY: { from: 1.0, to: 0.3 },
+          duration: 100 + i * 20,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+
+        this.scene.tweens.add({
+          targets: bat,
+          x: bat.x + (i % 2 === 0 ? 60 : -60),
+          y: bat.y + (i % 2 === 0 ? -25 : 25),
+          duration: 2800 + i * 500,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
+    } else if (this.worldId === 'dead_mountain') {
+      // FEUER-SALAMANDER (Kriechen auf warmen Felsen)
+      const salamanderCount = 3;
+      for (let i = 0; i < salamanderCount; i++) {
+        const pt = freeTiles[(i * 7 + 4) % freeTiles.length];
+        const { x, y } = this.gridToPixel(pt.col, pt.row);
+
+        const sal = this.scene.add.image(x, y, 'critter_salamander').setOrigin(0.5).setDepth(4);
+        this.critters.push(sal);
+
+        this.scene.tweens.add({
+          targets: sal,
+          angle: { from: -4, to: 4 },
+          duration: 1100 + i * 250,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+
+        const crawlTimer = this.scene.time.addEvent({
+          delay: Phaser.Math.Between(4000, 7000),
+          loop: true,
+          callback: () => {
+            if (!sal.active || !this.scene || !this.scene.sys.isActive()) return;
+            const dx = Phaser.Math.Between(-25, 25);
+            const targetX = Phaser.Math.Clamp(sal.x + dx, 50, GRID_COLS * TILE_SIZE - 50);
+            sal.setFlipX(dx < 0);
+
+            this.scene.tweens.add({
+              targets: sal,
+              x: targetX,
+              duration: 600,
+              ease: 'Linear'
+            });
+          }
+        });
+        this.critterTimers.push(crawlTimer);
+      }
+    }
+  }
+
+  public destroy(): void {
+    this.critters.forEach((c) => c.destroy());
+    this.critters = [];
+    this.critterTimers.forEach((t) => t.destroy());
+    this.critterTimers = [];
+    this.ambientParticles.forEach((p) => p.destroy());
+    this.ambientParticles = [];
   }
 
   private spawnAmbientAtmosphere(): void {

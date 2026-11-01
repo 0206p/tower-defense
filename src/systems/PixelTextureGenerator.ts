@@ -537,6 +537,370 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
+    // 4b. BÄUME, FELSEN, BÄCHE & LEBENDIGE VIECHER
+    // ==========================================
+
+    // Großer Laubbaum (Hexenwald)
+    create('decor_tree_oak', 46, 54, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+      ctx.beginPath();
+      ctx.ellipse(23, 49, 14, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const trunkGrad = ctx.createLinearGradient(19, 32, 27, 49);
+      trunkGrad.addColorStop(0, '#593922');
+      trunkGrad.addColorStop(0.5, '#422817');
+      trunkGrad.addColorStop(1, '#2c180d');
+      ctx.fillStyle = trunkGrad;
+      ctx.beginPath();
+      ctx.moveTo(21, 30);
+      ctx.lineTo(25, 30);
+      ctx.lineTo(27, 48);
+      ctx.lineTo(19, 48);
+      ctx.closePath();
+      ctx.fill();
+
+      const drawCanopy = (cx: number, cy: number, r: number, color1: string, color2: string) => {
+        const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 2, cx, cy, r);
+        g.addColorStop(0, color1);
+        g.addColorStop(1, color2);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      drawCanopy(17, 24, 13, '#2ed573', '#1e824c');
+      drawCanopy(29, 24, 13, '#26af61', '#145a32');
+      drawCanopy(23, 14, 14, '#7bed9f', '#20bf6b');
+    });
+
+    // Nadelbaum / Wald-Tanne
+    create('decor_tree_pine', 38, 56, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+      ctx.beginPath();
+      ctx.ellipse(19, 52, 11, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#3e2723';
+      ctx.fillRect(17, 42, 4, 10);
+
+      const drawNeedles = (yTop: number, yBot: number, w: number, c1: string, c2: string) => {
+        const g = ctx.createLinearGradient(19, yTop, 19, yBot);
+        g.addColorStop(0, c1);
+        g.addColorStop(1, c2);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(19, yTop);
+        ctx.lineTo(19 + w, yBot);
+        ctx.lineTo(19 - w, yBot);
+        ctx.closePath();
+        ctx.fill();
+      };
+
+      drawNeedles(26, 44, 16, '#27ae60', '#145a32');
+      drawNeedles(15, 33, 13, '#2ecc71', '#196f3d');
+      drawNeedles(4, 21, 10, '#55efc4', '#1e824c');
+    });
+
+    // Toter Vulkan-Baum mit Glut
+    create('decor_tree_dead', 42, 54, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.beginPath();
+      ctx.ellipse(21, 50, 13, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#1a0a0d';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(21, 49);
+      ctx.lineTo(21, 28);
+      ctx.lineTo(12, 14);
+      ctx.moveTo(21, 32);
+      ctx.lineTo(31, 16);
+      ctx.moveTo(16, 21);
+      ctx.lineTo(8, 10);
+      ctx.moveTo(26, 24);
+      ctx.lineTo(35, 12);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ff6b6b';
+      [ {x: 12, y: 14}, {x: 8, y: 10}, {x: 31, y: 16}, {x: 35, y: 12} ].forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    });
+
+    // Stalagmit-Säule (Goblinhöhle)
+    create('decor_stalagmite_huge', 38, 54, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(19, 50, 13, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const g = ctx.createLinearGradient(12, 6, 26, 50);
+      g.addColorStop(0, '#57606f');
+      g.addColorStop(0.5, '#2f3542');
+      g.addColorStop(1, '#1e272e');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(19, 4);
+      ctx.lineTo(30, 48);
+      ctx.lineTo(8, 48);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#00d2d3';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(19, 10);
+      ctx.lineTo(22, 28);
+      ctx.lineTo(17, 44);
+      ctx.stroke();
+    });
+
+    // Felsbrocken Granit mit Moos
+    create('decor_rock_granite', 38, 30, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.beginPath();
+      ctx.ellipse(19, 26, 15, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const g = ctx.createLinearGradient(6, 4, 32, 28);
+      g.addColorStop(0, '#747d8c');
+      g.addColorStop(0.6, '#4f5663');
+      g.addColorStop(1, '#2f3542');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(8, 22);
+      ctx.lineTo(12, 8);
+      ctx.lineTo(25, 6);
+      ctx.lineTo(32, 16);
+      ctx.lineTo(29, 25);
+      ctx.lineTo(14, 26);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#2ed573';
+      ctx.beginPath();
+      ctx.ellipse(18, 9, 8, 3.5, -0.1, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Felsbrocken mit Erz
+    create('decor_rock_ore', 38, 30, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.beginPath();
+      ctx.ellipse(19, 26, 14, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#2d3436';
+      ctx.beginPath();
+      ctx.moveTo(8, 24);
+      ctx.lineTo(11, 7);
+      ctx.lineTo(27, 7);
+      ctx.lineTo(31, 23);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#ffd32a';
+      ctx.fillRect(14, 12, 4, 4);
+      ctx.fillRect(23, 16, 3, 3);
+      ctx.fillStyle = '#be2edd';
+      ctx.fillRect(19, 10, 3, 3);
+    });
+
+    // Vulkanfels mit Lava-Adern
+    create('decor_rock_volcanic', 38, 30, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(19, 26, 15, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#1e0c0f';
+      ctx.beginPath();
+      ctx.moveTo(7, 24);
+      ctx.lineTo(13, 6);
+      ctx.lineTo(26, 7);
+      ctx.lineTo(33, 24);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#ff4757';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(14, 10);
+      ctx.lineTo(19, 18);
+      ctx.lineTo(27, 20);
+      ctx.stroke();
+    });
+
+    // Bach / Wasser-Kachel (Hexenwald)
+    create('decor_water_stream_h', 40, 40, (ctx) => {
+      const g = ctx.createLinearGradient(0, 0, 0, 40);
+      g.addColorStop(0, '#192a56');
+      g.addColorStop(0.3, '#0984e3');
+      g.addColorStop(0.7, '#48dbfb');
+      g.addColorStop(1, '#192a56');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 4, 40, 32);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(4, 14);
+      ctx.quadraticCurveTo(14, 11, 24, 14);
+      ctx.quadraticCurveTo(32, 17, 38, 14);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(2, 26);
+      ctx.quadraticCurveTo(12, 23, 22, 26);
+      ctx.quadraticCurveTo(30, 29, 36, 26);
+      ctx.stroke();
+
+      ctx.fillStyle = '#57606f';
+      ctx.beginPath();
+      ctx.arc(8, 4, 2, 0, Math.PI * 2);
+      ctx.arc(28, 5, 2.5, 0, Math.PI * 2);
+      ctx.arc(18, 36, 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Seerose auf dem Wasser
+    create('decor_water_lily', 24, 24, (ctx) => {
+      ctx.fillStyle = '#10ac84';
+      ctx.beginPath();
+      ctx.arc(12, 12, 8, 0.3, Math.PI * 1.85);
+      ctx.lineTo(12, 12);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#ff9ff3';
+      ctx.beginPath();
+      ctx.arc(12, 12, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#feca57';
+      ctx.beginPath();
+      ctx.arc(12, 12, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Süßes Wald-Kaninchen
+    create('critter_rabbit', 22, 20, (ctx) => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.beginPath();
+      ctx.ellipse(11, 18, 8, 2.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#f5f0e6';
+      ctx.beginPath();
+      ctx.ellipse(10, 13, 7, 5, -0.15, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(15, 9, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#f5f0e6';
+      ctx.beginPath();
+      ctx.ellipse(14, 3, 1.8, 4.5, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(17, 4, 1.8, 4.5, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffb8b8';
+      ctx.beginPath();
+      ctx.ellipse(14, 3, 0.9, 3, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(17, 4, 0.9, 3, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#2f3542';
+      ctx.beginPath();
+      ctx.arc(16, 8, 0.9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(3, 13, 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Schillernder Wald-Schmetterling
+    create('critter_butterfly', 20, 18, (ctx) => {
+      const grad = ctx.createLinearGradient(0, 0, 20, 18);
+      grad.addColorStop(0, '#00d2d3');
+      grad.addColorStop(0.5, '#54a0ff');
+      grad.addColorStop(1, '#5f27cd');
+      ctx.fillStyle = grad;
+
+      ctx.beginPath();
+      ctx.ellipse(6, 6, 5, 4, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(7, 12, 3.5, 2.5, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.ellipse(14, 6, 5, 4, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(13, 12, 3.5, 2.5, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#222f3e';
+      ctx.fillRect(9, 4, 2, 9);
+    });
+
+    // Höhlen-Fledermaus
+    create('critter_bat', 24, 18, (ctx) => {
+      ctx.fillStyle = '#1e272e';
+      ctx.beginPath();
+      ctx.ellipse(12, 9, 3, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(12, 7);
+      ctx.quadraticCurveTo(6, 2, 2, 6);
+      ctx.quadraticCurveTo(5, 12, 10, 10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(12, 7);
+      ctx.quadraticCurveTo(18, 2, 22, 6);
+      ctx.quadraticCurveTo(19, 12, 14, 10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#ff4757';
+      ctx.fillRect(11, 7, 1, 1);
+      ctx.fillRect(13, 7, 1, 1);
+    });
+
+    // Feuer-Salamander
+    create('critter_salamander', 24, 16, (ctx) => {
+      ctx.fillStyle = '#1a0d0d';
+      ctx.beginPath();
+      ctx.ellipse(12, 8, 7, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#1a0d0d';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(5, 8);
+      ctx.quadraticCurveTo(2, 6, 0, 10);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ff9f43';
+      ctx.beginPath();
+      ctx.arc(9, 7, 1.3, 0, Math.PI * 2);
+      ctx.arc(13, 8, 1.5, 0, Math.PI * 2);
+      ctx.arc(16, 7, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // ==========================================
     // 5. RUNENSTEIN, PORTAL & SCHLOSS
     // ==========================================
     create('bg_menu_panorama', 1280, 720, (ctx) => {

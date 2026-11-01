@@ -81,6 +81,12 @@ export class GameScene extends Phaser.Scene {
     // Soundtrack starten
     SoundManager.startMusic();
 
+    this.events.once('shutdown', () => {
+      if (this.mapManager) {
+        this.mapManager.destroy();
+      }
+    });
+
     // 1. Ökonomie
     this.economy = new EconomySystem({
       onGoldChanged: (gold) => {
