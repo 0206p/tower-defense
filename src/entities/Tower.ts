@@ -3,6 +3,7 @@ import { TOWER_CONFIGS, TowerDefinition, TowerLevelData, TowerType } from '../co
 import { Enemy } from './Enemy';
 import { Projectile, ProjectileType } from './Projectile';
 import { EconomySystem } from '../systems/EconomySystem';
+import { SaveSystem } from '../systems/SaveSystem';
 
 export class Tower extends Phaser.GameObjects.Container {
   public towerType: TowerType;
@@ -21,6 +22,12 @@ export class Tower extends Phaser.GameObjects.Container {
   private economy: EconomySystem;
   private getEnemiesFn: () => Enemy[];
   private onSelectCallback: (tower: Tower) => void;
+
+  // Stat Multipliers aus dem globalen Upgrade-Menü
+  private metaDamageMult: number = 1.0;
+  private metaFrequencyMult: number = 1.0;
+  private metaRangeMult: number = 1.0;
+  private metaSpeedMult: number = 1.0;
 
   constructor(
     scene: Phaser.Scene,
@@ -44,7 +51,14 @@ export class Tower extends Phaser.GameObjects.Container {
     this.getEnemiesFn = getEnemies;
     this.onSelectCallback = onSelect;
 
-    // Reichweitenanzeige (initial unsichtbar)
+    // Meta-Boni laden
+    const mults = SaveSystem.getStatMultipliers(towerType);
+    this.metaDamageMult = mults.damageMult;
+    this.metaFrequencyMult = mults.frequencyMult;
+    this.metaRangeMult = mults.rangeMult;
+    this.metaSpeedMult = mults.speedMult;
+
+    // Reichweitenanzeige
     this.rangeCircle = scene.add.graphics();
     this.rangeCircle.setDepth(4);
     this.updateRangeCircle();
@@ -54,7 +68,6 @@ export class Tower extends Phaser.GameObjects.Container {
     this.sprite = scene.add.sprite(0, 0, textureKey);
     this.add(this.sprite);
 
-    // Klickbar machen
     this.setSize(40, 40);
     this.setInteractive(new Phaser.Geom.Rectangle(-20, -20, 40, 40), Phaser.Geom.Rectangle.Contains);
 
@@ -78,15 +91,27 @@ export class Tower extends Phaser.GameObjects.Container {
     this.setDepth(5);
     scene.add.existing(this);
 
-    // Platzierungs-Bounce-Animation
+    // Platzierungs-Tween
     this.setScale(0.2);
     scene.tweens.add({
       targets: this,
       scaleX: 1,
       scaleY: 1,
-      duration: 250,
+      duration: 220,
       ease: 'Back.easeOut'
     });
+  }
+
+  public getEffectiveRange(): number {
+    return Math.round(this.currentStats.range * this.metaRangeMult);
+  }
+
+  public getEffectiveDamage(): number {
+    return Math.round(this.currentStats.damage * this.metaDamageMult);
+  }
+
+  public getEffectiveCooldown(): number {
+    return Math.round(this.currentStats.attackCooldown / this.metaFrequencyMult);
   }
 
   public getStats(): TowerLevelData {
@@ -112,7 +137,6 @@ export class Tower extends Phaser.GameObjects.Container {
   }
 
   public getSellValue(): number {
-    // 70% der gesamten Investition
     return Math.floor(this.investedGold * 0.7);
   }
 
@@ -129,18 +153,18 @@ export class Tower extends Phaser.GameObjects.Container {
     this.currentLevel++;
     this.currentStats = nextStats;
 
-    // Textur auf neue Stufe anpassen
+    // Textur anpassen
     const textureKey = `tower_${this.towerType}_${this.currentLevel}`;
     this.sprite.setTexture(textureKey);
 
     this.updateRangeCircle();
 
-    // Glanz-Effekt bei Upgrade
-    const glow = this.scene.add.circle(this.x, this.y, 24, 0xffeb3b, 0.8).setDepth(15);
+    // Glanz & Upgrade-Partikel
+    const glow = this.scene.add.circle(this.x, this.y, 24, 0xf1c40f, 0.8).setDepth(15);
     this.scene.tweens.add({
       targets: glow,
-      scaleX: 2,
-      scaleY: 2,
+      scaleX: 2.2,
+      scaleY: 2.2,
       alpha: 0,
       duration: 350,
       onComplete: () => glow.destroy()
@@ -153,7 +177,6 @@ export class Tower extends Phaser.GameObjects.Container {
     const refund = this.getSellValue();
     this.economy.addGold(refund);
 
-    // Verkaufs-Tween
     this.setSelected(false);
     this.rangeCircle.destroy();
 
@@ -181,17 +204,16 @@ export class Tower extends Phaser.GameObjects.Container {
 
   private updateRangeCircle(): void {
     this.rangeCircle.clear();
-    // Halbtransparenter Kreis mit Rand
+    const effectiveRange = this.getEffectiveRange();
     this.rangeCircle.fillStyle(0x4fc3f7, 0.18);
-    this.rangeCircle.fillCircle(this.x, this.y, this.currentStats.range);
-
+    this.rangeCircle.fillCircle(this.x, this.y, effectiveRange);
     this.rangeCircle.lineStyle(2, 0x4fc3f7, 0.85);
-    this.rangeCircle.strokeCircle(this.x, this.y, this.currentStats.range);
+    this.rangeCircle.strokeCircle(this.x, this.y, effectiveRange);
     this.rangeCircle.setVisible(this.isSelected);
   }
 
   public update(time: number, delta: number): void {
-    if (time - this.lastAttackTime < this.currentStats.attackCooldown) {
+    if (time - this.lastAttackTime < this.getEffectiveCooldown()) {
       return;
     }
 
@@ -206,12 +228,12 @@ export class Tower extends Phaser.GameObjects.Container {
     const enemies = this.getEnemiesFn();
     let bestTarget: Enemy | null = null;
     let maxProgress = -1;
+    const effectiveRange = this.getEffectiveRange();
 
     for (const enemy of enemies) {
       if (enemy.isDead) continue;
       const dist = Math.hypot(enemy.x - this.x, enemy.y - this.y);
-      if (dist <= this.currentStats.range) {
-        // First-Targeting: wähle den Gegner, der am weitesten auf dem Pfad ist
+      if (dist <= effectiveRange) {
         if (enemy.pathProgress > maxProgress) {
           maxProgress = enemy.pathProgress;
           bestTarget = enemy;
@@ -223,28 +245,28 @@ export class Tower extends Phaser.GameObjects.Container {
   }
 
   private shoot(target: Enemy): void {
-    let projType: ProjectileType = 'arrow';
-    if (this.towerType === 'cannon') projType = 'cannonball';
-    else if (this.towerType === 'ice') projType = 'ice';
-
     new Projectile(this.scene, {
-      type: projType,
+      type: this.towerType as ProjectileType,
       startX: this.x,
       startY: this.y - 4,
       target: target,
-      damage: this.currentStats.damage,
+      damage: this.getEffectiveDamage(),
       splashRadius: this.currentStats.splashRadius,
       slowFactor: this.currentStats.slowFactor,
       slowDuration: this.currentStats.slowDuration,
-      allEnemies: this.getEnemiesFn()
+      dotDamage: this.currentStats.dotDamage,
+      dotDuration: this.currentStats.dotDuration,
+      chainTargets: this.currentStats.chainTargets,
+      critChance: this.currentStats.critChance,
+      allEnemies: this.getEnemiesFn(),
+      speedMultiplier: this.metaSpeedMult
     });
 
-    // Kleines Mündungsfeuer / Rückstoß-Tween
     this.scene.tweens.add({
       targets: this.sprite,
       scaleY: 0.85,
       yoyo: true,
-      duration: 70
+      duration: 60
     });
   }
 
@@ -255,4 +277,3 @@ export class Tower extends Phaser.GameObjects.Container {
     super.destroy(fromScene);
   }
 }
-

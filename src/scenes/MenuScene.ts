@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, PALETTE } from '../config/GameConfig';
+import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
+import { SaveSystem } from '../systems/SaveSystem';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -7,118 +8,116 @@ export class MenuScene extends Phaser.Scene {
   }
 
   public create(): void {
-    // Dunkler Fantasy-Hintergrund mit Kacheleffekt
     const bg = this.add.graphics();
-    bg.fillStyle(0x121019, 1);
+    bg.fillStyle(0x100d18, 1);
     bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Kacheln als Retro-Boden
-    for (let x = 0; x < GAME_WIDTH; x += 40) {
-      for (let y = 0; y < GAME_HEIGHT; y += 40) {
-        if ((x / 40 + y / 40) % 2 === 0) {
-          bg.fillStyle(0x191624, 0.4);
-          bg.fillRect(x, y, 40, 40);
-        }
-      }
-    }
-
-    // Dekorative Banner / Rahmen
-    const banner = this.add.graphics();
-    banner.fillStyle(0x231d33, 0.9);
-    banner.fillRoundedRect(GAME_WIDTH / 2 - 420, 70, 840, 560, 12);
-    banner.lineStyle(3, 0x8a78a5, 1);
-    banner.strokeRoundedRect(GAME_WIDTH / 2 - 420, 70, 840, 560, 12);
-
-    banner.lineStyle(1, 0xd4af37, 0.7);
-    banner.strokeRoundedRect(GAME_WIDTH / 2 - 410, 80, 820, 540, 8);
-
-    // Titel mit Pixel-Schattierung
-    const titleShadow = this.add.text(GAME_WIDTH / 2 + 4, 144, 'TOWER DEFENSE', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '44px',
-      color: '#1a1024'
-    }).setOrigin(0.5);
-
-    const title = this.add.text(GAME_WIDTH / 2, 140, 'TOWER DEFENSE', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '44px',
-      color: '#ffd13b'
-    }).setOrigin(0.5);
-
-    // Untertitel
-    const subtitle = this.add.text(GAME_WIDTH / 2, 200, '- 16-BIT RETRO STRATEGIE -', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '14px',
-      color: '#5eead4'
-    }).setOrigin(0.5);
-
-    // Deko: 3 Turm-Vorschauen in der Mitte
-    this.createTowerShowcase(GAME_WIDTH / 2 - 220, 310, 'tower_archer_2', 'Bogenschütze', 'Schnell & Präzise\nEinzelziel');
-    this.createTowerShowcase(GAME_WIDTH / 2, 310, 'tower_cannon_2', 'Kanone', 'Schwere Artillerie\nFlächenschaden');
-    this.createTowerShowcase(GAME_WIDTH / 2 + 220, 310, 'tower_ice_2', 'Eismagier', 'Frostzauber\nVerlangsamt');
-
-    // Spielen-Button
-    const playBtn = this.createButton(GAME_WIDTH / 2, 470, 'SPIELEN', 240, 52, 0x2d6323, 0x518233, () => {
-      this.cameras.main.fade(300, 0, 0, 0, false, (cam: any, progress: number) => {
-        if (progress === 1) {
-          this.scene.start('GameScene');
-        }
-      });
-    });
-
-    // Retro-Blinkender Hinweistext unten
-    const hint = this.add.text(GAME_WIDTH / 2, 570, 'Verteidige das Schloss gegen 10 tödliche Wellen!', {
-      fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
-      color: '#f5f0e6'
-    }).setOrigin(0.5);
-
-    this.tweens.add({
-      targets: hint,
-      alpha: 0.3,
-      duration: 800,
-      yoyo: true,
-      repeat: -1
-    });
-
-    // Dekorative Partikel / Sterne im Hintergrund
-    for (let i = 0; i < 15; i++) {
-      const px = Phaser.Math.Between(50, GAME_WIDTH - 50);
+    // Animierte Hintergrund-Glows
+    for (let i = 0; i < 20; i++) {
+      const px = Phaser.Math.Between(40, GAME_WIDTH - 40);
       const py = Phaser.Math.Between(40, GAME_HEIGHT - 40);
       const dot = this.add.circle(px, py, 2, 0xd4af37, 0.4);
       this.tweens.add({
         targets: dot,
         alpha: 0.9,
+        scale: 1.5,
         duration: Phaser.Math.Between(1000, 2500),
         yoyo: true,
         repeat: -1,
         delay: Phaser.Math.Between(0, 1500)
       });
     }
-  }
 
-  private createTowerShowcase(x: number, y: number, spriteKey: string, name: string, desc: string): void {
-    const cardBg = this.add.graphics();
-    cardBg.fillStyle(0x191624, 0.85);
-    cardBg.fillRoundedRect(x - 90, y - 60, 180, 120, 6);
-    cardBg.lineStyle(2, 0x483d5a, 1);
-    cardBg.strokeRoundedRect(x - 90, y - 60, 180, 120, 6);
+    // Banner
+    const banner = this.add.graphics();
+    banner.fillStyle(0x211b30, 0.92);
+    banner.fillRoundedRect(GAME_WIDTH / 2 - 460, 50, 920, 600, 12);
+    banner.lineStyle(3, 0x8a78a5, 1);
+    banner.strokeRoundedRect(GAME_WIDTH / 2 - 460, 50, 920, 600, 12);
+    banner.lineStyle(1, 0xd4af37, 0.7);
+    banner.strokeRoundedRect(GAME_WIDTH / 2 - 450, 60, 900, 580, 8);
 
-    const img = this.add.image(x, y - 18, spriteKey).setScale(1.2);
-
-    const title = this.add.text(x, y + 16, name, {
+    // Titel
+    this.add.text(GAME_WIDTH / 2 + 4, 124, 'RETRO TOWER DEFENSE', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontSize: '34px',
+      color: '#1a1024'
+    }).setOrigin(0.5);
+
+    this.add.text(GAME_WIDTH / 2, 120, 'RETRO TOWER DEFENSE', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '34px',
       color: '#ffd13b'
     }).setOrigin(0.5);
 
-    const info = this.add.text(x, y + 38, desc, {
+    this.add.text(GAME_WIDTH / 2, 168, '- DIE DREI GROSSEN WELTEN DER VERDAMMNIS -', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
-      lineSpacing: 4,
-      color: '#a39cb5',
-      align: 'center'
+      fontSize: '11px',
+      color: '#5eead4'
     }).setOrigin(0.5);
+
+    // 3 Welten-Teaser
+    const worlds = [
+      { name: 'DIE HEXENWELT', desc: '50 Missionen | Sumpf & Pilze', color: '#c586fa' },
+      { name: 'DIE GOBLINHÖHLEN', desc: '50 Missionen | Schiefer & Minen', color: '#ffd13b' },
+      { name: 'DER TOTE BERG', desc: '50 Missionen | Gross, Rot & Lava', color: '#ff4757' }
+    ];
+
+    worlds.forEach((w, idx) => {
+      const wx = GAME_WIDTH / 2 - 280 + idx * 280;
+      const wCard = this.add.graphics();
+      wCard.fillStyle(0x191424, 0.85);
+      wCard.fillRoundedRect(wx - 125, 215, 250, 100, 8);
+      wCard.lineStyle(2, 0x483d5a, 1);
+      wCard.strokeRoundedRect(wx - 125, 215, 250, 100, 8);
+
+      this.add.text(wx, 245, w.name, {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '9px',
+        color: w.color
+      }).setOrigin(0.5);
+
+      this.add.text(wx, 280, w.desc, {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '7px',
+        color: '#9e97b0',
+        align: 'center'
+      }).setOrigin(0.5);
+    });
+
+    // Kristalle-Badge
+    const crystals = SaveSystem.getCrystals();
+    const crystalBadge = this.add.container(GAME_WIDTH / 2, 360);
+    this.add.image(GAME_WIDTH / 2 - 80, 360, 'icon_crystal').setScale(1.2);
+    this.add.text(GAME_WIDTH / 2 - 60, 360, `VERFÜGBARE KRISTALLE: ${crystals}`, {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '10px',
+      color: '#be2edd'
+    }).setOrigin(0, 0.5);
+
+    // Haupt-Aktions-Buttons
+    this.createButton(GAME_WIDTH / 2, 435, 'KAMPAGNE WÄHLEN', 340, 54, 0x27ae60, 0x2ecc71, () => {
+      this.scene.start('WorldSelectScene');
+    });
+
+    this.createButton(GAME_WIDTH / 2, 505, '💎 TURM-SCHMIEDE (UPGRADES 1-5)', 340, 50, 0x512b7a, 0x8e44ad, () => {
+      this.scene.start('UpgradeMenuScene');
+    });
+
+    // Hinweis
+    const hint = this.add.text(GAME_WIDTH / 2, 595, '150 Missionen insgesamt. Schalte Welten & Turmstufen frei!', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '9px',
+      color: '#f5f0e6'
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: hint,
+      alpha: 0.4,
+      duration: 800,
+      yoyo: true,
+      repeat: -1
+    });
   }
 
   private createButton(
@@ -142,7 +141,7 @@ export class MenuScene extends Phaser.Scene {
 
     const label = this.add.text(0, 0, text, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '16px',
+      fontSize: '11px',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(label);
@@ -153,24 +152,13 @@ export class MenuScene extends Phaser.Scene {
     container.on('pointerdown', onClick);
 
     container.on('pointerover', () => {
-      bg.clear();
-      bg.fillStyle(0x38782c, 1);
-      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 6);
-      bg.lineStyle(3, 0x7eb34d, 1);
-      bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 6);
-      container.setScale(1.05);
+      container.setScale(1.04);
     });
 
     container.on('pointerout', () => {
-      bg.clear();
-      bg.fillStyle(color, 1);
-      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 6);
-      bg.lineStyle(3, borderColor, 1);
-      bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 6);
       container.setScale(1.0);
     });
 
     return container;
   }
 }
-

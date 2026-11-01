@@ -15,30 +15,29 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     economy: EconomySystem,
     onSelect: (type: TowerType | null) => void
   ) {
-    super(scene, 0, GAME_HEIGHT - 64);
+    super(scene, 0, GAME_HEIGHT - 66);
     this.economy = economy;
     this.onSelectCallback = onSelect;
 
     // Leisten-Hintergrund
     const barBg = scene.add.graphics();
-    barBg.fillStyle(PALETTE.uiBg, 0.94);
-    barBg.fillRect(0, 0, GAME_WIDTH, 64);
+    barBg.fillStyle(PALETTE.uiBg, 0.95);
+    barBg.fillRect(0, 0, GAME_WIDTH, 66);
     barBg.lineStyle(2, PALETTE.uiBorder, 1);
     barBg.lineBetween(0, 0, GAME_WIDTH, 0);
     this.add(barBg);
 
-    // Label links
-    const title = scene.add.text(24, 24, 'TURMBAU:', {
+    const title = scene.add.text(18, 22, 'TÜRME:', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '12px',
+      fontSize: '11px',
       color: '#ffd13b'
     }).setOrigin(0, 0.5);
     this.add(title);
 
-    // Karten für die 3 Türme
-    const towerTypes: TowerType[] = ['archer', 'cannon', 'ice'];
-    let startX = 170;
-    const cardSpacing = 220;
+    // 6 Türme im Grid
+    const towerTypes: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
+    const startX = 140;
+    const cardSpacing = 160;
 
     towerTypes.forEach((type, index) => {
       const card = this.createTowerCard(type, startX + index * cardSpacing, 32);
@@ -46,10 +45,10 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
       this.add(card.container);
     });
 
-    // Info- und Hilfetext rechts
-    this.infoText = scene.add.text(GAME_WIDTH - 24, 32, 'Klicke auf einen Turm und setze ihn auf das Gras', {
+    // Hilfetext
+    this.infoText = scene.add.text(GAME_WIDTH - 18, 48, 'Wähle einen Turm und baue ihn auf das Feld', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontSize: '8px',
       color: '#9e97b0',
       align: 'right'
     }).setOrigin(1, 0.5);
@@ -68,31 +67,25 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     const bg = this.scene.add.graphics();
     container.add(bg);
 
-    // Icon
-    const icon = this.scene.add.image(-70, 0, def.icon);
+    const icon = this.scene.add.image(-52, 0, def.icon).setScale(0.9);
     container.add(icon);
 
-    // Turm-Name
-    const nameText = this.scene.add.text(-44, -12, def.name, {
+    const nameText = this.scene.add.text(-32, -12, def.shortName, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontSize: '9px',
       color: '#ffffff'
     });
     container.add(nameText);
 
-    // Kosten mit Münz-Symbol
-    const coin = this.scene.add.image(-38, 12, 'icon_gold').setScale(0.7);
-    container.add(coin);
-
-    const costText = this.scene.add.text(-26, 6, `${def.baseCost} G`, {
+    const costText = this.scene.add.text(-32, 4, `${def.baseCost}G`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontSize: '9px',
       color: '#ffd13b'
     });
     container.add(costText);
 
-    container.setSize(200, 48);
-    container.setInteractive(new Phaser.Geom.Rectangle(-95, -24, 190, 48), Phaser.Geom.Rectangle.Contains);
+    container.setSize(145, 46);
+    container.setInteractive(new Phaser.Geom.Rectangle(-72, -23, 145, 46), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -104,7 +97,7 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     });
 
     container.on('pointerout', () => {
-      this.setInfoText('Klicke auf einen Turm und setze ihn auf das Gras');
+      this.setInfoText('Wähle einen Turm und baue ihn auf das Feld');
     });
 
     return { container, bg, costText, nameText };
@@ -118,7 +111,6 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
       if (this.economy.canAfford(def.baseCost)) {
         this.selectedTowerType = type;
       } else {
-        // Nicht genug Gold
         this.selectedTowerType = null;
         this.setInfoText('Nicht genügend Gold für diesen Turm!');
       }
@@ -151,25 +143,22 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
       card.bg.clear();
 
       if (isSelected) {
-        // Stark hervorgehoben (Gold / Grün)
         card.bg.fillStyle(0x384a28, 1);
-        card.bg.fillRoundedRect(-95, -24, 190, 48, 6);
+        card.bg.fillRoundedRect(-72, -23, 145, 46, 6);
         card.bg.lineStyle(2, 0x7eb34d, 1);
-        card.bg.strokeRoundedRect(-95, -24, 190, 48, 6);
+        card.bg.strokeRoundedRect(-72, -23, 145, 46, 6);
         card.nameText.setColor('#ffffff');
       } else if (!canAfford) {
-        // Ausgegraut
         card.bg.fillStyle(0x191821, 0.7);
-        card.bg.fillRoundedRect(-95, -24, 190, 48, 6);
+        card.bg.fillRoundedRect(-72, -23, 145, 46, 6);
         card.bg.lineStyle(2, 0x2e293a, 1);
-        card.bg.strokeRoundedRect(-95, -24, 190, 48, 6);
+        card.bg.strokeRoundedRect(-72, -23, 145, 46, 6);
         card.nameText.setColor('#686075');
       } else {
-        // Normal bereit
         card.bg.fillStyle(0x282337, 1);
-        card.bg.fillRoundedRect(-95, -24, 190, 48, 6);
+        card.bg.fillRoundedRect(-72, -23, 145, 46, 6);
         card.bg.lineStyle(2, 0x483d5a, 1);
-        card.bg.strokeRoundedRect(-95, -24, 190, 48, 6);
+        card.bg.strokeRoundedRect(-72, -23, 145, 46, 6);
         card.nameText.setColor('#f5f0e6');
       }
     });
@@ -179,4 +168,3 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     this.infoText.setText(text);
   }
 }
-

@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH, TILE_SIZE } from '../config/GameConfig';
 import { TOWER_CONFIGS, TowerType } from '../config/TowerConfig';
+import { WORLDS_CONFIG } from '../config/WorldConfig';
 import { MapManager } from '../systems/MapManager';
 import { EconomySystem } from '../systems/EconomySystem';
 import { WaveManager } from '../systems/WaveManager';
+import { SaveSystem, WorldId } from '../systems/SaveSystem';
 import { Tower } from '../entities/Tower';
 import { Projectile } from '../entities/Projectile';
 import { HUD } from '../ui/HUD';
@@ -11,6 +13,9 @@ import { TowerSelectionBar } from '../ui/TowerSelectionBar';
 import { TowerInfoModal } from '../ui/TowerInfoModal';
 
 export class GameScene extends Phaser.Scene {
+  private worldId: WorldId = 'witch_forest';
+  private missionNumber: number = 1;
+
   private mapManager!: MapManager;
   private economy!: EconomySystem;
   private waveManager!: WaveManager;
@@ -34,13 +39,16 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
+  public init(data: { worldId?: WorldId; missionNumber?: number }): void {
+    if (data.worldId) this.worldId = data.worldId;
+    if (data.missionNumber) this.missionNumber = data.missionNumber;
+  }
+
   public create(): void {
     this.isGameOver = false;
     this.towers = [];
     this.selectedTowerType = null;
     this.selectedPlacedTower = null;
-
-    // Normale Spielgeschwindigkeit wiederherstellen
     this.time.timeScale = 1.0;
 
     // 1. Ökonomie initialisieren
@@ -61,12 +69,15 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 2. Map rendern
-    this.mapManager = new MapManager(this);
+    // 2. Map rendern (spezifisch für die gewählte Welt und Mission)
+    this.mapManager = new MapManager(this, this.worldId, this.missionNumber);
     this.mapManager.renderMap();
 
-    // 3. Wellen-Manager initialisieren
-    this.waveManager = new WaveManager(this, this.mapManager, this.economy, {
+    // 3. Stimmungs-Partikel passend zur Welt (Hexenwelt, Höhlen, Tote Berg)
+    this.spawnWorldAtmosphere();
+
+    // 4. Wellen-Manager initialisieren (10 Wellen pro Mission)
+    this.waveManager = new WaveManager(this, this.mapManager, this.economy, this.worldId, this.missionNumber, {
       onWaveChange: (waveNum, total) => {
         this.hud.updateWave(waveNum, total);
         this.hud.setNextWaveButtonEnabled(false, `WELLE ${waveNum} LÄUFT`);
@@ -74,7 +85,7 @@ export class GameScene extends Phaser.Scene {
       onWaveCompleted: (waveNum) => {
         if (waveNum < this.waveManager.getTotalWaves()) {
           this.hud.setNextWaveButtonEnabled(true, `WELLE ${waveNum + 1} STARTEN`);
-          this.hud.showAnnouncement(`Welle ${waveNum} gemeistert! +${25 + waveNum * 10} Bonusgold`);
+          this.hud.showAnnouncement(`Welle ${waveNum} überstanden! +${30 + waveNum * 12} Bonusgold`);
         }
       },
       onAllWavesCompleted: () => {
@@ -85,7 +96,7 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 4. UI: HUD, TowerBar, Modal
+    // 5. UI: HUD, TowerBar, Modal
     this.hud = new HUD(this, this.economy.getLives(), this.economy.getGold(), {
       onSpeedChange: (speed) => {
         this.time.timeScale = speed;
@@ -94,6 +105,9 @@ export class GameScene extends Phaser.Scene {
         this.waveManager.startNextWave();
       }
     });
+
+    const worldDef = WORLDS_CONFIG[this.worldId];
+    this.hud.showAnnouncement(`${worldDef.name.toUpperCase()} - MISSION ${this.missionNumber}`);
 
     this.towerBar = new TowerSelectionBar(this, this.economy, (type) => {
       this.selectedTowerType = type;
@@ -123,34 +137,51 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // 5. Platzierungs-Vorschau (Ghost)
+    // 6. Ghost-Vorschau
     this.createPlacementPreview();
 
-    // 6. Input Listener für Maus
+    // 7. Inputs
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       this.handlePointerMove(pointer);
     });
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      // Nur linke Maustaste
       if (pointer.button === 0) {
         this.handlePointerDown(pointer);
-      }
-    });
-
-    // Rechtsklick bricht Bauen ab
-    this.input.mouse?.disableContextMenu();
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (pointer.button === 2) {
+      } else if (pointer.button === 2) {
         this.towerBar.clearSelection();
         this.deselectPlacedTower();
       }
     });
 
-    // Willkommens-Ankündigung
-    this.time.delayedCall(500, () => {
-      this.hud.showAnnouncement('Platziere deine Türme und drücke WELLE STARTEN!');
-    });
+    this.input.mouse?.disableContextMenu();
+  }
+
+  private spawnWorldAtmosphere(): void {
+    let particleColor = 0x2ecc71;
+    if (this.worldId === 'goblin_caves') particleColor = 0xf39c12;
+    else if (this.worldId === 'dead_mountain') particleColor = 0xff4757;
+
+    for (let i = 0; i < 24; i++) {
+      const p = this.add.circle(
+        Phaser.Math.Between(0, GAME_WIDTH),
+        Phaser.Math.Between(40, GAME_HEIGHT - 60),
+        Phaser.Math.Between(1, 3),
+        particleColor,
+        0.4
+      ).setDepth(3);
+
+      this.tweens.add({
+        targets: p,
+        y: p.y - Phaser.Math.Between(40, 80),
+        x: p.x + Phaser.Math.Between(-30, 30),
+        alpha: 0.1,
+        duration: Phaser.Math.Between(2500, 5000),
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    }
   }
 
   private createPlacementPreview(): void {
@@ -158,16 +189,13 @@ export class GameScene extends Phaser.Scene {
     this.placementPreviewContainer.setDepth(60);
     this.placementPreviewContainer.setVisible(false);
 
-    // Kachel-Rahmen (Grün oder Rot)
     this.previewTileBox = this.add.graphics();
     this.placementPreviewContainer.add(this.previewTileBox);
 
-    // Sprite-Vorschau
     this.previewSprite = this.add.sprite(0, 0, 'tower_archer_1');
     this.previewSprite.setAlpha(0.75);
     this.placementPreviewContainer.add(this.previewSprite);
 
-    // Reichweiten-Kreis
     this.previewRange = this.add.graphics();
     this.placementPreviewContainer.add(this.previewRange);
   }
@@ -180,12 +208,14 @@ export class GameScene extends Phaser.Scene {
       const def = TOWER_CONFIGS[this.selectedTowerType];
       this.previewSprite.setTexture(`tower_${this.selectedTowerType}_1`);
 
-      // Reichweiten-Vorschau neu zeichnen
+      const mults = SaveSystem.getStatMultipliers(this.selectedTowerType);
+      const effectiveRange = Math.round(def.levels[0].range * mults.rangeMult);
+
       this.previewRange.clear();
       this.previewRange.fillStyle(0x4fc3f7, 0.2);
-      this.previewRange.fillCircle(0, 0, def.levels[0].range);
+      this.previewRange.fillCircle(0, 0, effectiveRange);
       this.previewRange.lineStyle(2, 0x4fc3f7, 0.85);
-      this.previewRange.strokeCircle(0, 0, def.levels[0].range);
+      this.previewRange.strokeCircle(0, 0, effectiveRange);
     }
   }
 
@@ -219,21 +249,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handlePointerDown(pointer: Phaser.Input.Pointer): void {
-    // Wenn wir in der HUD-Bar oder Tower-Bar sind, Klick ignorieren
     if (pointer.y <= 44 || pointer.y >= GAME_HEIGHT - 66) {
       return;
     }
 
     const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
 
-    // Fall A: Turm bauen
     if (this.selectedTowerType) {
       const def = TOWER_CONFIGS[this.selectedTowerType];
       if (this.mapManager.canBuildAt(gridPos.col, gridPos.row)) {
         if (this.economy.spendGold(def.baseCost)) {
           this.placeTower(gridPos.col, gridPos.row, this.selectedTowerType);
 
-          // Bleibe im Baumodus, wenn der Spieler sich noch einen weiteren Turm leisten kann
           if (!this.economy.canAfford(def.baseCost)) {
             this.towerBar.clearSelection();
           }
@@ -244,7 +271,6 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    // Fall B: Klick ins Leere schließt das Turm-Info-Fenster
     if (this.selectedPlacedTower) {
       this.deselectPlacedTower();
     }
@@ -267,10 +293,7 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.towers.push(tower);
-
-    // Visueller Aufbaueffekt (Partikelstaub)
     this.spawnBuildDust(x, y);
-
     this.towerBar.updateAffordability();
   }
 
@@ -319,6 +342,8 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.fade(600, 40, 10, 15, false, (cam: any, progress: number) => {
       if (progress === 1) {
         this.scene.start('GameOverScene', {
+          worldId: this.worldId,
+          missionNumber: this.missionNumber,
           wave: this.waveManager.getCurrentWaveNumber(),
           score: this.economy.getScore(),
           gold: this.economy.getGold()
@@ -332,12 +357,22 @@ export class GameScene extends Phaser.Scene {
     this.isGameOver = true;
 
     this.time.timeScale = 1.0;
+    const livesLeft = this.economy.getLives();
+    const starsEarned = livesLeft >= 18 ? 3 : livesLeft >= 8 ? 2 : 1;
+    const scoreEarned = this.economy.getScore();
+
+    // Speichern
+    SaveSystem.completeMission(this.worldId, this.missionNumber, starsEarned, scoreEarned);
+
     this.cameras.main.fade(700, 15, 40, 25, false, (cam: any, progress: number) => {
       if (progress === 1) {
         this.scene.start('VictoryScene', {
-          score: this.economy.getScore(),
+          worldId: this.worldId,
+          missionNumber: this.missionNumber,
+          score: scoreEarned,
           gold: this.economy.getGold(),
-          lives: this.economy.getLives()
+          lives: livesLeft,
+          stars: starsEarned
         });
       }
     });
@@ -346,15 +381,12 @@ export class GameScene extends Phaser.Scene {
   public update(time: number, delta: number): void {
     if (this.isGameOver) return;
 
-    // Wellen-Update
     this.waveManager.update(time, delta);
 
-    // Türme updaten
     for (let i = 0; i < this.towers.length; i++) {
       this.towers[i].update(time, delta);
     }
 
-    // Projektile updaten
     const children = this.children.getChildren();
     for (let i = children.length - 1; i >= 0; i--) {
       const child = children[i];
@@ -364,4 +396,3 @@ export class GameScene extends Phaser.Scene {
     }
   }
 }
-

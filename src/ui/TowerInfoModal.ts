@@ -29,37 +29,32 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       onSell: (tower: Tower) => void;
     }
   ) {
-    // Rechts oben platzieren (Breite 280, Höhe 250)
-    super(scene, 970, 56);
+    super(scene, 960, 52);
     this.economy = economy;
     this.onCloseCallback = callbacks.onClose;
     this.onUpgradeCallback = callbacks.onUpgrade;
     this.onSellCallback = callbacks.onSell;
 
-    // Hintergrund-Rahmen
     const bg = scene.add.graphics();
-    bg.fillStyle(PALETTE.uiBgDark, 0.95);
-    bg.fillRoundedRect(0, 0, 290, 270, 8);
+    bg.fillStyle(PALETTE.uiBgDark, 0.96);
+    bg.fillRoundedRect(0, 0, 305, 290, 8);
     bg.lineStyle(2, PALETTE.uiBorderHighlight, 1);
-    bg.strokeRoundedRect(0, 0, 290, 270, 8);
+    bg.strokeRoundedRect(0, 0, 305, 290, 8);
     this.add(bg);
 
-    // Header-Balken
     const header = scene.add.graphics();
     header.fillStyle(0x282337, 1);
-    header.fillRoundedRect(0, 0, 290, 36, { tl: 8, tr: 8, bl: 0, br: 0 });
+    header.fillRoundedRect(0, 0, 305, 36, { tl: 8, tr: 8, bl: 0, br: 0 });
     this.add(header);
 
-    // Titel
     this.titleText = scene.add.text(12, 10, 'TURM DETAILS', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
+      fontSize: '10px',
       color: '#ffd13b'
     });
     this.add(this.titleText);
 
-    // Schließen-Button 'X'
-    const closeBtn = scene.add.text(268, 10, 'X', {
+    const closeBtn = scene.add.text(285, 10, 'X', {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '12px',
       color: '#e84a5f'
@@ -71,26 +66,23 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     });
     this.add(closeBtn);
 
-    // Aktuelle Stats
-    this.statsText = scene.add.text(14, 48, '', {
+    this.statsText = scene.add.text(14, 46, '', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
-      lineSpacing: 8,
+      fontSize: '8px',
+      lineSpacing: 7,
       color: '#f5f0e6'
     });
     this.add(this.statsText);
 
-    // Upgrade-Vorschau
-    this.upgradeInfoText = scene.add.text(14, 140, '', {
+    this.upgradeInfoText = scene.add.text(14, 150, '', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
-      lineSpacing: 6,
+      fontSize: '8px',
+      lineSpacing: 5,
       color: '#5cd670'
     });
     this.add(this.upgradeInfoText);
 
-    // Upgrade-Button
-    this.upgradeBtn = this.createActionButton(14, 195, 262, 30, 'UPGRADE', 0x2d6323, 0x518233, () => {
+    this.upgradeBtn = this.createActionButton(14, 212, 277, 30, 'UPGRADE', 0x2d6323, 0x518233, () => {
       if (this.currentTower) {
         this.onUpgradeCallback(this.currentTower);
         this.refresh();
@@ -99,8 +91,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.upgradeBtnText = this.upgradeBtn.getAt(1) as Phaser.GameObjects.Text;
     this.add(this.upgradeBtn);
 
-    // Verkaufen-Button
-    this.sellBtn = this.createActionButton(14, 230, 262, 28, 'VERKAUFEN', 0x7a2828, 0xa33b3b, () => {
+    this.sellBtn = this.createActionButton(14, 248, 277, 28, 'VERKAUFEN', 0x7a2828, 0xa33b3b, () => {
       if (this.currentTower) {
         this.onSellCallback(this.currentTower);
         this.hide();
@@ -135,7 +126,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
 
     const text = this.scene.add.text(w / 2, h / 2, label, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontSize: '9px',
       color: '#ffffff'
     }).setOrigin(0.5);
     container.add(text);
@@ -175,22 +166,21 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     const nextStats = tower.getNextLevelStats();
     const sellValue = tower.getSellValue();
 
-    this.titleText.setText(`${def.name} [Stufe ${tower.currentLevel}/3]`);
+    this.titleText.setText(`${def.name} [Stufe ${tower.currentLevel}/5]`);
 
-    let statsString = `Schaden:     ${stats.damage}\nReichweite:  ${stats.range} px\nKadenz:      ${(1000 / stats.attackCooldown).toFixed(1)}/s`;
-    if (stats.splashRadius) {
-      statsString += `\nRadius:      ${stats.splashRadius} px`;
-    }
-    if (stats.slowFactor) {
-      statsString += `\nSlow:        ${Math.round(stats.slowFactor * 100)}%`;
-    }
+    let statsString = `Schaden:     ${tower.getEffectiveDamage()}\nReichweite:  ${tower.getEffectiveRange()} px\nKadenz:      ${(1000 / tower.getEffectiveCooldown()).toFixed(1)}/s`;
+    if (stats.splashRadius) statsString += `\nRadius:      ${stats.splashRadius} px`;
+    if (stats.slowFactor) statsString += `\nSlow:        ${Math.round(stats.slowFactor * 100)}%`;
+    if (stats.dotDamage) statsString += `\nGift-DoT:    ${stats.dotDamage}/Tick`;
+    if (stats.chainTargets) statsString += `\nKettenblitz: ${stats.chainTargets} Ziele`;
+    if (stats.critChance) statsString += `\nKritisch:    ${Math.round(stats.critChance * 100)}%`;
     this.statsText.setText(statsString);
 
     if (nextStats) {
       const upgradeCost = nextStats.cost;
       const canAfford = this.economy.canAfford(upgradeCost);
 
-      let upString = `NÄCHSTE STUFE:\n+${nextStats.damage - stats.damage} Schaden, +${nextStats.range - stats.range} Reichweite`;
+      let upString = `NÄCHSTE STUFE (Stufe ${tower.currentLevel + 1}):\n+${nextStats.damage - stats.damage} Schaden, +${nextStats.range - stats.range} Reichweite`;
       this.upgradeInfoText.setText(upString);
 
       this.upgradeBtnText.setText(`UPGRADE (${upgradeCost} G)`);
@@ -201,24 +191,23 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       if (canAfford) {
         this.upgradeBtn.setInteractive();
         bg.fillStyle(0x2d6323, 1);
-        bg.fillRoundedRect(0, 0, 262, 30, 4);
+        bg.fillRoundedRect(0, 0, 277, 30, 4);
         bg.lineStyle(2, 0x518233, 1);
-        bg.strokeRoundedRect(0, 0, 262, 30, 4);
+        bg.strokeRoundedRect(0, 0, 277, 30, 4);
         this.upgradeBtnText.setColor('#ffffff');
       } else {
         this.upgradeBtn.disableInteractive();
         bg.fillStyle(0x221f2d, 1);
-        bg.fillRoundedRect(0, 0, 262, 30, 4);
+        bg.fillRoundedRect(0, 0, 277, 30, 4);
         bg.lineStyle(2, 0x3d354a, 1);
-        bg.strokeRoundedRect(0, 0, 262, 30, 4);
+        bg.strokeRoundedRect(0, 0, 277, 30, 4);
         this.upgradeBtnText.setColor('#686075');
       }
     } else {
-      this.upgradeInfoText.setText('MAXIMALE STUFE ERREICHT!');
+      this.upgradeInfoText.setText('MAXIMALE STUFE 5 ERREICHT!');
       this.upgradeBtn.setVisible(false);
     }
 
     this.sellBtnText.setText(`VERKAUFEN (+${sellValue} G)`);
   }
 }
-

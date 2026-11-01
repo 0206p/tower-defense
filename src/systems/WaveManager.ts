@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { WaveDefinition, WAVES_CONFIG } from '../config/WaveConfig';
 import { ENEMY_CONFIGS, EnemyType } from '../config/EnemyConfig';
+import { WORLDS_CONFIG } from '../config/WorldConfig';
+import { WorldId } from './SaveSystem';
 import { Enemy } from '../entities/Enemy';
 import { MapManager } from './MapManager';
 import { EconomySystem } from './EconomySystem';
@@ -9,8 +10,11 @@ export class WaveManager {
   private scene: Phaser.Scene;
   private mapManager: MapManager;
   private economy: EconomySystem;
+  private worldId: WorldId;
+  private missionNumber: number;
 
   private currentWaveIndex: number = 0;
+  private totalWaves: number = 10;
   private isSpawning: boolean = false;
   private enemiesRemainingToSpawn: number = 0;
   private activeEnemies: Enemy[] = [];
@@ -24,6 +28,8 @@ export class WaveManager {
     scene: Phaser.Scene,
     mapManager: MapManager,
     economy: EconomySystem,
+    worldId: WorldId = 'witch_forest',
+    missionNumber: number = 1,
     callbacks: {
       onWaveChange: (waveNumber: number, totalWaves: number) => void;
       onWaveCompleted: (waveNumber: number) => void;
@@ -34,6 +40,8 @@ export class WaveManager {
     this.scene = scene;
     this.mapManager = mapManager;
     this.economy = economy;
+    this.worldId = worldId;
+    this.missionNumber = missionNumber;
     this.onWaveChange = callbacks.onWaveChange;
     this.onWaveCompleted = callbacks.onWaveCompleted;
     this.onAllWavesCompleted = callbacks.onAllWavesCompleted;
@@ -45,7 +53,7 @@ export class WaveManager {
   }
 
   public getTotalWaves(): number {
-    return WAVES_CONFIG.length;
+    return this.totalWaves;
   }
 
   public isWaveActive(): boolean {
@@ -57,39 +65,62 @@ export class WaveManager {
   }
 
   public startNextWave(): boolean {
-    if (this.isWaveActive() || this.currentWaveIndex >= WAVES_CONFIG.length) {
+    if (this.isWaveActive() || this.currentWaveIndex >= this.totalWaves) {
       return false;
     }
 
-    const wave = WAVES_CONFIG[this.currentWaveIndex];
-    this.onWaveChange(this.getCurrentWaveNumber(), this.getTotalWaves());
-    this.onWaveAnnouncement(wave.announcement);
+    const waveNum = this.getCurrentWaveNumber();
+    this.onWaveChange(waveNum, this.totalWaves);
 
+    const worldDef = WORLDS_CONFIG[this.worldId] || WORLDS_CONFIG.witch_forest;
+    const isBossWave = waveNum === 10;
+    const announcement = isBossWave
+      ? `FINALE WELLE 10: Boss-Invasion der ${worldDef.name}!`
+      : `Welle ${waveNum} / 10 - Feinde rücken vor!`;
+    this.onWaveAnnouncement(announcement);
+
+    // Skalierung: Basis + Missions-Faktor + Welten-Schwierigkeit
+    const worldMult = this.worldId === 'dead_mountain' ? 1.5 : this.worldId === 'goblin_caves' ? 1.25 : 1.0;
+    const missionMult = 1.0 + (this.missionNumber - 1) * 0.04;
+    const waveMult = 1.0 + (waveNum - 1) * 0.12;
+    const hpMult = worldMult * missionMult * waveMult;
+
+    const pool = worldDef.enemyPool as EnemyType[];
+    const spawnCount = 8 + waveNum * 2;
     this.isSpawning = true;
-    this.enemiesRemainingToSpawn = wave.spawns.length;
+    this.enemiesRemainingToSpawn = spawnCount + (isBossWave ? 1 : 0);
 
-    let cumulativeDelay = 400; // Kurze Vorlaufzeit
+    let cumulativeDelay = 400;
 
-    wave.spawns.forEach((spawnItem) => {
-      cumulativeDelay += spawnItem.delayMs;
+    for (let i = 0; i < spawnCount; i++) {
+      cumulativeDelay += Math.max(450, 1100 - waveNum * 45);
+      const enemyType = pool[i % pool.length];
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy(spawnItem.enemyType, spawnItem.hpMultiplier || 1.0);
+          this.spawnEnemy(enemyType, hpMult);
           this.enemiesRemainingToSpawn--;
-
-          if (this.enemiesRemainingToSpawn <= 0) {
-            this.isSpawning = false;
-          }
+          if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
         }
       });
-    });
+    }
+
+    if (isBossWave) {
+      cumulativeDelay += 1500;
+      this.scene.time.delayedCall(cumulativeDelay, () => {
+        if (this.scene && this.scene.sys.isActive()) {
+          this.spawnEnemy('boss', hpMult * 2.2);
+          this.enemiesRemainingToSpawn--;
+          if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
+        }
+      });
+    }
 
     return true;
   }
 
   private spawnEnemy(type: EnemyType, hpMultiplier: number): void {
-    const config = ENEMY_CONFIGS[type];
+    const config = ENEMY_CONFIGS[type] || ENEMY_CONFIGS.goblin;
     const enemy = new Enemy(
       this.scene,
       config,
@@ -111,7 +142,6 @@ export class WaveManager {
       this.activeEnemies.splice(idx, 1);
     }
 
-    // Prüfen, ob Welle abgeschlossen ist
     if (!this.isSpawning && this.activeEnemies.length === 0) {
       this.handleWaveEnd();
     }
@@ -121,14 +151,12 @@ export class WaveManager {
     const completedWaveNum = this.getCurrentWaveNumber();
     this.onWaveCompleted(completedWaveNum);
 
-    // Wellen-Bonus-Gold geben (z.B. 25 + Welle * 10)
-    const waveBonus = 25 + completedWaveNum * 10;
+    const waveBonus = 30 + completedWaveNum * 12;
     this.economy.addGold(waveBonus);
 
     this.currentWaveIndex++;
 
-    if (this.currentWaveIndex >= WAVES_CONFIG.length) {
-      // Alle 10 Wellen geschafft! Sieg!
+    if (this.currentWaveIndex >= this.totalWaves) {
       this.onAllWavesCompleted();
     }
   }
@@ -142,4 +170,3 @@ export class WaveManager {
     }
   }
 }
-

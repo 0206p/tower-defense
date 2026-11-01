@@ -18,6 +18,9 @@ export class Enemy extends Phaser.GameObjects.Container {
 
   private slowMultiplier: number = 1.0;
   private slowTimer: number = 0;
+  private poisonTimer: number = 0;
+  private poisonDamageTick: number = 0;
+  private nextPoisonTick: number = 0;
   private walkTime: number = 0;
 
   private mapManager: MapManager;
@@ -49,16 +52,17 @@ export class Enemy extends Phaser.GameObjects.Container {
     this.currentHp = this.maxHp;
 
     // Sprite
-    this.sprite = scene.add.sprite(0, 0, config.spriteKey);
+    const textureKey = scene.textures.exists(config.spriteKey) ? config.spriteKey : 'enemy_goblin';
+    this.sprite = scene.add.sprite(0, 0, textureKey);
     this.add(this.sprite);
 
     // Healthbars
-    const barWidth = config.type === 'boss' ? 36 : 24;
+    const barWidth = config.type === 'boss' ? 44 : 26;
     const barHeight = 4;
     const barY = -(config.radius + 8);
 
     this.healthBarBg = scene.add.graphics();
-    this.healthBarBg.fillStyle(0x000000, 0.7);
+    this.healthBarBg.fillStyle(0x000000, 0.75);
     this.healthBarBg.fillRect(-barWidth / 2 - 1, barY - 1, barWidth + 2, barHeight + 2);
     this.healthBarBg.fillStyle(0xcc2936, 1);
     this.healthBarBg.fillRect(-barWidth / 2, barY, barWidth, barHeight);
@@ -68,7 +72,6 @@ export class Enemy extends Phaser.GameObjects.Container {
     this.add(this.healthBarFill);
     this.updateHealthBar();
 
-    // Startposition auf dem Pfad
     const startPoint = this.path.getPoint(0);
     this.setPosition(startPoint.x, startPoint.y);
     this.setDepth(10);
@@ -78,29 +81,50 @@ export class Enemy extends Phaser.GameObjects.Container {
 
   public updateHealthBar(): void {
     this.healthBarFill.clear();
-    const barWidth = this.config.type === 'boss' ? 36 : 24;
+    const barWidth = this.config.type === 'boss' ? 44 : 26;
     const barHeight = 4;
     const barY = -(this.config.radius + 8);
 
     const hpRatio = Phaser.Math.Clamp(this.currentHp / this.maxHp, 0, 1);
     const fillWidth = Math.round(barWidth * hpRatio);
 
-    // Grün bei viel Leben, Gelb bei halbem Leben
-    const color = hpRatio > 0.5 ? 0x4cd964 : 0xffcc00;
+    const color = hpRatio > 0.5 ? 0x2ecc71 : hpRatio > 0.25 ? 0xf1c40f : 0xe74c3c;
     this.healthBarFill.fillStyle(color, 1);
     this.healthBarFill.fillRect(-barWidth / 2, barY, fillWidth, barHeight);
   }
 
-  public takeDamage(damage: number): void {
+  public takeDamage(damage: number, isCrit: boolean = false): void {
     if (this.isDead) return;
 
     this.currentHp -= damage;
     this.updateHealthBar();
 
-    // Aufblitzen bei Treffer
+    // Schadens-Popup
+    if (damage > 5) {
+      const dmgText = this.scene.add.text(
+        this.x + Phaser.Math.Between(-8, 8),
+        this.y - 14,
+        isCrit ? `!${damage}!` : `${damage}`,
+        {
+          fontFamily: '"Press Start 2P", monospace',
+          fontSize: isCrit ? '11px' : '8px',
+          color: isCrit ? '#ff3838' : '#ffffff'
+        }
+      ).setOrigin(0.5).setDepth(25);
+
+      this.scene.tweens.add({
+        targets: dmgText,
+        y: dmgText.y - 16,
+        alpha: 0,
+        duration: 500,
+        onComplete: () => dmgText.destroy()
+      });
+    }
+
+    // Aufblitzen
     this.scene.tweens.add({
       targets: this.sprite,
-      alpha: 0.4,
+      alpha: 0.35,
       duration: 60,
       yoyo: true,
       onComplete: () => {
@@ -115,28 +139,32 @@ export class Enemy extends Phaser.GameObjects.Container {
 
   public applySlow(factor: number, durationMs: number): void {
     if (this.isDead) return;
-
-    // Nur den stärksten Slow anwenden
     const newMultiplier = 1.0 - factor;
     if (newMultiplier < this.slowMultiplier || this.slowTimer <= 0) {
       this.slowMultiplier = newMultiplier;
       this.slowTimer = durationMs;
-      this.sprite.setTint(0x76d7ea); // Frost-Blau
+      this.sprite.setTint(0x76d7ea);
     }
+  }
+
+  public applyPoison(damagePerTick: number, durationMs: number): void {
+    if (this.isDead) return;
+    this.poisonDamageTick = Math.max(this.poisonDamageTick, damagePerTick);
+    this.poisonTimer = durationMs;
+    this.nextPoisonTick = 400; // alle 400ms Schaden
+    this.sprite.setTint(0x2ecc71);
   }
 
   public die(): void {
     if (this.isDead) return;
     this.isDead = true;
 
-    // Gold & Punkte vergeben
     this.economy.addGold(this.config.rewardGold);
     this.economy.addScore(this.config.score);
 
-    // Schwebender Text für Gold "+14g"
     const goldText = this.scene.add.text(this.x, this.y - 12, `+${this.config.rewardGold}`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
+      fontSize: '9px',
       color: '#ffd13b'
     }).setOrigin(0.5).setDepth(20);
 
@@ -144,17 +172,16 @@ export class Enemy extends Phaser.GameObjects.Container {
       targets: goldText,
       y: goldText.y - 20,
       alpha: 0,
-      duration: 800,
+      duration: 700,
       onComplete: () => goldText.destroy()
     });
 
-    // Todes-Tween (Zerplatzen / Ausblenden)
     this.scene.tweens.add({
       targets: this,
       scaleX: 1.3,
       scaleY: 1.3,
       alpha: 0,
-      duration: 200,
+      duration: 180,
       onComplete: () => {
         this.onEnemyDeath(this);
         this.destroy();
@@ -166,10 +193,7 @@ export class Enemy extends Phaser.GameObjects.Container {
     if (this.isDead) return;
     this.isDead = true;
 
-    // Spieler verliert Leben
     this.economy.loseLives(this.config.damageToPlayer);
-
-    // Bildschirm kurz rot aufblitzen lassen bei Schadenseingang
     this.scene.cameras.main.flash(150, 200, 30, 30, true);
 
     this.onEnemyReachedEnd(this);
@@ -179,16 +203,30 @@ export class Enemy extends Phaser.GameObjects.Container {
   public update(time: number, delta: number): void {
     if (this.isDead) return;
 
-    // Slow Timer aktualisieren
+    // Slow aktualisieren
     if (this.slowTimer > 0) {
       this.slowTimer -= delta;
       if (this.slowTimer <= 0) {
         this.slowMultiplier = 1.0;
-        this.sprite.clearTint();
+        if (this.poisonTimer <= 0) this.sprite.clearTint();
       }
     }
 
-    // Bewegung entlang des Pfades
+    // Gift aktualisieren
+    if (this.poisonTimer > 0) {
+      this.poisonTimer -= delta;
+      this.nextPoisonTick -= delta;
+      if (this.nextPoisonTick <= 0) {
+        this.nextPoisonTick = 400;
+        this.takeDamage(this.poisonDamageTick);
+      }
+      if (this.poisonTimer <= 0) {
+        this.poisonDamageTick = 0;
+        if (this.slowTimer <= 0) this.sprite.clearTint();
+      }
+    }
+
+    // Pfadbewegung
     const currentSpeed = this.config.speed * this.slowMultiplier;
     const step = (currentSpeed * (delta / 1000)) / this.pathLength;
     this.pathProgress += step;
@@ -201,12 +239,10 @@ export class Enemy extends Phaser.GameObjects.Container {
     const pos = this.path.getPoint(this.pathProgress);
     this.setPosition(pos.x, pos.y);
 
-    // Geh-Animation (leichtes Schaukeln)
     this.walkTime += delta * 0.01 * (currentSpeed / 50);
     this.sprite.y = Math.sin(this.walkTime) * 2;
-    if (this.config.type === 'bat') {
-      this.sprite.scaleY = 0.8 + Math.sin(this.walkTime * 2) * 0.3; // Flügelschlag
+    if (this.config.type === 'bat' || this.config.type === 'witch') {
+      this.sprite.scaleY = 0.85 + Math.sin(this.walkTime * 2.5) * 0.25;
     }
   }
 }
-
