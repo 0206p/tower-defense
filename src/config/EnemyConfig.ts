@@ -29,10 +29,10 @@ export interface EnemyDefinition {
 }
 
 export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
-  // --- Hexenwelt ---
+  // --- Sektor Zerus (Xeno-Biom) ---
   goblin: {
     type: 'goblin',
-    name: 'Wald-Goblin',
+    name: 'Xeno-Zergling',
     maxHp: 38,
     speed: 70,
     rewardGold: 5,
@@ -43,7 +43,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   bat: {
     type: 'bat',
-    name: 'Nachtschwinge',
+    name: 'Mutalisk-Flieger',
     maxHp: 24,
     speed: 105,
     rewardGold: 5,
@@ -54,7 +54,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   witch: {
     type: 'witch',
-    name: 'Sumpf-Hexe',
+    name: 'Sporen-Königin',
     maxHp: 75,
     speed: 74,
     rewardGold: 9,
@@ -65,7 +65,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   slime: {
     type: 'slime',
-    name: 'Gift-Schleim',
+    name: 'Bio-Säure-Schleim',
     maxHp: 140,
     speed: 46,
     rewardGold: 12,
@@ -76,7 +76,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   swamp_troll: {
     type: 'swamp_troll',
-    name: 'Sumpftroll',
+    name: 'Bio-Ultralisk',
     maxHp: 280,
     speed: 38,
     rewardGold: 20,
@@ -86,10 +86,10 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     damageToPlayer: 2
   },
 
-  // --- Goblinhöhlen ---
+  // --- Sektor Korhal (Mech-Kolonie) ---
   cave_goblin: {
     type: 'cave_goblin',
-    name: 'Minen-Goblin',
+    name: 'Cyber-Scout',
     maxHp: 46,
     speed: 74,
     rewardGold: 6,
@@ -100,7 +100,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   bomber: {
     type: 'bomber',
-    name: 'Goblin-Bomber',
+    name: 'Baneling-Drohne',
     maxHp: 34,
     speed: 110,
     rewardGold: 8,
@@ -111,7 +111,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   orc: {
     type: 'orc',
-    name: 'Ork-Krieger',
+    name: 'Mech-Goliath',
     maxHp: 160,
     speed: 52,
     rewardGold: 14,
@@ -122,7 +122,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   armored_troll: {
     type: 'armored_troll',
-    name: 'Panzer-Troll',
+    name: 'Cyborg-Koloss',
     maxHp: 340,
     speed: 36,
     rewardGold: 24,
@@ -134,7 +134,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   golem: {
     type: 'golem',
-    name: 'Kristall-Golem',
+    name: 'Titan-Mech',
     maxHp: 520,
     speed: 30,
     rewardGold: 32,
@@ -145,10 +145,10 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
     shield: 80
   },
 
-  // --- Der Tote Berg ---
+  // --- Sektor Char (Vulkan-Invasion) ---
   fire_imp: {
     type: 'fire_imp',
-    name: 'Feuer-Imp',
+    name: 'Plasma-Imp',
     maxHp: 52,
     speed: 80,
     rewardGold: 7,
@@ -170,7 +170,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   hellhound: {
     type: 'hellhound',
-    name: 'Höllenhund',
+    name: 'Xeno-Jägerhund',
     maxHp: 44,
     speed: 115,
     rewardGold: 9,
@@ -181,7 +181,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   },
   lava_golem: {
     type: 'lava_golem',
-    name: 'Obsidian-Koloss',
+    name: 'Obsidian-Ultralisk',
     maxHp: 420,
     speed: 34,
     rewardGold: 30,
@@ -195,7 +195,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   // Boss
   boss: {
     type: 'boss',
-    name: 'Titan der Zerstörung',
+    name: 'Titan der Leere',
     maxHp: 750,
     speed: 32,
     rewardGold: 60,

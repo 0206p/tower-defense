@@ -92,9 +92,10 @@ export class WorldSelectScene extends Phaser.Scene {
     card.add(bg);
 
     // Titel (Groß & fett)
-    const title = this.add.text(w / 2, 35, def.name.toUpperCase(), {
+    const title = this.add.text(w / 2, 33, def.name.toUpperCase(), {
       fontFamily: GAME_FONT,
-      fontSize: '18px',
+      fontSize: '15px',
+      fontStyle: 'bold',
       color: isUnlocked ? def.textColor : '#7f8c8d',
       stroke: '#000000',
       strokeThickness: 3
@@ -102,34 +103,21 @@ export class WorldSelectScene extends Phaser.Scene {
     card.add(title);
 
     // Schwierigkeit Pill
-    const diffText = this.add.text(w / 2, 70, `SCHWIERIGKEIT: ${def.difficulty}`, {
+    const diffText = this.add.text(w / 2, 64, `SCHWIERIGKEIT: ${def.difficulty}`, {
       fontFamily: GAME_FONT,
-      fontSize: '14px',
+      fontSize: '12px',
+      fontStyle: 'bold',
       color: isUnlocked ? def.difficultyColor : '#57606f',
       stroke: '#000000',
       strokeThickness: 2
     }).setOrigin(0.5);
     card.add(diffText);
 
-    // Deko-Kacheln
-    const tileKey = worldId === 'dungeon'
-      ? 'tile_ground_dungeon'
-      : worldId === 'dead_mountain'
-      ? 'tile_ground_mountain'
-      : worldId === 'goblin_caves'
-      ? 'tile_ground_cave'
-      : 'tile_ground_witch';
-
-    for (let bx = 0; bx < 3; bx++) {
-      for (let by = 0; by < 2; by++) {
-        const mini = this.add.image(w / 2 - 40 + bx * 40, 125 + by * 38, tileKey).setScale(0.85);
-        if (!isUnlocked) mini.setTint(0x333333);
-        card.add(mini);
-      }
-    }
+    // Galaxie-Wesen & Xeno-Kreaturen Schaufenster
+    this.createCreatureShowcase(card, worldId, isUnlocked, w);
 
     // Beschreibung (Groß & lesbar)
-    const desc = this.add.text(w / 2, 235, def.description, {
+    const desc = this.add.text(w / 2, 240, def.description, {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       lineSpacing: 4,
@@ -145,7 +133,7 @@ export class WorldSelectScene extends Phaser.Scene {
       ? `FORTSCHRITT:\nALLE 30 FREI (ADMIN)`
       : `FORTSCHRITT:\n${completed} / 30 ${isKammer ? 'KAMMERN' : 'MISSIONEN'}`;
 
-    const progressText = this.add.text(w / 2, 320, progressLabel, {
+    const progressText = this.add.text(w / 2, 325, progressLabel, {
       fontFamily: GAME_FONT,
       fontSize: '13px',
       lineSpacing: 4,
@@ -214,14 +202,14 @@ export class WorldSelectScene extends Phaser.Scene {
       card.add(playBtn);
     } else {
       const reqWorld = worldId === 'dungeon'
-        ? 'dem Toten Berg'
+        ? WORLDS_CONFIG.dead_mountain.name
         : worldId === 'dead_mountain'
-        ? 'den Goblinhöhlen'
-        : 'der Hexenwelt';
+        ? WORLDS_CONFIG.goblin_caves.name
+        : WORLDS_CONFIG.witch_forest.name;
       const lockText = this.add.text(w / 2, 408, `🔒 GESPERRT\nErfordert 30 Missionen\nin ${reqWorld}`, {
         fontFamily: GAME_FONT,
-        fontSize: '13px',
-        lineSpacing: 5,
+        fontSize: '12px',
+        lineSpacing: 4,
         color: '#e74c3c',
         align: 'center',
         stroke: '#000000',
@@ -229,6 +217,145 @@ export class WorldSelectScene extends Phaser.Scene {
       }).setOrigin(0.5);
       card.add(lockText);
     }
+  }
+
+  private createCreatureShowcase(card: Phaser.GameObjects.Container, worldId: WorldId, isUnlocked: boolean, w: number): void {
+    const boxW = 236;
+    const boxH = 118;
+    const boxX = w / 2;
+    const boxY = 148;
+
+    const showcase = this.add.container(boxX, boxY);
+
+    // 1. Tiefraum- / Galaxie-Hintergrund
+    const bg = this.add.graphics();
+    bg.fillStyle(0x060814, 0.95);
+    bg.fillRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
+
+    // Kosmischer Nebel passend zum Biom
+    let nebulaColor = 0x10b981; // Zerus Emerald
+    let techBorder = 0x059669;
+    let badgeText = '🧬 XENO-SPEZIES: ZERGLING';
+    let centerSpriteKey = 'enemy_goblin';
+    let leftSpriteKey = 'enemy_bat';
+    let rightSpriteKey = 'enemy_slime';
+
+    if (worldId === 'goblin_caves') {
+      nebulaColor = 0x0284c7; // Korhal Neon Blue
+      techBorder = 0x0ea5e9;
+      badgeText = '⚙️ MECH-CYBORG: GOLIATH';
+      centerSpriteKey = 'enemy_orc';
+      leftSpriteKey = 'enemy_cave_goblin';
+      rightSpriteKey = 'enemy_bomber';
+    } else if (worldId === 'dead_mountain') {
+      nebulaColor = 0xdc2626; // Char Magma Red
+      techBorder = 0xf43f5e;
+      badgeText = '🔥 MAGMA-TITAN: ULTRALISK';
+      centerSpriteKey = 'enemy_magma_orc';
+      leftSpriteKey = 'enemy_hellhound';
+      rightSpriteKey = 'enemy_lava_golem';
+    } else if (worldId === 'dungeon') {
+      nebulaColor = 0x8b5cf6; // Void Celestial Purple
+      techBorder = 0xa855f7;
+      badgeText = '⚡ VOID-WESEN: OVERLORD';
+      centerSpriteKey = 'enemy_boss';
+      leftSpriteKey = 'enemy_witch';
+      rightSpriteKey = 'enemy_armored_troll';
+    }
+
+    if (isUnlocked) {
+      bg.fillStyle(nebulaColor, 0.25);
+      bg.fillCircle(0, 0, 52);
+      bg.fillStyle(nebulaColor, 0.15);
+      bg.fillCircle(-40, -10, 36);
+      bg.fillCircle(40, 10, 36);
+
+      // Funkelnde Galaxie-Sterne
+      bg.fillStyle(0xffffff, 0.9);
+      const starOffsets = [
+        [-80, -35], [-45, -42], [-15, -45], [35, -38], [80, -32],
+        [-90, 20], [-60, 35], [20, 38], [75, 25], [95, -10]
+      ];
+      starOffsets.forEach(([sx, sy]) => {
+        bg.fillCircle(sx, sy, 1.2);
+      });
+    }
+
+    // Rahmen & Tech-Corner-Brackets
+    bg.lineStyle(1.5, isUnlocked ? techBorder : 0x334155, 0.8);
+    bg.strokeRoundedRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
+
+    // Eck-Brackets im Sci-Fi-Stil
+    bg.lineStyle(2, isUnlocked ? 0xffffff : 0x64748b, 0.9);
+    const bLen = 10;
+    // Oben-links
+    bg.lineBetween(-boxW / 2, -boxH / 2 + bLen, -boxW / 2, -boxH / 2);
+    bg.lineBetween(-boxW / 2, -boxH / 2, -boxW / 2 + bLen, -boxH / 2);
+    // Oben-rechts
+    bg.lineBetween(boxW / 2 - bLen, -boxH / 2, boxW / 2, -boxH / 2);
+    bg.lineBetween(boxW / 2, -boxH / 2, boxW / 2, -boxH / 2 + bLen);
+    // Unten-links
+    bg.lineBetween(-boxW / 2, boxH / 2 - bLen, -boxW / 2, boxH / 2);
+    bg.lineBetween(-boxW / 2, boxH / 2, -boxW / 2 + bLen, boxH / 2);
+    // Unten-rechts
+    bg.lineBetween(boxW / 2 - bLen, boxH / 2, boxW / 2, boxH / 2);
+    bg.lineBetween(boxW / 2, boxH / 2, boxW / 2, boxH / 2 - bLen);
+
+    showcase.add(bg);
+
+    if (isUnlocked) {
+      // 2. Galaxie-Wesen Sprites (Flankierende Kreaturen)
+      const leftCreature = this.add.sprite(-62, 4, leftSpriteKey).setScale(1.15);
+      const rightCreature = this.add.sprite(62, 4, rightSpriteKey).setScale(1.15);
+      const centerCreature = this.add.sprite(0, 0, centerSpriteKey).setScale(1.55);
+
+      showcase.add([leftCreature, rightCreature, centerCreature]);
+
+      // Lebendige Atmungs-/Schweb-Animation
+      this.tweens.add({
+        targets: centerCreature,
+        y: -4,
+        scaleY: 1.62,
+        duration: 1200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+      this.tweens.add({
+        targets: [leftCreature, rightCreature],
+        y: 8,
+        duration: 1500,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+        delay: 300
+      });
+
+      // Hologramm-Scan-Leiste oben
+      const scanBadge = this.add.text(0, -boxH / 2 + 10, badgeText, {
+        fontFamily: GAME_FONT,
+        fontSize: '10px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 2
+      }).setOrigin(0.5);
+      showcase.add(scanBadge);
+    } else {
+      // Gesperrtes Holo-Display mit Scan-Verzerrung
+      const lockIcon = this.add.text(0, -6, '🔒', { fontSize: '26px' }).setOrigin(0.5);
+      const lockLabel = this.add.text(0, 24, 'BIO-SCAN VERSCHLÜSSELT', {
+        fontFamily: GAME_FONT,
+        fontSize: '10px',
+        fontStyle: 'bold',
+        color: '#ef4444',
+        stroke: '#000000',
+        strokeThickness: 2
+      }).setOrigin(0.5);
+      showcase.add([lockIcon, lockLabel]);
+    }
+
+    card.add(showcase);
   }
 
   private createBottomButton(x: number, y: number, text: string, color: number, border: number, onClick: () => void, btnWidth: number = 260): void {
