@@ -18,6 +18,8 @@ export interface SaveData {
   totalScore: number;
   selectedWorld: WorldId;
   selectedMission: number;
+  endlessHighScore: number;
+  endlessMaxWave: number;
   worlds: Record<WorldId, WorldProgress>;
   towerUpgrades: Record<string, TowerMetaUpgrade>;
 }
@@ -27,6 +29,8 @@ const DEFAULT_SAVE: SaveData = {
   totalScore: 0,
   selectedWorld: 'witch_forest',
   selectedMission: 1,
+  endlessHighScore: 0,
+  endlessMaxWave: 0,
   worlds: {
     witch_forest: {
       unlocked: true,
@@ -253,5 +257,31 @@ export class SaveSystem {
       rangeMult: 1.0 + up.range * 0.08,
       speedMult: 1.0 + up.speed * 0.15
     };
+  }
+
+  public static getEndlessHighScore(): number {
+    return this.data.endlessHighScore || 0;
+  }
+
+  public static getEndlessMaxWave(): number {
+    return this.data.endlessMaxWave || 0;
+  }
+
+  public static saveEndlessResult(wave: number, score: number): { isNewWaveRecord: boolean; isNewScoreRecord: boolean } {
+    let isNewWaveRecord = false;
+    let isNewScoreRecord = false;
+
+    if (wave > (this.data.endlessMaxWave || 0)) {
+      this.data.endlessMaxWave = wave;
+      isNewWaveRecord = true;
+    }
+
+    if (score > (this.data.endlessHighScore || 0)) {
+      this.data.endlessHighScore = score;
+      isNewScoreRecord = true;
+    }
+
+    this.save();
+    return { isNewWaveRecord, isNewScoreRecord };
   }
 }

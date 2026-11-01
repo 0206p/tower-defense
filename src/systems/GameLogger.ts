@@ -228,3 +228,4 @@ export class GameLogger {
 }
 
 export const logger = GameLogger.getInstance();
+

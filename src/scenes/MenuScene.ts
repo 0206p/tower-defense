@@ -93,35 +93,49 @@ export class MenuScene extends Phaser.Scene {
     crystalText.setX(startX + 34);
     crystalContainer.add([crystalIcon, crystalText]);
 
-    // 6. Hauptmenü-Buttons (Groß, responsiv, reaktionsschnell)
-    this.createMenuButton(GAME_WIDTH / 2, 305, '⚔️ KAMPAGNE STARTEN', 380, 56, 0x27ae60, 0x2ecc71, () => {
+    // 6. Hauptmenü-Buttons (Groß, responsiv, modern gestaltet)
+    const maxEndlessWave = SaveSystem.getEndlessMaxWave();
+    const endlessLabel = maxEndlessWave > 0
+      ? `🔥 ENDLOSMODUS (REKORD: WELLE ${maxEndlessWave})`
+      : '🔥 ENDLOSMODUS (ENDLESS SURVIVAL)';
+
+    this.createMenuButton(GAME_WIDTH / 2, 295, '⚔️ KAMPAGNE STARTEN', 400, 50, 0x27ae60, 0x2ecc71, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Kampagne starten gewählt');
       this.scene.start('WorldSelectScene');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 380, '💎 TURM-SCHMIEDE (UPGRADES)', 380, 54, 0x512b7a, 0x8e44ad, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 355, endlessLabel, 400, 50, 0xb33939, 0xff5252, () => {
+      SoundManager.playClick();
+      logger.info('MenuScene', 'Endlosmodus gestartet');
+      this.scene.start('GameScene', {
+        worldId: 'witch_forest',
+        missionNumber: 1,
+        isEndless: true
+      });
+    });
+
+    this.createMenuButton(GAME_WIDTH / 2, 415, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 48, 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
     });
 
-    // Sound Toggle Button
+    // Sound Toggle Button & Logs
     const soundLabel = SoundManager.getIsMuted() ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN';
-    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 452, soundLabel, 170, 42, 0x2d3436, 0x636e72, () => {
+    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 478, soundLabel, 185, 40, 0x2d3436, 0x636e72, () => {
       const muted = SoundManager.toggleMute();
       logger.info('Sound', `Musik umgeschaltet: ${muted ? 'AUS' : 'AN'}`);
       (soundBtn.getAt(1) as Phaser.GameObjects.Text).setText(muted ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN');
     });
 
-    // Logs Herunterladen (für den Nutzer & Support zur 15-Minuten-Analyse)
-    this.createMenuButton(GAME_WIDTH / 2 + 105, 452, '📜 LOGS EXPORT', 170, 42, 0x1e3799, 0x4a69bd, () => {
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 478, '📜 LOGS EXPORT', 185, 40, 0x1e3799, 0x4a69bd, () => {
       SoundManager.playClick();
       logger.downloadLogs(30);
     });
 
     // Subtiler Fußnoten-Text
-    const hint = this.add.text(GAME_WIDTH / 2, 575, 'Türme im Spiel ziehen & ablegen (Drag & Drop) • 2 Spezialisierungen ab Stufe 3', {
+    const hint = this.add.text(GAME_WIDTH / 2, 575, 'Endlosmodus: Überlebe unendliche Wellen & verdiene alle 5 Wellen Bonus-Kristalle!', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       color: '#f5f0e6',

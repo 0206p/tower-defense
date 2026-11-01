@@ -8,6 +8,9 @@ export interface GameOverData {
   wave: number;
   score: number;
   gold: number;
+  isEndless?: boolean;
+  isNewWaveRecord?: boolean;
+  isNewScoreRecord?: boolean;
 }
 
 export class GameOverScene extends Phaser.Scene {
@@ -26,15 +29,33 @@ export class GameOverScene extends Phaser.Scene {
     panel.lineStyle(3, 0x8a2334, 1);
     panel.strokeRoundedRect(GAME_WIDTH / 2 - 320, 80, 640, 550, 10);
 
-    this.add.text(GAME_WIDTH / 2, 140, 'NIEDERLAGE', {
+    const isEndless = !!data.isEndless;
+    const titleText = isEndless ? 'ENDLOS-LAUF BEENDET' : 'NIEDERLAGE';
+    const subText = isEndless
+      ? `Standhaft verteidigt bis Welle ${data.wave || 1}!`
+      : `Mission ${data.missionNumber || 1} - Überrannt in Welle ${data.wave || 1}`;
+
+    this.add.text(GAME_WIDTH / 2, 140, titleText, {
       fontFamily: GAME_FONT,
-      fontSize: '40px',
-      color: '#e84a5f',
+      fontSize: isEndless ? '34px' : '40px',
+      fontStyle: 'bold',
+      color: isEndless ? '#ffd13b' : '#e84a5f',
       stroke: '#000000',
       strokeThickness: 5
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 185, `Mission ${data.missionNumber || 1} - Überrannt in Welle ${data.wave || 1}`, {
+    if (data.isNewWaveRecord) {
+      this.add.text(GAME_WIDTH / 2, 172, '🏆 NEUER WELLEN-REKORD! 🏆', {
+        fontFamily: GAME_FONT,
+        fontSize: '14px',
+        fontStyle: 'bold',
+        color: '#2ecc71',
+        stroke: '#000000',
+        strokeThickness: 2
+      }).setOrigin(0.5);
+    }
+
+    this.add.text(GAME_WIDTH / 2, data.isNewWaveRecord ? 198 : 185, subText, {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#d4afb6'
@@ -52,7 +73,7 @@ export class GameOverScene extends Phaser.Scene {
       fontSize: '15px',
       color: '#f5f0e6'
     });
-    this.add.text(GAME_WIDTH / 2 + 160, 245, `${data.wave ?? 1} / 10`, {
+    this.add.text(GAME_WIDTH / 2 + 160, 245, isEndless ? `${data.wave ?? 1} (Endlos)` : `${data.wave ?? 1} / 10`, {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#ffd13b'
@@ -92,7 +113,8 @@ export class GameOverScene extends Phaser.Scene {
     this.createButton(GAME_WIDTH / 2, 435, 'ERNEUT VERSUCHEN', 300, 46, 0x6e1b27, 0xa82a3d, () => {
       this.scene.start('GameScene', {
         worldId: data.worldId || 'witch_forest',
-        missionNumber: data.missionNumber || 1
+        missionNumber: data.missionNumber || 1,
+        isEndless: isEndless
       });
     });
 

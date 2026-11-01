@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { ENEMY_CONFIGS, EnemyType } from '../config/EnemyConfig';
 import { WORLDS_CONFIG } from '../config/WorldConfig';
-import { WorldId } from './SaveSystem';
+import { WorldId, SaveSystem } from './SaveSystem';
 import { Enemy } from '../entities/Enemy';
 import { MapManager } from './MapManager';
 import { EconomySystem } from './EconomySystem';
@@ -15,6 +15,7 @@ export class WaveManager {
 
   private currentWaveIndex: number = 0;
   private totalWaves: number = 10;
+  private isEndless: boolean = false;
   private isSpawning: boolean = false;
   private enemiesRemainingToSpawn: number = 0;
   private activeEnemies: Enemy[] = [];
@@ -35,7 +36,8 @@ export class WaveManager {
       onWaveCompleted: (waveNumber: number) => void;
       onAllWavesCompleted: () => void;
       onWaveAnnouncement: (text: string) => void;
-    }
+    },
+    isEndless: boolean = false
   ) {
     this.scene = scene;
     this.mapManager = mapManager;
@@ -46,6 +48,14 @@ export class WaveManager {
     this.onWaveCompleted = callbacks.onWaveCompleted;
     this.onAllWavesCompleted = callbacks.onAllWavesCompleted;
     this.onWaveAnnouncement = callbacks.onWaveAnnouncement;
+    this.isEndless = isEndless;
+    if (this.isEndless) {
+      this.totalWaves = 999999;
+    }
+  }
+
+  public getIsEndless(): boolean {
+    return this.isEndless;
   }
 
   public getCurrentWaveNumber(): number {
@@ -65,54 +75,78 @@ export class WaveManager {
   }
 
   public startNextWave(): boolean {
-    if (this.isWaveActive() || this.currentWaveIndex >= this.totalWaves) {
+    if (this.isWaveActive() || (!this.isEndless && this.currentWaveIndex >= this.totalWaves)) {
       return false;
     }
 
     const waveNum = this.getCurrentWaveNumber();
-    this.onWaveChange(waveNum, this.totalWaves);
+    this.onWaveChange(waveNum, this.isEndless ? 0 : this.totalWaves);
 
     const worldDef = WORLDS_CONFIG[this.worldId] || WORLDS_CONFIG.witch_forest;
-    const isBossWave = waveNum === 10;
-    const announcement = isBossWave
-      ? `FINALE WELLE 10: Titanen-Boss greift an!`
-      : `Welle ${waveNum} / 10 - Feindlicher Vorstoß!`;
+    const isBossWave = this.isEndless ? waveNum % 10 === 0 : waveNum === 10;
+    const isMiniBossWave = this.isEndless && !isBossWave && waveNum % 5 === 0;
+
+    let announcement = `Welle ${waveNum} / 10 - Feindlicher Vorstoß!`;
+    if (this.isEndless) {
+      if (isBossWave) {
+        announcement = `⚔️ ENDLOS-BOSS WELLE ${waveNum}: Titanen erwachen!`;
+      } else if (isMiniBossWave) {
+        announcement = `⚠️ ENDLOS WELLE ${waveNum}: Elite-Horde greift an!`;
+      } else {
+        announcement = `⚔️ ENDLOS-WELLE ${waveNum} - Neue Monster nahen!`;
+      }
+    } else if (isBossWave) {
+      announcement = `FINALE WELLE 10: Titanen-Boss greift an!`;
+    }
     this.onWaveAnnouncement(announcement);
 
-    // Welt-Grundskalierung
-    const worldMult = this.worldId === 'dead_mountain' ? 1.25 : this.worldId === 'goblin_caves' ? 1.12 : 1.0;
+    let hpMult = 1.0;
+    let currentPool: EnemyType[] = [];
+    let spawnCount = 6;
 
-    // Sanfte globale Missionsprogression über 150 Level:
-    const globalMission = this.worldId === 'dead_mountain'
-      ? 100 + this.missionNumber
-      : this.worldId === 'goblin_caves'
-      ? 50 + this.missionNumber
-      : this.missionNumber;
+    if (this.isEndless) {
+      // Endlosmodus-Skalierung: graduell, fordernd, aber mathematisch fair
+      hpMult = 1.0 + (waveNum - 1) * 0.08 + Math.pow(Math.max(0, waveNum - 5) * 0.02, 1.25);
+      spawnCount = Math.min(28, 6 + Math.floor(waveNum * 0.7));
 
-    // Sehr kontrollierte Potenzkurve (1.0x bei Level 1 bis ~2.5x bei Level 150)
-    const progressRatio = Math.max(0, (globalMission - 1) / 149);
-    const missionMult = 1.0 + Math.pow(progressRatio, 1.2) * 1.5;
+      // Im Endlosmodus kommen schrittweise alle Monstertypen vor
+      const allTypes: EnemyType[] = [
+        'goblin', 'bat', 'witch', 'slime', 'swamp_troll',
+        'cave_goblin', 'bomber', 'orc', 'armored_troll', 'golem',
+        'fire_imp', 'magma_orc', 'hellhound', 'lava_golem'
+      ];
+      const poolSize = Math.min(allTypes.length, 3 + Math.floor(waveNum / 2));
+      currentPool = allTypes.slice(0, poolSize);
+    } else {
+      // Kampagnen-Skalierung
+      const worldMult = this.worldId === 'dead_mountain' ? 1.25 : this.worldId === 'goblin_caves' ? 1.12 : 1.0;
+      const globalMission = this.worldId === 'dead_mountain'
+        ? 100 + this.missionNumber
+        : this.worldId === 'goblin_caves'
+        ? 50 + this.missionNumber
+        : this.missionNumber;
 
-    // Sanfte Wellen-Skalierung innerhalb einer Mission (Welle 1: 1.0x bis Welle 10: 1.40x)
-    const waveMult = 1.0 + (waveNum - 1) * 0.045;
-    const hpMult = worldMult * missionMult * waveMult;
+      const progressRatio = Math.max(0, (globalMission - 1) / 149);
+      const missionMult = 1.0 + Math.pow(progressRatio, 1.2) * 1.5;
+      const waveMult = 1.0 + (waveNum - 1) * 0.045;
+      hpMult = worldMult * missionMult * waveMult;
 
-    // Nur leichte Gegner in den ersten Wellen!
-    const fullPool = worldDef.enemyPool as EnemyType[];
-    let allowedPoolLength = 2; // Welle 1-2: nur Goblins & Bats
-    if (waveNum >= 3) allowedPoolLength = 3; // Welle 3-4: + Hexen / Bomber
-    if (waveNum >= 5) allowedPoolLength = 4; // Welle 5-7: + Schleime / Orks
-    if (waveNum >= 8) allowedPoolLength = fullPool.length; // Welle 8-10: schwere Trolle
+      const fullPool = worldDef.enemyPool as EnemyType[];
+      let allowedPoolLength = 2;
+      if (waveNum >= 3) allowedPoolLength = 3;
+      if (waveNum >= 5) allowedPoolLength = 4;
+      if (waveNum >= 8) allowedPoolLength = fullPool.length;
+      currentPool = fullPool.slice(0, allowedPoolLength);
+      spawnCount = 5 + waveNum;
+    }
 
-    const currentPool = fullPool.slice(0, allowedPoolLength);
-    const spawnCount = 5 + waveNum;
     this.isSpawning = true;
-    this.enemiesRemainingToSpawn = spawnCount + (isBossWave ? 1 : 0);
+    this.enemiesRemainingToSpawn = spawnCount + (isBossWave ? 1 : isMiniBossWave ? 2 : 0);
 
     let cumulativeDelay = 350;
 
     for (let i = 0; i < spawnCount; i++) {
-      cumulativeDelay += Math.max(600, 1200 - waveNum * 35);
+      cumulativeDelay += Math.max(500, 1100 - waveNum * 25);
       const enemyType = currentPool[i % currentPool.length];
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
@@ -129,6 +163,15 @@ export class WaveManager {
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
           this.spawnEnemy('boss', hpMult * 1.8);
+          this.enemiesRemainingToSpawn--;
+          if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
+        }
+      });
+    } else if (isMiniBossWave) {
+      cumulativeDelay += 800;
+      this.scene.time.delayedCall(cumulativeDelay, () => {
+        if (this.scene && this.scene.sys.isActive()) {
+          this.spawnEnemy('armored_troll', hpMult * 1.4);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
         }
@@ -173,9 +216,15 @@ export class WaveManager {
     const waveBonus = 20 + completedWaveNum * 6;
     this.economy.addGold(waveBonus);
 
+    if (this.isEndless && completedWaveNum % 5 === 0) {
+      const bonusCrystals = 10 + Math.floor(completedWaveNum / 5) * 5;
+      SaveSystem.addCrystals(bonusCrystals);
+      this.onWaveAnnouncement(`💎 MEILENSTEIN WELLE ${completedWaveNum}! +${bonusCrystals} KRISTALLE!`);
+    }
+
     this.currentWaveIndex++;
 
-    if (this.currentWaveIndex >= this.totalWaves) {
+    if (!this.isEndless && this.currentWaveIndex >= this.totalWaves) {
       this.onAllWavesCompleted();
     }
   }

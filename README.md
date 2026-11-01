@@ -20,6 +20,16 @@ Das Spiel läuft vollständig clientseitig ohne Backend- oder Cloud-Abhängigkei
 
 ## ✨ Haupt-Features
 
+### ♾️ Endlosmodus (Endless Survival)
+* **Unendliche Wellen**: Stelle deine Verteidigung im endlosen Kampf gegen unaufhaltsame Horden auf die Probe.
+* **Dynamische Boss-Eskalation**:
+  * Alle **5 Wellen**: Elite-Mini-Bosse (`armored_troll` / `golem`).
+  * Alle **10 Wellen**: Gewaltige Titanen-Bosse mit Schilden und Wutanfall.
+* **Kristall-Belohnungen**: Alle 5 gemeisterten Wellen winken wertvolle Bonus-Kristalle für die Turm-Schmiede.
+* **Rekord-Tracking**: Das Spiel speichert deinen persönlichen Wellenrekord und Highscore lokal ab.
+
+---
+
 ### 🗺️ Drei große Kampagnen-Welten (150 Missionen)
 1. **Die Hexenwelt (Mission 1 – 50)**:
    * *Thema*: Sumpfland, dichte Wälder, Pilze und magische Pfade.

@@ -18,6 +18,7 @@ import { logger } from '../systems/GameLogger';
 export class GameScene extends Phaser.Scene {
   private worldId: WorldId = 'witch_forest';
   private missionNumber: number = 1;
+  private isEndless: boolean = false;
 
   private mapManager!: MapManager;
   private economy!: EconomySystem;
@@ -54,10 +55,11 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
-  public init(data: { worldId?: WorldId; missionNumber?: number }): void {
+  public init(data: { worldId?: WorldId; missionNumber?: number; isEndless?: boolean }): void {
     if (data.worldId) this.worldId = data.worldId;
     if (data.missionNumber) this.missionNumber = data.missionNumber;
-    logger.info('GameScene', `Mission initialisiert: Welt=${this.worldId}, Mission=${this.missionNumber}`);
+    this.isEndless = !!data.isEndless;
+    logger.info('GameScene', `Mission initialisiert: Welt=${this.worldId}, Mission=${this.missionNumber}, Endlos=${this.isEndless}`);
   }
 
   public create(): void {
@@ -126,7 +128,7 @@ export class GameScene extends Phaser.Scene {
       onWaveAnnouncement: (text) => {
         this.hud.showAnnouncement(text);
       }
-    });
+    }, this.isEndless);
 
     // 4. HUD mit 1x, 2x, 3x, Vollbild und Pause
     this.hud = new HUD(this, this.economy.getLives(), this.economy.getGold(), {
@@ -689,12 +691,27 @@ export class GameScene extends Phaser.Scene {
     this.time.timeScale = 1.0;
     this.cameras.main.fade(600, 40, 10, 15, false, (cam: any, progress: number) => {
       if (progress === 1) {
+        const currentWave = this.waveManager.getCurrentWaveNumber();
+        const score = this.economy.getScore();
+        let isNewWaveRecord = false;
+        let isNewScoreRecord = false;
+
+        if (this.isEndless) {
+          const res = SaveSystem.saveEndlessResult(currentWave, score);
+          isNewWaveRecord = res.isNewWaveRecord;
+          isNewScoreRecord = res.isNewScoreRecord;
+          logger.info('EndlessMode', `Endlos-Runde beendet bei Welle ${currentWave}`, res);
+        }
+
         this.scene.start('GameOverScene', {
           worldId: this.worldId,
           missionNumber: this.missionNumber,
-          wave: this.waveManager.getCurrentWaveNumber(),
-          score: this.economy.getScore(),
-          gold: this.economy.getGold()
+          wave: currentWave,
+          score,
+          gold: this.economy.getGold(),
+          isEndless: this.isEndless,
+          isNewWaveRecord,
+          isNewScoreRecord
         });
       }
     });
