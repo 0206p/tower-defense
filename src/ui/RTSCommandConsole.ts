@@ -151,12 +151,24 @@ export class RTSCommandConsole extends Phaser.GameObjects.Container {
         }
       });
 
+      hitZone.on('pointerover', () => {
+        if (this.selectedBuildType !== type) {
+          bg.clear();
+          bg.fillStyle(0x1e293b, 0.95);
+          bg.fillRoundedRect(0, 0, cardW, cardH, 6);
+          bg.lineStyle(2, 0x38bdf8, 1);
+          bg.strokeRoundedRect(0, 0, cardW, cardH, 6);
+          cardContainer.setScale(1.02);
+        }
+      });
+
       hitZone.on('pointerup', () => {
         cardContainer.setScale(1.0);
       });
 
       hitZone.on('pointerout', () => {
         cardContainer.setScale(1.0);
+        this.renderBuildCards();
       });
 
       this.buildCardContainers.set(type, { container: cardContainer, bg, nameText, costText });

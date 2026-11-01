@@ -91,8 +91,12 @@ export class Tower extends Phaser.GameObjects.Container {
     this.sprite = scene.add.sprite(0, 0, textureKey);
     this.add(this.sprite);
 
-    this.setSize(40, 40);
-    this.setInteractive(new Phaser.Geom.Rectangle(-20, -20, 40, 40), Phaser.Geom.Rectangle.Contains);
+    this.setSize(48, 56);
+    this.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-24, -28, 48, 56),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     this.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -102,12 +106,14 @@ export class Tower extends Phaser.GameObjects.Container {
     this.on('pointerover', () => {
       if (!this.isSelected) {
         this.showRangePreview(true);
+        this.sprite.setTint(0xddf4ff);
       }
     });
 
     this.on('pointerout', () => {
       if (!this.isSelected) {
         this.showRangePreview(false);
+        this.sprite.clearTint();
       }
     });
 

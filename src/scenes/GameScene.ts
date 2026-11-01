@@ -79,6 +79,8 @@ export class GameScene extends Phaser.Scene {
     this.pointerDownStartPos = null;
     this.time.timeScale = 1.0;
 
+    this.input.setPollAlways();
+
     // Soundtrack starten
     SoundManager.startMusic();
 
@@ -659,14 +661,23 @@ export class GameScene extends Phaser.Scene {
         return;
       }
 
-      const def = TOWER_CONFIGS[this.selectedTowerType];
+      const currentType = this.selectedTowerType;
+      const def = TOWER_CONFIGS[currentType];
       if (this.mapManager.canBuildAt(gridPos.col, gridPos.row)) {
         if (this.economy.spendGold(def.baseCost)) {
-          SoundManager.playShoot(this.selectedTowerType);
-          this.placeTower(gridPos.col, gridPos.row, this.selectedTowerType);
+          SoundManager.playShoot(currentType);
+          this.placeTower(gridPos.col, gridPos.row, currentType);
 
-          if (!this.economy.canAfford(def.baseCost)) {
+          const isShift = !!(pointer.event as MouseEvent)?.shiftKey || !!this.input.keyboard?.addKey('SHIFT')?.isDown;
+          if (isShift && this.economy.canAfford(def.baseCost)) {
+            // Mit Shift gedrückt: Turm bleibt für schnelles Ketten-Bauen aktiv!
+            this.updatePlacementPreviewVisibility();
+          } else {
+            // Ohne Shift: Turm nach dem Setzen sofort abwählen!
             this.rtsConsole.clearSelection();
+            this.selectedTowerType = null;
+            this.placementPreviewContainer.setVisible(false);
+            this.mapManager.showBuildGrid(false);
           }
         } else {
           this.hud.showAnnouncement('Nicht genügend Gold!');
@@ -697,6 +708,14 @@ export class GameScene extends Phaser.Scene {
             if (this.economy.spendGold(def.baseCost)) {
               SoundManager.playShoot(type);
               this.placeTower(gridPos.col, gridPos.row, type);
+
+              const isShift = !!(pointer.event as MouseEvent)?.shiftKey || !!this.input.keyboard?.addKey('SHIFT')?.isDown;
+              if (isShift && this.economy.canAfford(def.baseCost)) {
+                this.selectedTowerType = type;
+                this.updatePlacementPreviewVisibility();
+                this.mapManager.showBuildGrid(true);
+                return;
+              }
             } else {
               this.hud.showAnnouncement('Nicht genügend Gold!');
             }

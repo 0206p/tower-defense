@@ -19,17 +19,16 @@ export class SoundManager {
     }
   }
 
-  // Eingängige Retro-Melodie & Basslinie
-  private static melody = [
-    261.63, 293.66, 329.63, 392.00, 329.63, 293.66, 261.63, 220.00,
-    261.63, 329.63, 392.00, 440.00, 392.00, 329.63, 293.66, 261.63,
-    349.23, 392.00, 440.00, 523.25, 440.00, 392.00, 349.23, 293.66,
-    392.00, 440.00, 493.88, 587.33, 493.88, 440.00, 392.00, 329.63
-  ];
-
-  private static bassline = [
-    130.81, 130.81, 164.81, 164.81, 174.61, 174.61, 196.00, 196.00,
-    130.81, 130.81, 164.81, 164.81, 174.61, 174.61, 196.00, 196.00
+  // Ruhige, atmosphärische RTS-Akkordfolge (D-Moll / F / G-Moll / A)
+  private static chords = [
+    // D-Moll 7 (Tief, weit, ruhig)
+    [73.42, 110.0, 174.61, 261.63],
+    // B-Dur 7
+    [58.27, 87.31, 146.83, 220.0],
+    // G-Moll 7
+    [49.0, 73.42, 116.54, 174.61],
+    // A-Moll 9
+    [55.0, 82.41, 130.81, 196.0]
   ];
 
   public static init(): void {
@@ -72,18 +71,12 @@ export class SoundManager {
       if (!this.isMusicPlaying || this.isMuted || !this.ctx) return;
 
       const now = this.ctx.currentTime;
-      const noteFreq = this.melody[this.currentNoteIndex % this.melody.length];
-      const bassFreq = this.bassline[Math.floor(this.currentNoteIndex / 2) % this.bassline.length];
+      const currentChord = this.chords[this.currentNoteIndex % this.chords.length];
 
-      // Lead Note
-      this.playSynthNote(noteFreq, 0.16, 'square', 0.035, now);
-      // Bass Note
-      if (this.currentNoteIndex % 2 === 0) {
-        this.playSynthNote(bassFreq, 0.28, 'triangle', 0.06, now);
-      }
+      this.playAtmosphericPad(currentChord, 4.0, now);
 
       this.currentNoteIndex++;
-      this.musicTimer = setTimeout(playStep, 220); // Tempo
+      this.musicTimer = setTimeout(playStep, 3500); // Ruhiger, angenehmer 3.5s Takt
     };
 
     playStep();
@@ -97,22 +90,38 @@ export class SoundManager {
     }
   }
 
-  private static playSynthNote(freq: number, duration: number, type: OscillatorType, volume: number, startTime: number): void {
+  private static playAtmosphericPad(frequencies: number[], duration: number, startTime: number): void {
     if (!this.ctx || this.isMuted) return;
     try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, startTime);
+      // Warmer Low-Pass-Filter: schneidet schrille Frequenzen ab
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(620, startTime);
+      filter.Q.setValueAtTime(1.1, startTime);
 
-      gain.gain.setValueAtTime(volume, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      const masterGain = this.ctx.createGain();
+      // Extrem sanfter Ein- und Ausklang (kein Klick, kein penetrantes Piepen)
+      masterGain.gain.setValueAtTime(0.0001, startTime);
+      masterGain.gain.linearRampToValueAtTime(0.032, startTime + 1.0);
+      masterGain.gain.setValueAtTime(0.032, startTime + duration - 1.8);
+      masterGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      filter.connect(masterGain);
+      masterGain.connect(this.ctx.destination);
 
-      osc.start(startTime);
-      osc.stop(startTime + duration);
+      frequencies.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        // Bass tief mit warmem Triangle, Obertöne weich mit Sine
+        osc.type = idx === 0 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        // Leichte Schwebung für räumliche RTS-Atmosphäre
+        osc.detune.setValueAtTime((idx % 2 === 0 ? 3 : -3), startTime);
+
+        osc.connect(filter);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      });
     } catch (e) {
       // Audio-Context blockiert vor Nutzerinteraktion
     }

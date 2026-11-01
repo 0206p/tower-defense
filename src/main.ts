@@ -34,6 +34,10 @@ const config: Phaser.Types.Core.GameConfig = {
   antialiasGL: true,
   roundPixels: true,
   backgroundColor: '#100d18',
+  input: {
+    activePointers: 1,
+    smoothFactor: 0
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

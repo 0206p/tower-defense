@@ -162,7 +162,11 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(60, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-32, -16, 64, 32), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-32, -16, 64, 32),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -216,7 +220,11 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(36, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-20, -16, 40, 32), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-20, -16, 40, 32),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -275,7 +283,11 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(label);
 
     container.setSize(72, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-38, -16, 76, 32), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-38, -16, 76, 32),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -315,7 +327,11 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(88, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-46, -16, 92, 32), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-46, -16, 92, 32),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -370,7 +386,11 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(92, 28);
-    container.setInteractive(new Phaser.Geom.Rectangle(-46, -14, 92, 28), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-46, -14, 92, 28),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -418,7 +438,11 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(this.nextWaveLabel);
 
     container.setSize(190, 30);
-    container.setInteractive(new Phaser.Geom.Rectangle(-98, -17, 196, 34), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-98, -17, 196, 34),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -456,7 +480,11 @@ export class HUD extends Phaser.GameObjects.Container {
     const bg = this.btnNextWave.getAt(0) as Phaser.GameObjects.Graphics;
 
     if (enabled) {
-      this.btnNextWave.setInteractive(new Phaser.Geom.Rectangle(-98, -17, 196, 34), Phaser.Geom.Rectangle.Contains);
+      this.btnNextWave.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-98, -17, 196, 34),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true
+      });
       bg.clear();
       bg.fillStyle(0x2d6323, 1);
       bg.fillRoundedRect(-95, -15, 190, 30, 4);
