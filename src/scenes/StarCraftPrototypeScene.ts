@@ -10,7 +10,7 @@ interface RTSUnit {
   shadow: Phaser.GameObjects.Image;
   hpBarFill: Phaser.GameObjects.Graphics;
   shieldBarFill: Phaser.GameObjects.Graphics;
-  type: 'crawler' | 'mech' | 'skimmer';
+  type: 'zergling' | 'hydralisk' | 'mech' | 'skimmer' | 'crawler';
   name: string;
   hp: number;
   maxHp: number;
@@ -43,6 +43,9 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
   private units: RTSUnit[] = [];
   private pathCurve!: Phaser.Curves.Path;
   private selectedEntity: RTSTower | RTSUnit | null = null;
+  private terrainImage!: Phaser.GameObjects.Image;
+  private currentBiome: 'creep' | 'jungle' | 'metal' = 'creep';
+  private biomeButtons: Map<string, { bg: Phaser.GameObjects.Graphics; text: Phaser.GameObjects.Text }> = new Map();
 
   // RTS HUD Elements
   private radarSweepLine!: Phaser.GameObjects.Line;
@@ -72,8 +75,8 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     // 1. Assets generieren
     RTSAssetGenerator.generateAll(this);
 
-    // 2. Hintergrund-Terrain rendern
-    this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'rts_terrain_metal_platform').setDepth(0);
+    // 2. Hintergrund-Terrain rendern (Standardmäßig Zerg-Creep für authentischen SC2 Look)
+    this.terrainImage = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'rts_terrain_creep').setDepth(0);
 
     // 3. Taktischer Isometrischer Pfad
     this.setupTacticalPath();
@@ -84,14 +87,15 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     // 5. RTS Konsole & Command Card
     this.setupRTSConsole();
 
-    // 6. Wellen-Spawner für Prototyp-Gegner
+    // 6. Wellen-Spawner für Prototyp-Gegner (Zerglings, Hydralisks, Goliaths, Skimmers)
     this.time.addEvent({
-      delay: 1400,
+      delay: 1300,
       loop: true,
       callback: () => this.spawnRandomUnit()
     });
 
-    // 7. Vergleichs- & Kontroll-Buttons
+    // 7. Biome-Auswahl & Vergleichs-Buttons
+    this.setupBiomeSelector();
     this.setupComparisonControls();
 
     // Standard-Auswahl auf Belagerungsturm setzen
@@ -246,26 +250,49 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
   }
 
   private spawnRandomUnit(): void {
-    if (this.units.length >= 14) return;
+    if (this.units.length >= 18) return;
 
-    const unitTypes: ('crawler' | 'mech' | 'skimmer')[] = ['crawler', 'mech', 'skimmer'];
-    const type = unitTypes[Phaser.Math.Between(0, 2)];
+    const unitTypes: ('zergling' | 'hydralisk' | 'mech' | 'skimmer')[] = [
+      'zergling', 'zergling', 'hydralisk', 'mech', 'skimmer'
+    ];
+    const type = unitTypes[Phaser.Math.Between(0, unitTypes.length - 1)];
 
-    let name = 'SWARM CRAWLER';
-    let hp = 1400;
-    let shield = 200;
-    let speed = 75;
+    if (type === 'zergling') {
+      // Zerglings spawnen authentisch als Schwarm im Doppelpack!
+      this.createUnitInstance('zergling', 0);
+      if (this.units.length < 18) {
+        this.time.delayedCall(240, () => {
+          if (this.scene.isActive()) {
+            this.createUnitInstance('zergling', 0);
+          }
+        });
+      }
+    } else {
+      this.createUnitInstance(type, 0);
+    }
+  }
+
+  private createUnitInstance(type: 'zergling' | 'hydralisk' | 'mech' | 'skimmer', initialProgress: number = 0): void {
+    let name = 'SWARM ZERGLING';
+    let hp = 850;
+    let shield = 0;
+    let speed = 125;
     let altitudeOffset = 0;
 
-    if (type === 'mech') {
+    if (type === 'hydralisk') {
+      name = 'HUNTER HYDRALISK';
+      hp = 2200;
+      shield = 250;
+      speed = 78;
+    } else if (type === 'mech') {
       name = 'GOLIATH ASSAULT MECH';
-      hp = 3800;
-      shield = 1200;
+      hp = 4200;
+      shield = 1400;
       speed = 48;
     } else if (type === 'skimmer') {
       name = 'VOID SKIMMER (HOVER)';
-      hp = 2200;
-      shield = 600;
+      hp = 2400;
+      shield = 750;
       speed = 95;
       altitudeOffset = -12; // Schwebt 12px über dem Schatten
     }
@@ -284,7 +311,6 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     container.add(sprite);
 
     // StarCraft II Schild- & Lebensbalken über der Einheit
-    const barWidth = 36;
     const hpBarFill = this.add.graphics();
     const shieldBarFill = this.add.graphics();
     container.add([shieldBarFill, hpBarFill]);
@@ -305,7 +331,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
       shield,
       maxShield: shield,
       speed,
-      pathDistance: 0,
+      pathDistance: initialProgress,
       altitudeOffset
     };
 
@@ -432,14 +458,32 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
       this.wireframeHpText.setColor('#22c55e');
       this.wireframeWeaponText.setText(`PRIMÄR-WAFFE: ${t.name} (${t.damage} DMG | ${t.dps} DPS)`);
     } else {
-      // Es ist eine Einheit
+      // Es ist eine Einheit (Zergling, Hydralisk, Goliath oder Void Skimmer)
       const u = entity as RTSUnit;
-      this.wireframeRankText.setText(`EINHEIT: ${u.type.toUpperCase()} • GESCHWINDIGKEIT: ${u.speed}`);
-      this.wireframeShieldText.setText(`PLASMASCHILD: ${u.shield} / ${u.maxShield}`);
-      this.wireframeShieldText.setColor('#38bdf8');
+      let desc = 'LEICHTE BIO-MEUTE (ZERG)';
+      let weapon = 'NAHKAMPF-KLAUEN (DORSAL-STACHELN)';
+      let armor = 'LEICHT (BIOMASSE)';
+
+      if (u.type === 'hydralisk') {
+        desc = 'MITTLERE BIO-ARTILLERIE (ZERG)';
+        weapon = 'SÄURE-NADELN (HOHE WEITREICHWEITE)';
+        armor = 'MITTEL (CHITIN-PANZER)';
+      } else if (u.type === 'mech') {
+        desc = 'GEPANZERTE KAMPFMASCHINE (TERRAN)';
+        weapon = 'ZWILLINGS-AUTOKANONEN & HELLFIRE-RAKETEN';
+        armor = 'SCHWER (NEOSTEEL)';
+      } else if (u.type === 'skimmer') {
+        desc = 'PSI-SCHWEBEEINHEIT (PROTOSS)';
+        weapon = 'DISRUPTOR-PLASMASTRAHL';
+        armor = 'PSI-SCHUTZSCHILD (REGENERATIV)';
+      }
+
+      this.wireframeRankText.setText(`EINHEIT: ${desc} • GESCHWINDIGKEIT: ${u.speed}`);
+      this.wireframeShieldText.setText(u.maxShield > 0 ? `PLASMASCHILD: ${u.shield} / ${u.maxShield}` : `PLASMASCHILD: KEIN SCHILD (REINE BIOMASSE)`);
+      this.wireframeShieldText.setColor(u.maxShield > 0 ? '#38bdf8' : '#94a3b8');
       this.wireframeHpText.setText(`STRUKTUR / HP: ${u.hp} / ${u.maxHp}`);
       this.wireframeHpText.setColor('#22c55e');
-      this.wireframeWeaponText.setText(`BEDROHUNGSSTUFE: HOCH • RÜSTUNGSTYP: ${u.type === 'mech' ? 'SCHWER' : 'LEICHT'}`);
+      this.wireframeWeaponText.setText(`PRIMÄR-WAFFE: ${weapon} • PANZERUNG: ${armor}`);
     }
 
     // Hologramm-Drahtgitter zeichnen
@@ -450,6 +494,91 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     this.wireframeDisplayGfx.strokeRect(26, 26, 64, 64);
     this.wireframeDisplayGfx.strokeLineShape(new Phaser.Geom.Line(18, 58, 98, 58));
     this.wireframeDisplayGfx.strokeLineShape(new Phaser.Geom.Line(58, 18, 58, 98));
+  }
+
+  private setupBiomeSelector(): void {
+    const biomes: { key: 'creep' | 'jungle' | 'metal'; label: string; x: number; activeColor: number }[] = [
+      { key: 'creep', label: '🟣 ZERG-CREEP', x: 85, activeColor: 0x8b5cf6 },
+      { key: 'jungle', label: '🌿 ALIEN-DSCHUNGEL', x: 220, activeColor: 0x10b981 },
+      { key: 'metal', label: '⚙️ TERRAN-BASIS', x: 350, activeColor: 0x0284c7 }
+    ];
+
+    biomes.forEach((b) => {
+      const container = this.add.container(b.x, 19).setDepth(60);
+      const bg = this.add.graphics();
+      const isActive = this.currentBiome === b.key;
+
+      const drawBtnBg = (active: boolean, hovered: boolean = false) => {
+        bg.clear();
+        if (active) {
+          bg.fillStyle(b.activeColor, 1);
+          bg.fillRoundedRect(-58, -12, 116, 24, 4);
+          bg.lineStyle(2, 0xffffff, 0.9);
+          bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+        } else {
+          bg.fillStyle(hovered ? 0x334155 : 0x1e293b, 1);
+          bg.fillRoundedRect(-58, -12, 116, 24, 4);
+          bg.lineStyle(1.5, hovered ? 0x64748b : 0x475569, 1);
+          bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+        }
+      };
+
+      drawBtnBg(isActive);
+      container.add(bg);
+
+      const text = this.add.text(0, 0, b.label, {
+        fontFamily: GAME_FONT,
+        fontSize: '10px',
+        fontStyle: 'bold',
+        color: isActive ? '#ffffff' : '#94a3b8'
+      }).setOrigin(0.5);
+      container.add(text);
+
+      this.biomeButtons.set(b.key, { bg, text });
+
+      container.setSize(116, 24);
+      container.setInteractive(new Phaser.Geom.Rectangle(-58, -12, 116, 24), Phaser.Geom.Rectangle.Contains);
+
+      container.on('pointerover', () => {
+        if (this.currentBiome !== b.key) drawBtnBg(false, true);
+      });
+
+      container.on('pointerout', () => {
+        drawBtnBg(this.currentBiome === b.key, false);
+      });
+
+      container.on('pointerdown', () => {
+        SoundManager.playClick();
+        this.currentBiome = b.key;
+        logger.info('StarCraftPrototypeScene', `Biom gewechselt zu: ${b.key}`);
+
+        // Hintergrundtextur sofort wechseln
+        const texKey = b.key === 'metal' ? 'rts_terrain_metal_platform' : `rts_terrain_${b.key}`;
+        this.terrainImage.setTexture(texKey);
+
+        // Buttons neu rendern
+        biomes.forEach((item) => {
+          const entry = this.biomeButtons.get(item.key);
+          if (entry) {
+            const isCur = item.key === b.key;
+            entry.bg.clear();
+            if (isCur) {
+              entry.bg.fillStyle(item.activeColor, 1);
+              entry.bg.fillRoundedRect(-58, -12, 116, 24, 4);
+              entry.bg.lineStyle(2, 0xffffff, 0.9);
+              entry.bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+              entry.text.setColor('#ffffff');
+            } else {
+              entry.bg.fillStyle(0x1e293b, 1);
+              entry.bg.fillRoundedRect(-58, -12, 116, 24, 4);
+              entry.bg.lineStyle(1.5, 0x475569, 1);
+              entry.bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+              entry.text.setColor('#94a3b8');
+            }
+          }
+        });
+      });
+    });
   }
 
   private setupComparisonControls(): void {
@@ -700,3 +829,4 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     }
   }
 }
+
