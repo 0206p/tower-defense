@@ -72,10 +72,10 @@ export class HUD extends Phaser.GameObjects.Container {
     this.add(this.goldText);
 
     // 3. WELLE
-    const waveIcon = scene.add.image(218, 22, 'icon_wave');
+    const waveIcon = scene.add.image(210, 22, 'icon_wave');
     this.add(waveIcon);
 
-    this.waveText = scene.add.text(238, 11, 'Welle: 0 / 10', {
+    this.waveText = scene.add.text(230, 11, 'Welle: 0 / 10', {
       fontFamily: GAME_FONT,
       fontSize: '14px',
       fontStyle: 'bold',
@@ -85,8 +85,8 @@ export class HUD extends Phaser.GameObjects.Container {
     });
     this.add(this.waveText);
 
-    // 4. SCORE (Sicherer Abstand zum Pause-Button, absolut überschneidungsfrei)
-    this.scoreText = scene.add.text(340, 11, 'Punkte: 0', {
+    // 4. SCORE (Großzügig ab x=380 positioniert, absolut überschneidungsfrei zu Welle und Pause-Button)
+    this.scoreText = scene.add.text(380, 11, 'Punkte: 0', {
       fontFamily: GAME_FONT,
       fontSize: '14px',
       fontStyle: 'bold',
@@ -518,7 +518,7 @@ export class HUD extends Phaser.GameObjects.Container {
     if (total === 30) {
       this.waveText.setText(`Kammer: ${current} / 30`);
     } else if (total === 0 || total > 100) {
-      this.waveText.setText(`Welle: ${current} / ∞ (Endlos)`);
+      this.waveText.setText(`Welle: ${current} / ∞`);
     } else {
       this.waveText.setText(`Welle: ${current} / ${total}`);
     }
