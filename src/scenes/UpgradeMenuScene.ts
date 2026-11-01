@@ -21,22 +21,28 @@ export class UpgradeMenuScene extends Phaser.Scene {
     // Header
     this.add.text(GAME_WIDTH / 2, 40, 'TURM-SCHMIEDE & AKADEMIE', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '24px',
-      color: '#ffd13b'
+      fontSize: '26px',
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 4
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 70, 'Verstärke deine Türme dauerhaft in Schaden, Frequenz, Reichweite & Schnelligkeit!', {
+    this.add.text(GAME_WIDTH / 2, 75, 'Verstärke deine Türme dauerhaft in Schaden, Frequenz, Reichweite & Schnelligkeit!', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
-      color: '#9e97b0'
+      fontSize: '11px',
+      color: '#dcdde1',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
 
     // Kristalle oben rechts
-    this.add.image(GAME_WIDTH - 210, 40, 'icon_crystal').setScale(1.3);
-    this.crystalText = this.add.text(GAME_WIDTH - 190, 40, `${SaveSystem.getCrystals()} KRISTALLE`, {
+    this.add.image(GAME_WIDTH - 240, 40, 'icon_crystal').setScale(1.4);
+    this.crystalText = this.add.text(GAME_WIDTH - 215, 40, `${SaveSystem.getCrystals()} KRISTALLE`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
-      color: '#be2edd'
+      fontSize: '13px',
+      color: '#be2edd',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0, 0.5);
 
     // Linke Leiste: Turm-Auswahl (6 Türme)

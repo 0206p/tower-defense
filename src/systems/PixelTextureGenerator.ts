@@ -20,7 +20,6 @@ export class PixelTextureGenerator {
     // ==========================================
     // 1. HUD & SYSTEM ICONS
     // ==========================================
-    // Herz (Leben)
     create('icon_heart', 24, 24, (ctx) => {
       ctx.fillStyle = '#ff3838';
       ctx.beginPath();
@@ -34,7 +33,6 @@ export class PixelTextureGenerator {
       ctx.fillRect(7, 6, 3, 3);
     });
 
-    // Gold
     create('icon_gold', 24, 24, (ctx) => {
       ctx.fillStyle = '#b7791f';
       ctx.beginPath();
@@ -50,7 +48,6 @@ export class PixelTextureGenerator {
       ctx.fillRect(11, 7, 2, 10);
     });
 
-    // Welle (Totenkopf / Fahne)
     create('icon_wave', 24, 24, (ctx) => {
       ctx.fillStyle = '#dfe6e9';
       ctx.fillRect(6, 4, 12, 11);
@@ -62,7 +59,6 @@ export class PixelTextureGenerator {
       ctx.fillRect(13, 16, 1, 4);
     });
 
-    // Kristalle
     create('icon_crystal', 24, 24, (ctx) => {
       ctx.fillStyle = '#8e44ad';
       ctx.beginPath();
@@ -84,7 +80,6 @@ export class PixelTextureGenerator {
       ctx.fillRect(10, 7, 3, 4);
     });
 
-    // Turm-Icons
     create('icon_archer', 32, 32, (ctx) => {
       ctx.fillStyle = '#222f3e';
       ctx.fillRect(0, 0, 32, 32);
@@ -131,7 +126,7 @@ export class PixelTextureGenerator {
       ctx.beginPath();
       ctx.arc(16, 18, 9, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#1dd1a1';
+      ctx.fillStyle = '#f1c40f';
       ctx.fillRect(14, 6, 4, 8);
     });
 
@@ -162,7 +157,6 @@ export class PixelTextureGenerator {
     // ==========================================
     // 2. KARTEN-TILES (40x40)
     // ==========================================
-    // Standard Gras & Dirt Fallback
     create('tile_grass', 40, 40, (ctx) => {
       ctx.fillStyle = '#3f6728';
       ctx.fillRect(0, 0, 40, 40);
@@ -171,7 +165,6 @@ export class PixelTextureGenerator {
       ctx.fillRect(20, 20, 14, 10);
       ctx.fillStyle = '#77b244';
       ctx.fillRect(8, 12, 2, 4);
-      ctx.fillRect(26, 26, 2, 4);
     });
 
     create('tile_dirt', 40, 40, (ctx) => {
@@ -180,47 +173,18 @@ export class PixelTextureGenerator {
       ctx.fillStyle = '#654124';
       ctx.fillRect(8, 0, 4, 40);
       ctx.fillRect(28, 0, 4, 40);
-      ctx.fillStyle = '#9b6c43';
-      ctx.fillRect(16, 10, 8, 4);
-      ctx.fillRect(14, 26, 10, 4);
     });
 
-    create('tile_tree', 40, 40, (ctx) => {
-      ctx.fillStyle = '#4a2f1b';
-      ctx.fillRect(17, 24, 6, 12);
-      ctx.fillStyle = '#2d6323';
-      ctx.beginPath();
-      ctx.arc(20, 16, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#418632';
-      ctx.beginPath();
-      ctx.arc(18, 13, 10, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    create('tile_rock', 40, 40, (ctx) => {
-      ctx.fillStyle = '#3a3a47';
-      ctx.fillRect(10, 16, 20, 16);
-      ctx.fillStyle = '#525263';
-      ctx.fillRect(12, 14, 16, 16);
-      ctx.fillStyle = '#737388';
-      ctx.fillRect(14, 14, 10, 10);
-    });
-
-    // Hexenwelt
     create('tile_ground_witch', 40, 40, (ctx) => {
       ctx.fillStyle = '#223824';
       ctx.fillRect(0, 0, 40, 40);
       ctx.fillStyle = '#1c281e';
       ctx.fillRect(4, 4, 16, 12);
       ctx.fillRect(24, 20, 12, 16);
-      ctx.fillStyle = '#2f4f34';
-      ctx.fillRect(10, 10, 8, 8);
       ctx.fillStyle = '#4a2f54';
       ctx.fillRect(2, 26, 8, 10);
       ctx.fillStyle = '#8e44ad';
       ctx.fillRect(8, 22, 2, 2);
-      ctx.fillRect(30, 8, 2, 2);
     });
 
     create('tile_path_witch', 40, 40, (ctx) => {
@@ -231,9 +195,6 @@ export class PixelTextureGenerator {
       ctx.fillStyle = '#2b1c28';
       ctx.fillRect(8, 10, 24, 4);
       ctx.fillRect(6, 26, 26, 4);
-      ctx.fillStyle = '#9b59b6';
-      ctx.fillRect(18, 6, 2, 2);
-      ctx.fillRect(14, 20, 3, 2);
     });
 
     create('tile_decor_witch', 40, 40, (ctx) => {
@@ -248,16 +209,12 @@ export class PixelTextureGenerator {
       ctx.fillRect(23, 9, 3, 3);
     });
 
-    // Goblinhöhlen
     create('tile_ground_cave', 40, 40, (ctx) => {
       ctx.fillStyle = '#23222a';
       ctx.fillRect(0, 0, 40, 40);
       ctx.fillStyle = '#1a1920';
       ctx.fillRect(0, 0, 20, 20);
       ctx.fillRect(20, 20, 20, 20);
-      ctx.fillStyle = '#34323d';
-      ctx.fillRect(6, 8, 14, 6);
-      ctx.fillRect(22, 26, 12, 8);
       ctx.fillStyle = '#f39c12';
       ctx.fillRect(14, 18, 2, 3);
     });
@@ -285,7 +242,6 @@ export class PixelTextureGenerator {
       ctx.fillRect(18, 12, 3, 14);
     });
 
-    // Der Tote Berg
     create('tile_ground_mountain', 40, 40, (ctx) => {
       ctx.fillStyle = '#1f0d0d';
       ctx.fillRect(0, 0, 40, 40);
@@ -294,8 +250,6 @@ export class PixelTextureGenerator {
       ctx.fillStyle = '#c0392b';
       ctx.fillRect(0, 18, 16, 3);
       ctx.fillRect(16, 26, 24, 3);
-      ctx.fillStyle = '#f39c12';
-      ctx.fillRect(15, 20, 2, 4);
     });
 
     create('tile_path_mountain', 40, 40, (ctx) => {
@@ -317,7 +271,6 @@ export class PixelTextureGenerator {
       ctx.fillRect(18, 14, 4, 12);
     });
 
-    // Portal & Burg
     create('tile_portal', 40, 40, (ctx) => {
       ctx.fillStyle = '#110b1a';
       ctx.fillRect(2, 2, 36, 36);
@@ -341,7 +294,7 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
-    // 3. ALLE GEGNER-SPRITES (AUSNAHMSLOS)
+    // 3. ALLE GEGNER-SPRITES
     // ==========================================
     create('enemy_goblin', 32, 32, (ctx) => {
       ctx.fillStyle = '#4c8c30';
@@ -626,97 +579,174 @@ export class PixelTextureGenerator {
     });
 
     // ==========================================
-    // 5. TÜRMER-TEXTS (Stufe 1 bis 5 für 6 Typen)
+    // 5. TÜRMER-DESIGNS (EXAKT 3 AUSBAUSTUFEN PRO TURM)
+    // Stufe 1 = Gelbgold-Akzente
+    // Stufe 2 = Orange-Bronze-Akzente
+    // Stufe 3 = Rubin-Feuerrot-Akzente
+    // Gleiches Grundmodell je Turm!
     // ==========================================
     const towerTypes = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
 
+    const tierColors: Record<number, { accent: string; highlight: string; baseBorder: string; banner: string }> = {
+      1: { accent: '#f1c40f', highlight: '#fef160', baseBorder: '#e67e22', banner: '#f39c12' }, // Stufe 1: Gelb
+      2: { accent: '#ff793f', highlight: '#ffb142', baseBorder: '#d35400', banner: '#e55039' }, // Stufe 2: Orange
+      3: { accent: '#ff3838', highlight: '#ff7675', baseBorder: '#c0392b', banner: '#d63031' }  // Stufe 3: Rot
+    };
+
     towerTypes.forEach((type) => {
-      for (let lvl = 1; lvl <= 5; lvl++) {
+      for (let lvl = 1; lvl <= 3; lvl++) {
         const key = `tower_${type}_${lvl}`;
+        const theme = tierColors[lvl];
+
         create(key, 40, 40, (ctx) => {
-          const baseBorder = lvl >= 4 ? '#f1c40f' : lvl >= 3 ? '#9b59b6' : '#576574';
-          const baseColor = lvl === 5 ? '#222f3e' : '#341f97';
+          // Solides, edles Stein-Fundament (identisch für alle Stufen)
+          ctx.fillStyle = '#1e1c26';
+          ctx.fillRect(4, 16, 32, 20);
+          ctx.fillStyle = '#2f2b3d';
+          ctx.fillRect(6, 18, 28, 16);
 
-          ctx.fillStyle = '#1e272e';
-          ctx.fillRect(4, 14, 32, 22);
-          ctx.fillStyle = baseColor;
-          ctx.fillRect(6, 16, 28, 18);
+          // Stufen-Plakette & Zierstreifen (Gelb -> Orange -> Rot)
+          ctx.fillStyle = theme.accent;
+          ctx.fillRect(4, 33, 32, 3);
+          ctx.fillStyle = theme.highlight;
+          ctx.fillRect(8, 33, 24, 1);
 
+          // Stufe 2 & 3 erhalten Eck-Verstärkungen
           if (lvl >= 2) {
-            ctx.fillStyle = baseBorder;
-            ctx.fillRect(4, 32, 32, 3);
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(4, 20, 3, 13);
+            ctx.fillRect(33, 20, 3, 13);
           }
-          if (lvl >= 4) {
-            ctx.fillStyle = '#f1c40f';
-            ctx.fillRect(4, 14, 4, 20);
-            ctx.fillRect(32, 14, 4, 20);
+          if (lvl === 3) {
+            ctx.fillStyle = '#ffd13b';
+            ctx.fillRect(18, 22, 4, 4); // Zentraler Gold-Inlay
           }
 
+          // Spezifischer Turm-Aufbau (GLEICHES DESIGN, FARBE WANDELT SICH GELB->ORANGE->ROT)
           if (type === 'archer') {
-            ctx.fillStyle = lvl >= 3 ? '#10ac84' : '#2e86de';
-            ctx.fillRect(15, 6, 10, 14);
-            ctx.fillStyle = '#feca57';
-            ctx.fillRect(23, 4, 4, 16);
-            if (lvl >= 3) {
-              ctx.fillStyle = '#1dd1a1';
-              ctx.fillRect(13, 2, 14, 4);
-            }
-            if (lvl === 5) {
-              ctx.fillStyle = '#ff9ff3';
-              ctx.fillRect(17, 0, 6, 6);
-            }
+            // Schützen-Brüstung & Bogenschütze
+            ctx.fillStyle = '#4a3728';
+            ctx.fillRect(12, 10, 16, 12);
+            ctx.fillStyle = '#27ae60'; // Grünes Wams
+            ctx.fillRect(16, 8, 8, 8);
+            ctx.fillStyle = '#f5c398'; // Gesicht
+            ctx.fillRect(18, 9, 4, 3);
+
+            // Bogen mit Stufen-Farbe!
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(24, 4, 3, 16);
+            ctx.fillStyle = theme.highlight;
+            ctx.fillRect(23, 6, 1, 12);
+
+            // Zinnen-Krone (Gelb / Orange / Rot)
+            ctx.fillStyle = theme.banner;
+            ctx.fillRect(10, 8, 4, 5);
+            ctx.fillRect(26, 8, 4, 5);
           } else if (type === 'cannon') {
-            const tubeColor = lvl >= 4 ? '#222f3e' : lvl >= 3 ? '#ee5253' : '#576574';
-            ctx.fillStyle = tubeColor;
-            ctx.fillRect(12, 6 + (5 - lvl), 16, 16);
-            ctx.fillStyle = '#111';
-            ctx.fillRect(10, 4 + (5 - lvl), 20, 4);
-            if (lvl >= 3) {
-              ctx.fillStyle = '#f1c40f';
-              ctx.fillRect(12, 12, 16, 3);
-            }
-            if (lvl === 5) {
-              ctx.fillStyle = '#ff4757';
-              ctx.fillRect(14, 5, 12, 3);
-            }
+            // Schwere Kanone auf Drehkranz
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(12, 8, 16, 14);
+
+            // Eisenrohr
+            ctx.fillStyle = '#1a1a24';
+            ctx.fillRect(14, 5, 12, 18);
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(15, 6, 4, 16);
+
+            // Mündungs-Ring mit Stufen-Farbe!
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(13, 3, 14, 4);
+            ctx.fillStyle = theme.highlight;
+            ctx.fillRect(14, 4, 12, 2);
+
+            // Nietenband
+            ctx.fillStyle = theme.banner;
+            ctx.fillRect(14, 12, 12, 2);
           } else if (type === 'ice') {
-            ctx.fillStyle = '#48dbfb';
+            // Eiskristall-Obelisk
+            ctx.fillStyle = '#0984e3';
+            ctx.fillRect(16, 12, 8, 12);
+
+            // Großer schwebender Diamant
+            ctx.fillStyle = '#74b9ff';
             ctx.beginPath();
             ctx.moveTo(20, 2);
-            ctx.lineTo(30, 16);
-            ctx.lineTo(20, 26);
-            ctx.lineTo(10, 16);
+            ctx.lineTo(29, 14);
+            ctx.lineTo(20, 24);
+            ctx.lineTo(11, 14);
             ctx.closePath();
             ctx.fill();
+
+            // Kristall-Facette in Stufen-Farbe!
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(18, 10, 4, 6);
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(18, 10, 4, 8);
+            ctx.fillRect(19, 11, 2, 4);
+
+            // Halterung
+            ctx.fillStyle = theme.banner;
+            ctx.fillRect(14, 18, 12, 2);
           } else if (type === 'poison') {
-            ctx.fillStyle = '#10ac84';
-            ctx.fillRect(14, 10, 12, 16);
+            // Alchemie-Turm mit Glaskolben
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(12, 12, 16, 10);
+
+            // Kolben
+            ctx.fillStyle = '#00b894';
             ctx.beginPath();
-            ctx.arc(20, 18, 10, 0, Math.PI * 2);
+            ctx.arc(20, 14, 9, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#1dd1a1';
-            ctx.fillRect(17, 12, 6, 8);
+
+            // Reagenzflüssigkeit in Stufen-Farbe!
+            ctx.fillStyle = theme.accent;
+            ctx.beginPath();
+            ctx.arc(20, 15, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = theme.highlight;
+            ctx.fillRect(18, 5, 4, 6); // Schornstein
           } else if (type === 'tesla') {
-            ctx.fillStyle = '#0984e3';
-            ctx.fillRect(18, 10, 4, 14);
-            ctx.fillStyle = '#74b9ff';
+            // Spulenturm mit Entlade-Sphäre
+            ctx.fillStyle = '#2d3436';
+            ctx.fillRect(18, 12, 4, 12);
+
+            // Kupferringe
+            ctx.fillStyle = '#b33939';
+            ctx.fillRect(16, 14, 8, 2);
+            ctx.fillRect(16, 18, 8, 2);
+
+            // Entlade-Kugel mit Stufen-Farbe!
+            ctx.fillStyle = theme.accent;
             ctx.beginPath();
             ctx.arc(20, 8, 7, 0, Math.PI * 2);
             ctx.fill();
+
+            ctx.fillStyle = theme.highlight;
+            ctx.fillRect(18, 6, 4, 4);
           } else if (type === 'sniper') {
+            // Wehrturm mit Hochpräzisionslauf
             ctx.fillStyle = '#2d3436';
-            ctx.fillRect(14, 8, 12, 16);
+            ctx.fillRect(12, 10, 16, 12);
+
+            // Langer Scharfschützenlauf
             ctx.fillStyle = '#636e72';
-            ctx.fillRect(18, 0, 4, 20);
-            ctx.fillStyle = '#e84118';
+            ctx.fillRect(18, 0, 4, 18);
+
+            // Zielvisier-Laser mit Stufen-Farbe!
+            ctx.fillStyle = theme.accent;
+            ctx.fillRect(17, 0, 6, 3);
+            ctx.fillStyle = theme.highlight;
             ctx.fillRect(19, 0, 2, 2);
+
+            // Stabilisator
+            ctx.fillStyle = theme.banner;
+            ctx.fillRect(14, 14, 12, 2);
           }
 
-          ctx.fillStyle = '#f1c40f';
-          for (let s = 0; s < lvl; s++) {
-            ctx.fillRect(8 + s * 5, 34, 3, 3);
+          // Stufen-Indikator unten: 1, 2 oder 3 Quadrate
+          ctx.fillStyle = theme.accent;
+          for (let p = 0; p < lvl; p++) {
+            ctx.fillRect(14 + p * 5, 27, 4, 4);
           }
         });
       }

@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/GameConfig';
-import { WORLDS_CONFIG, WorldDefinition } from '../config/WorldConfig';
+import { WORLDS_CONFIG } from '../config/WorldConfig';
 import { SaveSystem, WorldId } from '../systems/SaveSystem';
+import { SoundManager } from '../systems/SoundManager';
 
 export class WorldSelectScene extends Phaser.Scene {
   constructor() {
@@ -13,27 +14,31 @@ export class WorldSelectScene extends Phaser.Scene {
     bg.fillStyle(0x110f17, 1);
     bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // Header
+    // Header mit gut lesbarer Schrift
     this.add.text(GAME_WIDTH / 2, 45, 'KAMPAGNEN-WELTEN', {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '28px',
-      color: '#ffd13b'
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 5
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 80, 'Wähle eine Kampagne. Jede Welt umfasst 50 herausfordernde Missionen.', {
+    this.add.text(GAME_WIDTH / 2, 85, 'Schließe 50 Missionen einer Welt ab, um die nächste Welt freizuschalten.', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
-      color: '#9e97b0'
+      fontSize: '11px',
+      color: '#dcdde1',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
 
-    // Kristall-Anzeige oben rechts sauber formatiert
+    // Kristall-Anzeige oben rechts
     const crystals = SaveSystem.getCrystals();
-    const crystalLabel = this.add.text(GAME_WIDTH - 80, 45, `${crystals}`, {
+    const crystalLabel = this.add.text(GAME_WIDTH - 60, 45, `${crystals}`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '14px',
+      fontSize: '15px',
       color: '#be2edd'
     }).setOrigin(1, 0.5);
-    this.add.image(crystalLabel.x - crystalLabel.width - 16, 45, 'icon_crystal').setScale(1.2);
+    this.add.image(crystalLabel.x - crystalLabel.width - 16, 45, 'icon_crystal').setScale(1.3);
 
     // 3 Welten-Karten nebeneinander
     const worldIds: WorldId[] = ['witch_forest', 'goblin_caves', 'dead_mountain'];
@@ -41,15 +46,17 @@ export class WorldSelectScene extends Phaser.Scene {
     const startX = 140;
 
     worldIds.forEach((wId, idx) => {
-      this.createWorldCard(wId, startX + idx * 390, 120, cardWidth, 440);
+      this.createWorldCard(wId, startX + idx * 390, 120, cardWidth, 470);
     });
 
-    // Unten: Upgrade-Menü Button & Menü Button
-    this.createBottomButton(GAME_WIDTH / 2 - 160, 640, '💎 TURM-SCHMIEDE (UPGRADES)', 0x512b7a, 0x8e44ad, () => {
+    // Unten: Upgrade-Menü Button & Menü Button mit großer Schrift
+    this.createBottomButton(GAME_WIDTH / 2 - 180, 645, '💎 TURM-SCHMIEDE (UPGRADES)', 0x512b7a, 0x8e44ad, () => {
+      SoundManager.playClick();
       this.scene.start('UpgradeMenuScene');
     });
 
-    this.createBottomButton(GAME_WIDTH / 2 + 180, 640, '< HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
+    this.createBottomButton(GAME_WIDTH / 2 + 180, 645, '< HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
+      SoundManager.playClick();
       this.scene.start('MenuScene');
     });
   }
@@ -64,118 +71,117 @@ export class WorldSelectScene extends Phaser.Scene {
 
     const bg = this.add.graphics();
     if (isUnlocked) {
-      bg.fillStyle(def.themeColor, 0.25);
+      bg.fillStyle(def.themeColor, 0.3);
       bg.fillRoundedRect(0, 0, w, h, 10);
       bg.lineStyle(3, def.themeColor, 1);
       bg.strokeRoundedRect(0, 0, w, h, 10);
     } else {
-      bg.fillStyle(0x1a1a24, 0.7);
+      bg.fillStyle(0x1a1a24, 0.75);
       bg.fillRoundedRect(0, 0, w, h, 10);
       bg.lineStyle(2, 0x3d354a, 1);
       bg.strokeRoundedRect(0, 0, w, h, 10);
     }
     card.add(bg);
 
-    // Titel
-    const title = this.add.text(w / 2, 35, def.name, {
+    // Titel (Groß & fett)
+    const title = this.add.text(w / 2, 35, def.name.toUpperCase(), {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '13px',
-      color: isUnlocked ? def.textColor : '#7f8c8d'
+      fontSize: '15px',
+      color: isUnlocked ? def.textColor : '#7f8c8d',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0.5);
     card.add(title);
 
     // Schwierigkeit Pill
     const diffText = this.add.text(w / 2, 70, `SCHWIERIGKEIT: ${def.difficulty}`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
-      color: isUnlocked ? def.difficultyColor : '#57606f'
+      fontSize: '11px',
+      color: isUnlocked ? def.difficultyColor : '#57606f',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
     card.add(diffText);
 
-    // Deko-Banner
-    const banner = this.add.graphics();
-    banner.fillStyle(def.themeColor, isUnlocked ? 0.8 : 0.2);
-    banner.fillRoundedRect(16, 95, w - 32, 130, 8);
-    card.add(banner);
-
-    // Miniatur-Grafik der Welt
+    // Deko-Kacheln
     const tileKey = worldId === 'dead_mountain' ? 'tile_ground_mountain' : worldId === 'goblin_caves' ? 'tile_ground_cave' : 'tile_ground_witch';
     for (let bx = 0; bx < 3; bx++) {
       for (let by = 0; by < 2; by++) {
-        const mini = this.add.image(w / 2 - 40 + bx * 40, 135 + by * 40, tileKey).setScale(0.85);
+        const mini = this.add.image(w / 2 - 44 + bx * 44, 140 + by * 44, tileKey).setScale(0.95);
         if (!isUnlocked) mini.setTint(0x333333);
         card.add(mini);
       }
     }
 
-    // Beschreibung
-    const desc = this.add.text(w / 2, 255, def.description, {
+    // Beschreibung (Groß & lesbar)
+    const desc = this.add.text(w / 2, 260, def.description, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
+      fontSize: '10px',
       lineSpacing: 6,
-      color: isUnlocked ? '#dcdde1' : '#57606f',
+      color: isUnlocked ? '#f5f0e6' : '#57606f',
       align: 'center',
       wordWrap: { width: w - 36 }
     }).setOrigin(0.5);
     card.add(desc);
 
     // Fortschritt
-    const progressText = this.add.text(w / 2, 335, `FORTSCHRITT:\n${completed} / 50 MISSIONEN`, {
+    const progressText = this.add.text(w / 2, 345, `FORTSCHRITT:\n${completed} / 50 MISSIONEN`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
-      lineSpacing: 5,
+      fontSize: '12px',
+      lineSpacing: 6,
       color: isUnlocked ? '#ffd13b' : '#57606f',
-      align: 'center'
+      align: 'center',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0.5);
     card.add(progressText);
 
     // Button / Sperr-Text
     if (isUnlocked) {
-      const playBtn = this.add.container(w / 2, 395);
+      const playBtn = this.add.container(w / 2, 420);
       const btnBg = this.add.graphics();
       btnBg.fillStyle(0x27ae60, 1);
-      btnBg.fillRoundedRect(-90, -18, 180, 36, 6);
+      btnBg.fillRoundedRect(-110, -22, 220, 44, 6);
       btnBg.lineStyle(2, 0x2ecc71, 1);
-      btnBg.strokeRoundedRect(-90, -18, 180, 36, 6);
+      btnBg.strokeRoundedRect(-110, -22, 220, 44, 6);
       playBtn.add(btnBg);
 
       const btnLabel = this.add.text(0, 0, 'MISSIONEN ÖFFNEN', {
         fontFamily: '"Press Start 2P", monospace',
-        fontSize: '9px',
+        fontSize: '11px',
         color: '#ffffff'
       }).setOrigin(0.5);
       playBtn.add(btnLabel);
 
-      playBtn.setSize(180, 36);
-      playBtn.setInteractive(new Phaser.Geom.Rectangle(-90, -18, 180, 36), Phaser.Geom.Rectangle.Contains);
+      playBtn.setSize(220, 44);
+      playBtn.setInteractive({ useHandCursor: true });
 
       playBtn.on('pointerdown', () => {
+        SoundManager.playClick();
         SaveSystem.getData().selectedWorld = worldId;
         SaveSystem.save();
         this.scene.start('MissionSelectScene', { worldId });
       });
 
       playBtn.on('pointerover', () => {
-        btnBg.clear();
-        btnBg.fillStyle(0x2ecc71, 1);
-        btnBg.fillRoundedRect(-90, -18, 180, 36, 6);
+        playBtn.setScale(1.04);
       });
 
       playBtn.on('pointerout', () => {
-        btnBg.clear();
-        btnBg.fillStyle(0x27ae60, 1);
-        btnBg.fillRoundedRect(-90, -18, 180, 36, 6);
+        playBtn.setScale(1.0);
       });
 
       card.add(playBtn);
     } else {
       const reqWorld = worldId === 'goblin_caves' ? 'der Hexenwelt' : 'den Goblinhöhlen';
-      const lockText = this.add.text(w / 2, 395, `🔒 GESPERRT\nErfordert 50 Missionen in ${reqWorld}`, {
+      const lockText = this.add.text(w / 2, 420, `🔒 GESPERRT\nErfordert 50 Missionen\nin ${reqWorld}`, {
         fontFamily: '"Press Start 2P", monospace',
-        fontSize: '7px',
-        lineSpacing: 4,
+        fontSize: '9px',
+        lineSpacing: 5,
         color: '#e74c3c',
-        align: 'center'
+        align: 'center',
+        stroke: '#000000',
+        strokeThickness: 2
       }).setOrigin(0.5);
       card.add(lockText);
     }
@@ -185,21 +191,22 @@ export class WorldSelectScene extends Phaser.Scene {
     const btn = this.add.container(x, y);
     const bg = this.add.graphics();
     bg.fillStyle(color, 1);
-    bg.fillRoundedRect(-140, -18, 280, 36, 6);
+    bg.fillRoundedRect(-160, -22, 320, 44, 6);
     bg.lineStyle(2, border, 1);
-    bg.strokeRoundedRect(-140, -18, 280, 36, 6);
+    bg.strokeRoundedRect(-160, -22, 320, 44, 6);
     btn.add(bg);
 
     const label = this.add.text(0, 0, text, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
+      fontSize: '11px',
       color: '#ffffff'
     }).setOrigin(0.5);
     btn.add(label);
 
-    btn.setSize(280, 36);
-    btn.setInteractive(new Phaser.Geom.Rectangle(-140, -18, 280, 36), Phaser.Geom.Rectangle.Contains);
+    btn.setSize(320, 44);
+    btn.setInteractive({ useHandCursor: true });
     btn.on('pointerdown', onClick);
+    btn.on('pointerover', () => btn.setScale(1.03));
+    btn.on('pointerout', () => btn.setScale(1.0));
   }
 }
-

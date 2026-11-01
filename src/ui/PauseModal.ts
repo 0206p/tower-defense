@@ -133,3 +133,4 @@ export class PauseModal extends Phaser.GameObjects.Container {
     return this.isShowing;
   }
 }
+

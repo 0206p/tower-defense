@@ -7,10 +7,10 @@ export interface WorldProgress {
 }
 
 export interface TowerMetaUpgrade {
-  damage: number;    // 0..5 (je +10% bis +50%)
-  frequency: number; // 0..5 (je +8% bis +40% Angriffsrate)
-  range: number;     // 0..5 (je +7% bis +35% Reichweite)
-  speed: number;     // 0..5 (je +12% bis +60% Projektiltempo & Spezialeigenschaft)
+  damage: number;    // 0..5 (je +12%)
+  frequency: number; // 0..5 (je +9%)
+  range: number;     // 0..5 (je +8%)
+  speed: number;     // 0..5 (je +15%)
 }
 
 export interface SaveData {
@@ -23,7 +23,7 @@ export interface SaveData {
 }
 
 const DEFAULT_SAVE: SaveData = {
-  crystals: 150, // Kleines Startkapital zum Experimentieren im Upgrade-Menü
+  crystals: 150,
   totalScore: 0,
   selectedWorld: 'witch_forest',
   selectedMission: 1,
@@ -54,7 +54,7 @@ const DEFAULT_SAVE: SaveData = {
   }
 };
 
-const STORAGE_KEY = 'tower_defense_save_v2';
+const STORAGE_KEY = 'tower_defense_save_v3';
 
 export class SaveSystem {
   private static data: SaveData = SaveSystem.load();
@@ -64,7 +64,7 @@ export class SaveSystem {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        return {
+        const data: SaveData = {
           ...DEFAULT_SAVE,
           ...parsed,
           worlds: {
@@ -76,6 +76,17 @@ export class SaveSystem {
             ...(parsed.towerUpgrades || {})
           }
         };
+
+        // Absicherung: worlds und completedMissions immer als Zahl
+        (['witch_forest', 'goblin_caves', 'dead_mountain'] as WorldId[]).forEach((wId) => {
+          if (!data.worlds[wId]) {
+            data.worlds[wId] = { unlocked: wId === 'witch_forest', completedMissions: 0, stars: {} };
+          }
+          data.worlds[wId].completedMissions = Number(data.worlds[wId].completedMissions || 0);
+          if (!data.worlds[wId].stars) data.worlds[wId].stars = {};
+        });
+
+        return data;
       }
     } catch (e) {
       console.warn('Fehler beim Laden des Spielstands, Standardwerte genutzt.', e);
@@ -116,33 +127,46 @@ export class SaveSystem {
   public static isWorldUnlocked(worldId: WorldId): boolean {
     if (worldId === 'witch_forest') return true;
     if (worldId === 'goblin_caves') {
-      return this.data.worlds.witch_forest.completedMissions >= 50;
+      return (this.data.worlds.witch_forest.completedMissions || 0) >= 50;
     }
     if (worldId === 'dead_mountain') {
-      return this.data.worlds.goblin_caves.completedMissions >= 50;
+      return (this.data.worlds.goblin_caves.completedMissions || 0) >= 50;
     }
     return false;
   }
 
-  public static completeMission(worldId: WorldId, missionNum: number, starsEarned: number, scoreEarned: number): void {
+  public static isMissionUnlocked(worldId: WorldId, missionNum: number): boolean {
+    if (missionNum === 1) return true;
     const world = this.data.worlds[worldId];
-    if (!world) return;
+    if (!world) return missionNum === 1;
+    const completed = Number(world.completedMissions || 0);
+    return completed >= missionNum - 1;
+  }
 
+  public static completeMission(worldId: WorldId, missionNum: number, starsEarned: number, scoreEarned: number): void {
+    let world = this.data.worlds[worldId];
+    if (!world) {
+      world = { unlocked: true, completedMissions: 0, stars: {} };
+      this.data.worlds[worldId] = world;
+    }
+
+    world.stars = world.stars || {};
     const prevStars = world.stars[missionNum] || 0;
     if (starsEarned > prevStars) {
       world.stars[missionNum] = starsEarned;
       const newStars = starsEarned - prevStars;
-      this.addCrystals(newStars * 25); // 25 Kristalle pro neuem Stern
+      this.data.crystals += newStars * 25;
     }
 
-    if (missionNum > world.completedMissions) {
+    const currentCompleted = Number(world.completedMissions || 0);
+    if (missionNum > currentCompleted) {
       world.completedMissions = missionNum;
-      this.addCrystals(50); // Bonus für erste Vollendung der Mission
+      this.data.crystals += 50; // Bonus für neue Mission
     }
 
     this.data.totalScore += scoreEarned;
 
-    // Automatische Freischaltung der nächsten Welt nach 50 Missionen
+    // Nach 50 Missionen nächste Welt freischalten
     if (worldId === 'witch_forest' && world.completedMissions >= 50) {
       this.data.worlds.goblin_caves.unlocked = true;
     } else if (worldId === 'goblin_caves' && world.completedMissions >= 50) {
@@ -160,7 +184,6 @@ export class SaveSystem {
   }
 
   public static getUpgradeCost(currentTier: number): number {
-    // Stufe 1: 30, Stufe 2: 60, Stufe 3: 100, Stufe 4: 160, Stufe 5: 250 Kristalle
     const costs = [30, 60, 100, 160, 250];
     return costs[currentTier] || 999;
   }
@@ -179,7 +202,6 @@ export class SaveSystem {
   }
 
   public static resetAllUpgrades(): void {
-    // Erstatte alle investierten Kristalle
     let refund = 0;
     Object.values(this.data.towerUpgrades).forEach((up) => {
       (['damage', 'frequency', 'range', 'speed'] as (keyof TowerMetaUpgrade)[]).forEach((s) => {
@@ -197,11 +219,10 @@ export class SaveSystem {
   public static getStatMultipliers(towerType: string) {
     const up = this.getTowerUpgrade(towerType);
     return {
-      damageMult: 1.0 + up.damage * 0.12,        // Bis zu +60% Schaden
-      frequencyMult: 1.0 + up.frequency * 0.09,  // Bis zu +45% Kadenz
-      rangeMult: 1.0 + up.range * 0.08,          // Bis zu +40% Reichweite
-      speedMult: 1.0 + up.speed * 0.15           // Bis zu +75% Geschoss-/Spezialtempo
+      damageMult: 1.0 + up.damage * 0.12,
+      frequencyMult: 1.0 + up.frequency * 0.09,
+      rangeMult: 1.0 + up.range * 0.08,
+      speedMult: 1.0 + up.speed * 0.15
     };
   }
 }
-
