@@ -20,6 +20,7 @@ export class GameScene extends Phaser.Scene {
   private missionNumber: number = 1;
   private isEndless: boolean = false;
   private isDungeon: boolean = false;
+  private gameSpeed: number = 1.0;
 
   private mapManager!: MapManager;
   private economy!: EconomySystem;
@@ -77,7 +78,9 @@ export class GameScene extends Phaser.Scene {
     this.repositionTower = null;
     this.isRepositionDragging = false;
     this.pointerDownStartPos = null;
+    this.gameSpeed = 1.0;
     this.time.timeScale = 1.0;
+    this.tweens.timeScale = 1.0;
 
     this.input.setPollAlways();
 
@@ -158,11 +161,13 @@ export class GameScene extends Phaser.Scene {
       }
     }, this.isEndless, this.isDungeon);
 
-    // 4. HUD mit 1x, 2x, 3x, Vollbild und Pause
+    // 4. HUD mit 1x, 2x, 3x, 5x, Vollbild und Pause
     this.hud = new HUD(this, this.economy.getLives(), this.economy.getGold(), {
       onSpeedChange: (speed) => {
         logger.info('GameSpeed', `Tempo auf ${speed}x gesetzt`);
+        this.gameSpeed = speed;
         this.time.timeScale = speed;
+        this.tweens.timeScale = speed;
       },
       onNextWaveClicked: () => {
         this.waveManager.startNextWave();
@@ -421,9 +426,11 @@ export class GameScene extends Phaser.Scene {
 
     if (this.isGamePaused) {
       this.time.timeScale = 0;
+      this.tweens.timeScale = 0;
       this.pauseModal.show();
     } else {
-      this.time.timeScale = 1.0;
+      this.time.timeScale = this.gameSpeed;
+      this.tweens.timeScale = this.gameSpeed;
       this.pauseModal.hide();
     }
   }
@@ -965,19 +972,22 @@ export class GameScene extends Phaser.Scene {
   public update(time: number, delta: number): void {
     if (this.isGameOver || this.isGamePaused) return;
 
+    // Echter Gameplay-Speed Multiplikator für Bewegung, Abklingzeiten und Projektile!
+    const scaledDelta = delta * this.gameSpeed;
+
     // 1. Wellen-Gegner
-    this.waveManager.update(time, delta);
+    this.waveManager.update(time, scaledDelta);
 
     // 2. Türme zielerfassen & schiessen
     for (let i = 0; i < this.towers.length; i++) {
-      this.towers[i].update(time, delta);
+      this.towers[i].update(time, scaledDelta);
     }
 
     // 3. Projektile bewegen & Kollision ausführen
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const p = this.projectiles[i];
       if (p && p.active) {
-        p.update(time, delta);
+        p.update(time, scaledDelta);
       } else {
         this.projectiles.splice(i, 1);
       }
