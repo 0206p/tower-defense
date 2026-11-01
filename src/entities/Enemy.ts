@@ -99,27 +99,27 @@ export class Enemy extends Phaser.GameObjects.Container {
     this.currentHp -= damage;
     this.updateHealthBar();
 
-    // Schadens-Popup
-    if (damage > 5) {
-      const dmgText = this.scene.add.text(
-        this.x + Phaser.Math.Between(-8, 8),
-        this.y - 14,
-        isCrit ? `!${damage}!` : `${damage}`,
-        {
-          fontFamily: '"Press Start 2P", monospace',
-          fontSize: isCrit ? '11px' : '8px',
-          color: isCrit ? '#ff3838' : '#ffffff'
-        }
-      ).setOrigin(0.5).setDepth(25);
+    // Schadens-Popup (deutlich sichtbar)
+    const dmgText = this.scene.add.text(
+      this.x + Phaser.Math.Between(-8, 8),
+      this.y - 18,
+      isCrit ? `!${damage}!` : `-${damage}`,
+      {
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: isCrit ? '13px' : '10px',
+        color: isCrit ? '#ff3838' : '#ffd13b',
+        stroke: '#000000',
+        strokeThickness: 3
+      }
+    ).setOrigin(0.5).setDepth(30);
 
-      this.scene.tweens.add({
-        targets: dmgText,
-        y: dmgText.y - 16,
-        alpha: 0,
-        duration: 500,
-        onComplete: () => dmgText.destroy()
-      });
-    }
+    this.scene.tweens.add({
+      targets: dmgText,
+      y: dmgText.y - 20,
+      alpha: 0,
+      duration: 550,
+      onComplete: () => dmgText.destroy()
+    });
 
     // Aufblitzen
     this.scene.tweens.add({

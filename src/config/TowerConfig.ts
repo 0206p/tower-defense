@@ -22,7 +22,7 @@ export interface TowerDefinition {
   shortName: string;
   icon: string;
   baseCost: number;
-  levels: TowerLevelData[]; // 3 Ausbaustufen!
+  levels: TowerLevelData[];
 }
 
 export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
@@ -36,26 +36,26 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
       {
         level: 1,
         cost: 100,
-        damage: 18,
-        range: 165,
-        attackCooldown: 600,
-        description: 'Stufe 1 (Gelb): Schnelle Pfeilsalven auf einzelne Feinde.'
+        damage: 32, // Spürbar stark gegen Welle 1 Monster!
+        range: 175,
+        attackCooldown: 500,
+        description: 'Stufe 1 (Gelb): Schnelle Pfeilsalven (32 Schaden, 2 Schüsse/s).'
       },
       {
         level: 2,
-        cost: 110,
-        damage: 38,
-        range: 195,
-        attackCooldown: 480,
-        description: 'Stufe 2 (Orange): Verstärkter Kompositbogen mit höherer Reichweite.'
+        cost: 120,
+        damage: 72,
+        range: 210,
+        attackCooldown: 400,
+        description: 'Stufe 2 (Orange): Verstärkter Kompositbogen (72 Schaden).'
       },
       {
         level: 3,
-        cost: 180,
-        damage: 75,
-        range: 235,
-        attackCooldown: 340,
-        description: 'Stufe 3 (Rot): Meisterschütze mit verheerendem Pfeilhagel!'
+        cost: 200,
+        damage: 155,
+        range: 250,
+        attackCooldown: 280,
+        description: 'Stufe 3 (Rot): Meisterschütze mit Pfeilhagel (155 Schaden, fast 4 Schüsse/s)!'
       }
     ]
   },
@@ -69,29 +69,29 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
       {
         level: 1,
         cost: 175,
-        damage: 60,
-        range: 140,
-        attackCooldown: 1600,
-        splashRadius: 70,
-        description: 'Stufe 1 (Gelb): Schwere Artillerie mit Flächenschaden.'
+        damage: 110, // Krachender Flächenschaden!
+        range: 155,
+        attackCooldown: 1400,
+        splashRadius: 80,
+        description: 'Stufe 1 (Gelb): Schwere Artillerie (110 Flächenschaden).'
       },
       {
         level: 2,
-        cost: 150,
-        damage: 130,
-        range: 165,
-        attackCooldown: 1350,
-        splashRadius: 90,
-        description: 'Stufe 2 (Orange): Bronzemörser mit vergrößertem Splitterradius.'
+        cost: 160,
+        damage: 240,
+        range: 180,
+        attackCooldown: 1200,
+        splashRadius: 105,
+        description: 'Stufe 2 (Orange): Belagerungsmörser (240 Flächenschaden).'
       },
       {
         level: 3,
-        cost: 260,
-        damage: 260,
-        range: 195,
-        attackCooldown: 1100,
-        splashRadius: 120,
-        description: 'Stufe 3 (Rot): Titanische Belagerungshaubitze mit Schockwellen!'
+        cost: 280,
+        damage: 490,
+        range: 215,
+        attackCooldown: 1000,
+        splashRadius: 135,
+        description: 'Stufe 3 (Rot): Titanische Erdbebenkanone (490 Flächenschaden zermalmt Gruppen)!'
       }
     ]
   },
@@ -105,35 +105,35 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
       {
         level: 1,
         cost: 150,
-        damage: 15,
-        range: 140,
-        attackCooldown: 1100,
-        splashRadius: 60,
-        slowFactor: 0.50,
-        slowDuration: 2500,
-        description: 'Stufe 1 (Gelb): Gefriert Feinde und halbiert ihr Lauftempo.'
+        damage: 28,
+        range: 150,
+        attackCooldown: 950,
+        splashRadius: 70,
+        slowFactor: 0.55,
+        slowDuration: 2800,
+        description: 'Stufe 1 (Gelb): Gefriert Gruppen (28 Schaden, 55% Verlangsamung).'
       },
       {
         level: 2,
-        cost: 130,
-        damage: 35,
-        range: 170,
-        attackCooldown: 900,
-        splashRadius: 85,
-        slowFactor: 0.65,
-        slowDuration: 3200,
-        description: 'Stufe 2 (Orange): Tiefkristalle mit 65% Frostlähmung.'
+        cost: 140,
+        damage: 68,
+        range: 185,
+        attackCooldown: 800,
+        splashRadius: 95,
+        slowFactor: 0.70,
+        slowDuration: 3500,
+        description: 'Stufe 2 (Orange): Tiefkristalle mit 70% Frostlähmung.'
       },
       {
         level: 3,
-        cost: 230,
-        damage: 75,
-        range: 210,
-        attackCooldown: 720,
-        splashRadius: 115,
-        slowFactor: 0.80,
-        slowDuration: 4000,
-        description: 'Stufe 3 (Rot): Blizzard-Zitadelle: Feinde frieren nahezu ein (80% Slow)!'
+        cost: 250,
+        damage: 145,
+        range: 225,
+        attackCooldown: 650,
+        splashRadius: 125,
+        slowFactor: 0.85,
+        slowDuration: 4400,
+        description: 'Stufe 3 (Rot): Blizzard-Kathedrale: 85% Lähmung und 145 Kälteschaden!'
       }
     ]
   },
@@ -147,35 +147,35 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
       {
         level: 1,
         cost: 140,
-        damage: 12,
-        range: 145,
-        attackCooldown: 1200,
-        splashRadius: 55,
-        dotDamage: 10,
-        dotDuration: 3000,
-        description: 'Stufe 1 (Gelb): Schleudert Säurekolben mit Giftschaden über Zeit.'
+        damage: 25,
+        range: 155,
+        attackCooldown: 1050,
+        splashRadius: 65,
+        dotDamage: 18,
+        dotDuration: 3200,
+        description: 'Stufe 1 (Gelb): Säurebombe (25 Aufprall + 18 Giftschaden pro Tick).'
       },
       {
         level: 2,
-        cost: 120,
-        damage: 28,
-        range: 175,
-        attackCooldown: 1000,
-        splashRadius: 75,
-        dotDamage: 24,
-        dotDuration: 3800,
-        description: 'Stufe 2 (Orange): Konzentriertes Gift zersetzt Panzerung.'
+        cost: 130,
+        damage: 58,
+        range: 185,
+        attackCooldown: 900,
+        splashRadius: 85,
+        dotDamage: 42,
+        dotDuration: 4000,
+        description: 'Stufe 2 (Orange): Schlangengift schmilzt Rüstung (42 DoT).'
       },
       {
         level: 3,
-        cost: 220,
-        damage: 60,
-        range: 215,
-        attackCooldown: 800,
-        splashRadius: 105,
-        dotDamage: 55,
-        dotDuration: 4800,
-        description: 'Stufe 3 (Rot): Biozid-Reaktor: Ätzende Seuchenwelle schmilzt Feindesmassen!'
+        cost: 240,
+        damage: 125,
+        range: 225,
+        attackCooldown: 750,
+        splashRadius: 115,
+        dotDamage: 90,
+        dotDuration: 5000,
+        description: 'Stufe 3 (Rot): Biozid-Kaskade: 125 Aufprall + 90 Giftschaden zersetzt Horden!'
       }
     ]
   },
@@ -189,29 +189,29 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
       {
         level: 1,
         cost: 200,
-        damage: 40,
-        range: 155,
-        attackCooldown: 1250,
+        damage: 75,
+        range: 165,
+        attackCooldown: 1100,
         chainTargets: 3,
-        description: 'Stufe 1 (Gelb): Entlädt Blitze auf 3 nahe Feinde.'
+        description: 'Stufe 1 (Gelb): Kettenblitze auf 3 Feinde (75 Schockschaden).'
       },
       {
         level: 2,
-        cost: 160,
-        damage: 85,
-        range: 185,
-        attackCooldown: 1050,
+        cost: 170,
+        damage: 160,
+        range: 195,
+        attackCooldown: 950,
         chainTargets: 5,
-        description: 'Stufe 2 (Orange): Resonanz-Plasma springt auf 5 Ziele.'
+        description: 'Stufe 2 (Orange): Hochfrequenz-Plasma auf 5 Ziele (160 Schaden).'
       },
       {
         level: 3,
-        cost: 280,
-        damage: 175,
-        range: 225,
-        attackCooldown: 850,
+        cost: 300,
+        damage: 330,
+        range: 235,
+        attackCooldown: 780,
         chainTargets: 7,
-        description: 'Stufe 3 (Rot): Donnergott-Kondensator: 7 Kettenblitze mit Schock-Schaden!'
+        description: 'Stufe 3 (Rot): Donnergott-Kondensator: 330 Blitzschaden auf 7 Feinde!'
       }
     ]
   },
@@ -225,29 +225,29 @@ export const TOWER_CONFIGS: Record<TowerType, TowerDefinition> = {
       {
         level: 1,
         cost: 220,
-        damage: 120,
-        range: 320,
-        attackCooldown: 2300,
-        critChance: 0.20,
-        description: 'Stufe 1 (Gelb): Große Reichweite, panzerbrechend & 20% Kritisch.'
+        damage: 220,
+        range: 350,
+        attackCooldown: 2000,
+        critChance: 0.25,
+        description: 'Stufe 1 (Gelb): Große Reichweite, 220 Schaden & 25% Kritischer Schuss (480 Dmg)!'
       },
       {
         level: 2,
-        cost: 180,
-        damage: 260,
-        range: 390,
-        attackCooldown: 1950,
-        critChance: 0.35,
-        description: 'Stufe 2 (Orange): Wolfram-Kaliber mit 35% kritischer Chance.'
+        cost: 190,
+        damage: 480,
+        range: 420,
+        attackCooldown: 1700,
+        critChance: 0.40,
+        description: 'Stufe 2 (Orange): Panzerbrechendes Wolfram: 480 Schaden & 40% Kritisch.'
       },
       {
         level: 3,
-        cost: 320,
-        damage: 550,
-        range: 480,
-        attackCooldown: 1600,
-        critChance: 0.50,
-        description: 'Stufe 3 (Rot): Orbital-Scharfschütze mit 50% kritischer Trefferchance (Doppelschaden)!'
+        cost: 340,
+        damage: 980,
+        range: 520,
+        attackCooldown: 1400,
+        critChance: 0.55,
+        description: 'Stufe 3 (Rot): Orbital-Kaliber: 980 Schaden & 55% Kritisch (über 2100 Schaden)!'
       }
     ]
   }

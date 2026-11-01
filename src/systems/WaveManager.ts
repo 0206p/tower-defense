@@ -75,26 +75,33 @@ export class WaveManager {
     const worldDef = WORLDS_CONFIG[this.worldId] || WORLDS_CONFIG.witch_forest;
     const isBossWave = waveNum === 10;
     const announcement = isBossWave
-      ? `FINALE WELLE 10: Boss-Invasion der ${worldDef.name}!`
-      : `Welle ${waveNum} / 10 - Feinde rücken vor!`;
+      ? `FINALE WELLE 10: Titanen-Boss greift an!`
+      : `Welle ${waveNum} / 10 - Feindlicher Vorstoß!`;
     this.onWaveAnnouncement(announcement);
 
-    // Skalierung: Basis + Missions-Faktor + Welten-Schwierigkeit
-    const worldMult = this.worldId === 'dead_mountain' ? 1.5 : this.worldId === 'goblin_caves' ? 1.25 : 1.0;
-    const missionMult = 1.0 + (this.missionNumber - 1) * 0.04;
-    const waveMult = 1.0 + (waveNum - 1) * 0.12;
+    // Faire, progressive Skalierung
+    const worldMult = this.worldId === 'dead_mountain' ? 1.35 : this.worldId === 'goblin_caves' ? 1.18 : 1.0;
+    const missionMult = 1.0 + (this.missionNumber - 1) * 0.025;
+    const waveMult = 1.0 + (waveNum - 1) * 0.08;
     const hpMult = worldMult * missionMult * waveMult;
 
-    const pool = worldDef.enemyPool as EnemyType[];
-    const spawnCount = 8 + waveNum * 2;
+    // Nur leichte Gegner in den ersten Wellen!
+    const fullPool = worldDef.enemyPool as EnemyType[];
+    let allowedPoolLength = 2; // Welle 1-2: nur Goblins & Bats
+    if (waveNum >= 3) allowedPoolLength = 3; // Welle 3-4: + Hexen / Bomber
+    if (waveNum >= 5) allowedPoolLength = 4; // Welle 5-7: + Schleime / Orks
+    if (waveNum >= 8) allowedPoolLength = fullPool.length; // Welle 8-10: schwere Trolle
+
+    const currentPool = fullPool.slice(0, allowedPoolLength);
+    const spawnCount = 6 + waveNum * 2;
     this.isSpawning = true;
     this.enemiesRemainingToSpawn = spawnCount + (isBossWave ? 1 : 0);
 
-    let cumulativeDelay = 400;
+    let cumulativeDelay = 350;
 
     for (let i = 0; i < spawnCount; i++) {
-      cumulativeDelay += Math.max(450, 1100 - waveNum * 45);
-      const enemyType = pool[i % pool.length];
+      cumulativeDelay += Math.max(500, 1100 - waveNum * 40);
+      const enemyType = currentPool[i % currentPool.length];
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
@@ -106,10 +113,10 @@ export class WaveManager {
     }
 
     if (isBossWave) {
-      cumulativeDelay += 1500;
+      cumulativeDelay += 1400;
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy('boss', hpMult * 2.2);
+          this.spawnEnemy('boss', hpMult * 1.8);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) this.isSpawning = false;
         }
@@ -151,7 +158,7 @@ export class WaveManager {
     const completedWaveNum = this.getCurrentWaveNumber();
     this.onWaveCompleted(completedWaveNum);
 
-    const waveBonus = 30 + completedWaveNum * 12;
+    const waveBonus = 35 + completedWaveNum * 12;
     this.economy.addGold(waveBonus);
 
     this.currentWaveIndex++;

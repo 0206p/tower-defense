@@ -38,28 +38,28 @@ export class Projectile extends Phaser.GameObjects.Sprite {
 
   constructor(scene: Phaser.Scene, params: ProjectileParams) {
     let textureKey = 'proj_arrow';
-    let baseSpeed = 480;
+    let baseSpeed = 520;
 
     switch (params.type) {
       case 'cannonball':
         textureKey = 'proj_cannonball';
-        baseSpeed = 350;
+        baseSpeed = 420;
         break;
       case 'ice':
         textureKey = 'proj_ice';
-        baseSpeed = 400;
+        baseSpeed = 460;
         break;
       case 'poison':
         textureKey = 'proj_poison';
-        baseSpeed = 370;
+        baseSpeed = 440;
         break;
       case 'tesla':
         textureKey = 'proj_tesla';
-        baseSpeed = 650;
+        baseSpeed = 750;
         break;
       case 'sniper':
         textureKey = 'proj_sniper';
-        baseSpeed = 950;
+        baseSpeed = 1100;
         break;
     }
 
@@ -84,9 +84,27 @@ export class Projectile extends Phaser.GameObjects.Sprite {
   }
 
   public update(time: number, delta: number): void {
+    // Zielverfolgung: Wenn Ziel stirbt, suche nächstgelegenen lebendigen Feind
     if (this.target && !this.target.isDead) {
       this.targetLastX = this.target.x;
       this.targetLastY = this.target.y;
+    } else {
+      let nearest: Enemy | null = null;
+      let minDist = 120;
+      for (const e of this.allEnemies) {
+        if (!e.isDead) {
+          const d = Math.hypot(e.x - this.x, e.y - this.y);
+          if (d < minDist) {
+            minDist = d;
+            nearest = e;
+          }
+        }
+      }
+      if (nearest) {
+        this.target = nearest;
+        this.targetLastX = nearest.x;
+        this.targetLastY = nearest.y;
+      }
     }
 
     const dx = this.targetLastX - this.x;
@@ -96,7 +114,8 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     this.rotation = Math.atan2(dy, dx);
     const moveDist = this.speed * (delta / 1000);
 
-    if (distance <= moveDist || distance < 14) {
+    // Großzügige Trefferzone (kein Durchfliegen bei schnellen Berechnungen)
+    if (distance <= moveDist || distance < 24) {
       this.hit();
     } else {
       this.x += Math.cos(this.rotation) * moveDist;
@@ -110,27 +129,39 @@ export class Projectile extends Phaser.GameObjects.Sprite {
 
     switch (this.pType) {
       case 'arrow':
-      case 'sniper':
-        if (this.target && !this.target.isDead) {
-          this.target.takeDamage(finalDamage, isCrit);
+      case 'sniper': {
+        // Falls primäres Ziel noch lebt, trifft es; andernfalls beliebigen Feind in 40px
+        let hitTarget: Enemy | null = (this.target && !this.target.isDead) ? this.target : null;
+        if (!hitTarget) {
+          for (const e of this.allEnemies) {
+            if (!e.isDead && Math.hypot(e.x - this.x, e.y - this.y) <= 45) {
+              hitTarget = e;
+              break;
+            }
+          }
+        }
+        if (hitTarget) {
+          hitTarget.takeDamage(finalDamage, isCrit);
           this.spawnHitEffect(this.x, this.y);
         }
         break;
+      }
 
-      case 'cannonball':
+      case 'cannonball': {
         this.spawnExplosionEffect(this.x, this.y);
         this.allEnemies.forEach((e) => {
           if (!e.isDead) {
             const dist = Math.hypot(e.x - this.x, e.y - this.y);
             if (dist <= this.splashRadius) {
-              const ratio = Math.max(0.5, 1 - dist / this.splashRadius);
+              const ratio = Math.max(0.6, 1 - dist / this.splashRadius);
               e.takeDamage(Math.round(finalDamage * ratio), isCrit);
             }
           }
         });
         break;
+      }
 
-      case 'ice':
+      case 'ice': {
         this.spawnFrostEffect(this.x, this.y);
         this.allEnemies.forEach((e) => {
           if (!e.isDead) {
@@ -142,8 +173,9 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           }
         });
         break;
+      }
 
-      case 'poison':
+      case 'poison': {
         this.spawnPoisonEffect(this.x, this.y);
         this.allEnemies.forEach((e) => {
           if (!e.isDead) {
@@ -155,10 +187,12 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           }
         });
         break;
+      }
 
-      case 'tesla':
+      case 'tesla': {
         this.chainLightningHit();
         break;
+      }
     }
 
     this.destroy();
@@ -171,11 +205,10 @@ export class Projectile extends Phaser.GameObjects.Sprite {
       this.target.takeDamage(this.damage);
     }
 
-    // Nächste Gegner finden
     while (hitList.length < this.chainTargets) {
       const last = hitList[hitList.length - 1] || { x: this.x, y: this.y };
       let nearest: Enemy | null = null;
-      let minDist = 120;
+      let minDist = 140;
 
       for (const e of this.allEnemies) {
         if (!e.isDead && !hitList.includes(e)) {
@@ -189,7 +222,6 @@ export class Projectile extends Phaser.GameObjects.Sprite {
 
       if (nearest) {
         hitList.push(nearest);
-        // Blitzgrafik zeichnen
         const beam = this.scene.add.graphics().setDepth(20);
         beam.lineStyle(2, 0x74b9ff, 1);
         beam.lineBetween(last.x, last.y, nearest.x, nearest.y);
@@ -199,7 +231,6 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           duration: 180,
           onComplete: () => beam.destroy()
         });
-        // 80% Schaden bei Kettensprung
         const chainDmg = Math.round(this.damage * Math.pow(0.85, hitList.length - 1));
         nearest.takeDamage(chainDmg);
       } else {
