@@ -14,6 +14,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
   }
 
   public create(): void {
+    this.input.setPollAlways();
     const bg = this.add.graphics();
     bg.fillStyle(0x110e19, 1);
     bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -81,12 +82,23 @@ export class UpgradeMenuScene extends Phaser.Scene {
       btn.add(label);
 
       btn.setSize(270, 52);
-      btn.setInteractive(new Phaser.Geom.Rectangle(0, 0, 270, 52), Phaser.Geom.Rectangle.Contains);
+      btn.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(0, 0, 270, 52),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true
+      });
 
       btn.on('pointerdown', () => {
         this.selectedTowerType = type;
         this.updateSidebarVisuals();
         this.refreshUpgradeContent();
+      });
+
+      btn.on('pointerover', () => {
+        btn.setScale(1.02);
+      });
+      btn.on('pointerout', () => {
+        btn.setScale(1.0);
       });
 
       this.towerButtons.set(type, btn);
@@ -287,11 +299,31 @@ export class UpgradeMenuScene extends Phaser.Scene {
     resetBtn.add(rLabel);
 
     resetBtn.setSize(280, 36);
-    resetBtn.setInteractive(new Phaser.Geom.Rectangle(-140, -18, 280, 36), Phaser.Geom.Rectangle.Contains);
+    resetBtn.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-140, -18, 280, 36),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
     resetBtn.on('pointerdown', () => {
       SaveSystem.resetAllUpgrades();
       this.crystalText.setText(`${SaveSystem.getCrystals()} KRISTALLE`);
       this.refreshUpgradeContent();
+    });
+    resetBtn.on('pointerover', () => {
+      rBg.clear();
+      rBg.fillStyle(0x993535, 1);
+      rBg.fillRoundedRect(-140, -18, 280, 36, 6);
+      rBg.lineStyle(2, 0xffffff, 1);
+      rBg.strokeRoundedRect(-140, -18, 280, 36, 6);
+      resetBtn.setScale(1.03);
+    });
+    resetBtn.on('pointerout', () => {
+      rBg.clear();
+      rBg.fillStyle(0x7a2828, 1);
+      rBg.fillRoundedRect(-140, -18, 280, 36, 6);
+      rBg.lineStyle(2, 0xa33b3b, 1);
+      rBg.strokeRoundedRect(-140, -18, 280, 36, 6);
+      resetBtn.setScale(1.0);
     });
 
     // Zurück-Button
@@ -303,7 +335,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
     bBg.strokeRoundedRect(-120, -18, 240, 36, 6);
     backBtn.add(bBg);
 
-    const bLabel = this.add.text(0, 0, '< ZURÜCK ZU DEN WELTEN', {
+    const bLabel = this.add.text(0, 0, 'ZURÜCK ZU DEN WELTEN', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       color: '#ffd13b'
@@ -311,9 +343,29 @@ export class UpgradeMenuScene extends Phaser.Scene {
     backBtn.add(bLabel);
 
     backBtn.setSize(240, 36);
-    backBtn.setInteractive(new Phaser.Geom.Rectangle(-120, -18, 240, 36), Phaser.Geom.Rectangle.Contains);
+    backBtn.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-120, -18, 240, 36),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
     backBtn.on('pointerdown', () => {
       this.scene.start('WorldSelectScene');
+    });
+    backBtn.on('pointerover', () => {
+      bBg.clear();
+      bBg.fillStyle(0x404b50, 1);
+      bBg.fillRoundedRect(-120, -18, 240, 36, 6);
+      bBg.lineStyle(2, 0xffffff, 1);
+      bBg.strokeRoundedRect(-120, -18, 240, 36, 6);
+      backBtn.setScale(1.03);
+    });
+    backBtn.on('pointerout', () => {
+      bBg.clear();
+      bBg.fillStyle(0x2d3436, 1);
+      bBg.fillRoundedRect(-120, -18, 240, 36, 6);
+      bBg.lineStyle(2, 0x636e72, 1);
+      bBg.strokeRoundedRect(-120, -18, 240, 36, 6);
+      backBtn.setScale(1.0);
     });
   }
 }

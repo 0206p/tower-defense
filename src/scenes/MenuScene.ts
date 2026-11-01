@@ -10,6 +10,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   public create(): void {
+    this.input.setPollAlways();
     logger.info('MenuScene', 'Hauptmenü aufgerufen');
 
     // 1. Grafik-Hintergrund: Episches Retro-Panorama
@@ -167,7 +168,7 @@ export class MenuScene extends Phaser.Scene {
       });
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 435, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 42, 0x512b7a, 0x8e44ad, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 435, '💎 TURM-SCHMIEDE', 400, 42, 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
@@ -226,7 +227,11 @@ export class MenuScene extends Phaser.Scene {
     renderAdminBg(SaveSystem.isAdminMode());
 
     adminBtn.setSize(adminWidth, adminHeight);
-    adminBtn.setInteractive(new Phaser.Geom.Rectangle(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight), Phaser.Geom.Rectangle.Contains);
+    adminBtn.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     adminBtn.on('pointerover', () => {
       renderAdminBg(SaveSystem.isAdminMode(), true);
@@ -277,10 +282,14 @@ export class MenuScene extends Phaser.Scene {
     const container = this.add.container(x, y);
 
     const bg = this.add.graphics();
-    bg.fillStyle(color, 1);
-    bg.fillRoundedRect(-width / 2, -height / 2, width, height, 8);
-    bg.lineStyle(2, borderColor, 1);
-    bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 8);
+    const renderBg = (hovered: boolean) => {
+      bg.clear();
+      bg.fillStyle(hovered ? borderColor : color, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 8);
+      bg.lineStyle(2, hovered ? 0xffffff : borderColor, 1);
+      bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 8);
+    };
+    renderBg(false);
     container.add(bg);
 
     const label = this.add.text(0, 0, text, {
@@ -294,7 +303,11 @@ export class MenuScene extends Phaser.Scene {
     container.add(label);
 
     container.setSize(width, height);
-    container.setInteractive(new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', (p: Phaser.Input.Pointer) => {
       p.event.stopPropagation();
@@ -302,10 +315,12 @@ export class MenuScene extends Phaser.Scene {
     });
 
     container.on('pointerover', () => {
+      renderBg(true);
       container.setScale(1.03);
     });
 
     container.on('pointerout', () => {
+      renderBg(false);
       container.setScale(1.0);
     });
 

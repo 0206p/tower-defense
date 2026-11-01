@@ -113,6 +113,8 @@ export class VictoryScene extends Phaser.Scene {
       color: '#4fc3f7'
     }).setOrigin(1, 0);
 
+    this.input.setPollAlways();
+
     // Buttons
     if (isDungeon) {
       this.createButton(GAME_WIDTH / 2, 490, '🏰 ERNEUT WAGEN', 320, 46, 0x4a148c, 0x8e24aa, () => {
@@ -123,7 +125,7 @@ export class VictoryScene extends Phaser.Scene {
         });
       });
 
-      this.createButton(GAME_WIDTH / 2, 545, '< HAUPTMENÜ', 320, 42, 0x2c3e50, 0x483d5a, () => {
+      this.createButton(GAME_WIDTH / 2, 545, 'HAUPTMENÜ', 320, 42, 0x2c3e50, 0x483d5a, () => {
         this.scene.start('MenuScene');
       });
     } else {
@@ -148,11 +150,11 @@ export class VictoryScene extends Phaser.Scene {
         this.scene.start('MissionSelectScene', { worldId: data.worldId });
       });
 
-      const menuBtn = this.add.text(GAME_WIDTH / 2, 605, '< ZURÜCK ZUR WELTENAUSWAHL', {
+      const menuBtn = this.add.text(GAME_WIDTH / 2, 605, 'ZURÜCK ZUR WELTENAUSWAHL', {
         fontFamily: GAME_FONT,
         fontSize: '13px',
         color: '#8a78a5'
-      }).setOrigin(0.5).setInteractive();
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
       menuBtn.on('pointerdown', () => this.scene.start('WorldSelectScene'));
       menuBtn.on('pointerover', () => menuBtn.setColor('#ffffff'));
@@ -173,10 +175,14 @@ export class VictoryScene extends Phaser.Scene {
     const container = this.add.container(x, y);
 
     const bg = this.add.graphics();
-    bg.fillStyle(color, 1);
-    bg.fillRoundedRect(-width / 2, -height / 2, width, height, 6);
-    bg.lineStyle(2, borderColor, 1);
-    bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 6);
+    const renderBg = (hovered: boolean) => {
+      bg.clear();
+      bg.fillStyle(hovered ? borderColor : color, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 6);
+      bg.lineStyle(2, hovered ? 0xffffff : borderColor, 1);
+      bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 6);
+    };
+    renderBg(false);
     container.add(bg);
 
     const label = this.add.text(0, 0, text, {
@@ -187,11 +193,21 @@ export class VictoryScene extends Phaser.Scene {
     container.add(label);
 
     container.setSize(width, height);
-    container.setInteractive(new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', onClick);
-    container.on('pointerover', () => container.setScale(1.03));
-    container.on('pointerout', () => container.setScale(1.0));
+    container.on('pointerover', () => {
+      renderBg(true);
+      container.setScale(1.03);
+    });
+    container.on('pointerout', () => {
+      renderBg(false);
+      container.setScale(1.0);
+    });
 
     return container;
   }

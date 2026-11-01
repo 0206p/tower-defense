@@ -117,6 +117,8 @@ export class GameOverScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Buttons
+    this.input.setPollAlways();
+
     this.createButton(GAME_WIDTH / 2, 435, isDungeon ? '🏰 DUNGEON NEU STARTEN' : 'ERNEUT VERSUCHEN', 300, 46, isDungeon ? 0x4a148c : 0x6e1b27, isDungeon ? 0x8e24aa : 0xa82a3d, () => {
       this.scene.start('GameScene', {
         worldId: isDungeon ? 'dungeon' : (data.worldId || 'witch_forest'),
@@ -126,12 +128,12 @@ export class GameOverScene extends Phaser.Scene {
       });
     });
 
-    this.createButton(GAME_WIDTH / 2, 490, 'TURM-SCHMIEDE (UPGRADES)', 300, 44, 0x512b7a, 0x8e44ad, () => {
+    this.createButton(GAME_WIDTH / 2, 490, 'TURM-SCHMIEDE', 300, 44, 0x512b7a, 0x8e44ad, () => {
       this.scene.start('UpgradeMenuScene');
     });
 
     if (isDungeon) {
-      this.createButton(GAME_WIDTH / 2, 545, '< HAUPTMENÜ', 300, 42, 0x2d3436, 0x636e72, () => {
+      this.createButton(GAME_WIDTH / 2, 545, 'HAUPTMENÜ', 300, 42, 0x2d3436, 0x636e72, () => {
         this.scene.start('MenuScene');
       });
     } else {
@@ -139,11 +141,11 @@ export class GameOverScene extends Phaser.Scene {
         this.scene.start('MissionSelectScene', { worldId: data.worldId || 'witch_forest' });
       });
 
-      const worldBtn = this.add.text(GAME_WIDTH / 2, 600, '< ZURÜCK ZUR WELTENAUSWAHL', {
+      const worldBtn = this.add.text(GAME_WIDTH / 2, 600, 'ZURÜCK ZUR WELTENAUSWAHL', {
         fontFamily: GAME_FONT,
         fontSize: '13px',
         color: '#8a78a5'
-      }).setOrigin(0.5).setInteractive();
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
       worldBtn.on('pointerdown', () => this.scene.start('WorldSelectScene'));
       worldBtn.on('pointerover', () => worldBtn.setColor('#ffffff'));
@@ -164,10 +166,14 @@ export class GameOverScene extends Phaser.Scene {
     const container = this.add.container(x, y);
 
     const bg = this.add.graphics();
-    bg.fillStyle(color, 1);
-    bg.fillRoundedRect(-width / 2, -height / 2, width, height, 6);
-    bg.lineStyle(2, borderColor, 1);
-    bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 6);
+    const renderBg = (hovered: boolean) => {
+      bg.clear();
+      bg.fillStyle(hovered ? borderColor : color, 1);
+      bg.fillRoundedRect(-width / 2, -height / 2, width, height, 6);
+      bg.lineStyle(2, hovered ? 0xffffff : borderColor, 1);
+      bg.strokeRoundedRect(-width / 2, -height / 2, width, height, 6);
+    };
+    renderBg(false);
     container.add(bg);
 
     const label = this.add.text(0, 0, text, {
@@ -178,11 +184,21 @@ export class GameOverScene extends Phaser.Scene {
     container.add(label);
 
     container.setSize(width, height);
-    container.setInteractive(new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
 
     container.on('pointerdown', onClick);
-    container.on('pointerover', () => container.setScale(1.03));
-    container.on('pointerout', () => container.setScale(1.0));
+    container.on('pointerover', () => {
+      renderBg(true);
+      container.setScale(1.03);
+    });
+    container.on('pointerout', () => {
+      renderBg(false);
+      container.setScale(1.0);
+    });
 
     return container;
   }

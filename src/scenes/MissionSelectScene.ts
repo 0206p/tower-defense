@@ -18,6 +18,7 @@ export class MissionSelectScene extends Phaser.Scene {
   }
 
   public create(): void {
+    this.input.setPollAlways();
     const worldDef = WORLDS_CONFIG[this.worldId];
     const bg = this.add.graphics();
     bg.fillStyle(0x110f17, 1);
@@ -45,7 +46,7 @@ export class MissionSelectScene extends Phaser.Scene {
     this.renderMissionGrid();
 
     // Zurück-Button
-    const backBtn = this.add.text(GAME_WIDTH / 2, 630, '< ZURÜCK ZUR WELTENAUSWAHL', {
+    const backBtn = this.add.text(GAME_WIDTH / 2, 630, 'ZURÜCK ZUR WELTENAUSWAHL', {
       fontFamily: GAME_FONT,
       fontSize: '16px',
       color: '#ffd13b',
@@ -127,7 +128,11 @@ export class MissionSelectScene extends Phaser.Scene {
       container.add(starText);
 
       container.setSize(w, h);
-      container.setInteractive(new Phaser.Geom.Rectangle(0, 0, w, h), Phaser.Geom.Rectangle.Contains);
+      container.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(0, 0, w, h),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true
+      });
 
       container.on('pointerdown', () => {
         SoundManager.playClick();

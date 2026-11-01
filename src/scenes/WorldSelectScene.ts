@@ -10,12 +10,14 @@ export class WorldSelectScene extends Phaser.Scene {
   }
 
   public create(): void {
+    this.input.setPollAlways();
+
     const bg = this.add.graphics();
     bg.fillStyle(0x110f17, 1);
     bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
     // Header mit gut lesbarer Schrift
-    this.add.text(GAME_WIDTH / 2, 45, 'KAMPAGNEN-WELTEN', {
+    this.add.text(GAME_WIDTH / 2, 40, 'KAMPAGNEN-WELTEN', {
       fontFamily: GAME_FONT,
       fontSize: '32px',
       color: '#ffd13b',
@@ -23,7 +25,7 @@ export class WorldSelectScene extends Phaser.Scene {
       strokeThickness: 5
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 85, 'Schließe jeweils 30 Missionen einer Welt ab, um die nächste Welt und das Dungeon freizuschalten.', {
+    this.add.text(GAME_WIDTH / 2, 75, 'Schließe jeweils 30 Missionen einer Welt ab, um die nächste Welt und das Dungeon freizuschalten.', {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#dcdde1',
@@ -33,12 +35,12 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Kristall-Anzeige oben rechts
     const crystals = SaveSystem.getCrystals();
-    const crystalLabel = this.add.text(GAME_WIDTH - 60, 45, `${crystals}`, {
+    const crystalLabel = this.add.text(GAME_WIDTH - 60, 40, `${crystals}`, {
       fontFamily: GAME_FONT,
       fontSize: '18px',
       color: '#be2edd'
     }).setOrigin(1, 0.5);
-    this.add.image(crystalLabel.x - crystalLabel.width - 16, 45, 'icon_crystal').setScale(1.3);
+    this.add.image(crystalLabel.x - crystalLabel.width - 16, 40, 'icon_crystal').setScale(1.3);
 
     // 4 Welten-Karten nebeneinander (inkl. Endgame Dungeon)
     const worldIds: WorldId[] = ['witch_forest', 'goblin_caves', 'dead_mountain', 'dungeon'];
@@ -47,16 +49,16 @@ export class WorldSelectScene extends Phaser.Scene {
     const startX = 60;
 
     worldIds.forEach((wId, idx) => {
-      this.createWorldCard(wId, startX + idx * (cardWidth + gap), 115, cardWidth, 505);
+      this.createWorldCard(wId, startX + idx * (cardWidth + gap), 105, cardWidth, 470);
     });
 
-    // Unten: Upgrade-Menü Button & Menü Button mit großer Schrift
-    this.createBottomButton(GAME_WIDTH / 2 - 180, 645, '💎 TURM-SCHMIEDE (UPGRADES)', 0x512b7a, 0x8e44ad, () => {
+    // Unten: Upgrade-Menü Button & Menü Button mit großzügigem Abstand
+    this.createBottomButton(GAME_WIDTH / 2 - 180, 648, '💎 TURM-SCHMIEDE', 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       this.scene.start('UpgradeMenuScene');
     });
 
-    this.createBottomButton(GAME_WIDTH / 2 + 180, 645, '< HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
+    this.createBottomButton(GAME_WIDTH / 2 + 180, 648, 'HAUPTMENÜ', 0x2d3436, 0x636e72, () => {
       SoundManager.playClick();
       this.scene.start('MenuScene');
     });
@@ -115,14 +117,14 @@ export class WorldSelectScene extends Phaser.Scene {
 
     for (let bx = 0; bx < 3; bx++) {
       for (let by = 0; by < 2; by++) {
-        const mini = this.add.image(w / 2 - 40 + bx * 40, 135 + by * 40, tileKey).setScale(0.9);
+        const mini = this.add.image(w / 2 - 40 + bx * 40, 125 + by * 38, tileKey).setScale(0.85);
         if (!isUnlocked) mini.setTint(0x333333);
         card.add(mini);
       }
     }
 
     // Beschreibung (Groß & lesbar)
-    const desc = this.add.text(w / 2, 255, def.description, {
+    const desc = this.add.text(w / 2, 235, def.description, {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       lineSpacing: 4,
@@ -138,10 +140,10 @@ export class WorldSelectScene extends Phaser.Scene {
       ? `FORTSCHRITT:\nALLE 30 FREI (ADMIN)`
       : `FORTSCHRITT:\n${completed} / 30 ${isKammer ? 'KAMMERN' : 'MISSIONEN'}`;
 
-    const progressText = this.add.text(w / 2, 345, progressLabel, {
+    const progressText = this.add.text(w / 2, 320, progressLabel, {
       fontFamily: GAME_FONT,
-      fontSize: '14px',
-      lineSpacing: 5,
+      fontSize: '13px',
+      lineSpacing: 4,
       color: isUnlocked ? '#ffd13b' : '#57606f',
       align: 'center',
       stroke: '#000000',
@@ -151,11 +153,15 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Button / Sperr-Text
     if (isUnlocked) {
-      const playBtn = this.add.container(w / 2, 435);
+      const playBtn = this.add.container(w / 2, 408);
       const btnBg = this.add.graphics();
-      btnBg.fillStyle(worldId === 'dungeon' ? 0x6a1b9a : 0x27ae60, 1);
+      const primaryColor = worldId === 'dungeon' ? 0x6a1b9a : 0x27ae60;
+      const borderColor = worldId === 'dungeon' ? 0xba68c8 : 0x2ecc71;
+      const hoverColor = worldId === 'dungeon' ? 0x8e24aa : 0x2ecc71;
+
+      btnBg.fillStyle(primaryColor, 1);
       btnBg.fillRoundedRect(-100, -20, 200, 40, 6);
-      btnBg.lineStyle(2, worldId === 'dungeon' ? 0xba68c8 : 0x2ecc71, 1);
+      btnBg.lineStyle(2, borderColor, 1);
       btnBg.strokeRoundedRect(-100, -20, 200, 40, 6);
       playBtn.add(btnBg);
 
@@ -169,7 +175,11 @@ export class WorldSelectScene extends Phaser.Scene {
       playBtn.add(btnLabel);
 
       playBtn.setSize(200, 40);
-      playBtn.setInteractive(new Phaser.Geom.Rectangle(-100, -20, 200, 40), Phaser.Geom.Rectangle.Contains);
+      playBtn.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(-100, -20, 200, 40),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true
+      });
 
       playBtn.on('pointerdown', () => {
         SoundManager.playClick();
@@ -179,21 +189,31 @@ export class WorldSelectScene extends Phaser.Scene {
       });
 
       playBtn.on('pointerover', () => {
+        btnBg.clear();
+        btnBg.fillStyle(hoverColor, 1);
+        btnBg.fillRoundedRect(-100, -20, 200, 40, 6);
+        btnBg.lineStyle(2, 0xffffff, 1);
+        btnBg.strokeRoundedRect(-100, -20, 200, 40, 6);
         playBtn.setScale(1.04);
       });
 
       playBtn.on('pointerout', () => {
+        btnBg.clear();
+        btnBg.fillStyle(primaryColor, 1);
+        btnBg.fillRoundedRect(-100, -20, 200, 40, 6);
+        btnBg.lineStyle(2, borderColor, 1);
+        btnBg.strokeRoundedRect(-100, -20, 200, 40, 6);
         playBtn.setScale(1.0);
       });
 
       card.add(playBtn);
     } else {
       const reqWorld = worldId === 'dungeon'
-        ? 'dem Toten Berg (30)'
+        ? 'dem Toten Berg'
         : worldId === 'dead_mountain'
         ? 'den Goblinhöhlen'
         : 'der Hexenwelt';
-      const lockText = this.add.text(w / 2, 435, `🔒 GESPERRT\nErfordert 30 Missionen\nin ${reqWorld}`, {
+      const lockText = this.add.text(w / 2, 408, `🔒 GESPERRT\nErfordert 30 Missionen\nin ${reqWorld}`, {
         fontFamily: GAME_FONT,
         fontSize: '13px',
         lineSpacing: 5,
@@ -225,9 +245,27 @@ export class WorldSelectScene extends Phaser.Scene {
     btn.add(label);
 
     btn.setSize(320, 44);
-    btn.setInteractive(new Phaser.Geom.Rectangle(-160, -22, 320, 44), Phaser.Geom.Rectangle.Contains);
+    btn.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(-160, -22, 320, 44),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+      useHandCursor: true
+    });
     btn.on('pointerdown', onClick);
-    btn.on('pointerover', () => btn.setScale(1.03));
-    btn.on('pointerout', () => btn.setScale(1.0));
+    btn.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(border, 1);
+      bg.fillRoundedRect(-160, -22, 320, 44, 6);
+      bg.lineStyle(2, 0xffffff, 1);
+      bg.strokeRoundedRect(-160, -22, 320, 44, 6);
+      btn.setScale(1.03);
+    });
+    btn.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(color, 1);
+      bg.fillRoundedRect(-160, -22, 320, 44, 6);
+      bg.lineStyle(2, border, 1);
+      bg.strokeRoundedRect(-160, -22, 320, 44, 6);
+      btn.setScale(1.0);
+    });
   }
 }
