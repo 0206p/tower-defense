@@ -5,6 +5,7 @@ import { WorldId, SaveSystem } from './SaveSystem';
 import { Enemy } from '../entities/Enemy';
 import { MapManager } from './MapManager';
 import { EconomySystem } from './EconomySystem';
+import { balancing } from './BalancingTelemetry';
 
 export class WaveManager {
   private scene: Phaser.Scene;
@@ -80,6 +81,7 @@ export class WaveManager {
     }
 
     const waveNum = this.getCurrentWaveNumber();
+    balancing.startWave(waveNum, this.worldId, this.isEndless);
     this.onWaveChange(waveNum, this.isEndless ? 0 : this.totalWaves);
 
     const worldDef = WORLDS_CONFIG[this.worldId] || WORLDS_CONFIG.witch_forest;
@@ -227,6 +229,7 @@ export class WaveManager {
 
   private handleWaveEnd(): void {
     const completedWaveNum = this.getCurrentWaveNumber();
+    balancing.finalizeWave(completedWaveNum);
     this.onWaveCompleted(completedWaveNum);
 
     const waveBonus = 20 + completedWaveNum * 6;

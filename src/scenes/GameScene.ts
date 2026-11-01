@@ -14,6 +14,7 @@ import { TowerSelectionBar } from '../ui/TowerSelectionBar';
 import { TowerInfoModal } from '../ui/TowerInfoModal';
 import { PauseModal } from '../ui/PauseModal';
 import { logger } from '../systems/GameLogger';
+import { balancing } from '../systems/BalancingTelemetry';
 
 export class GameScene extends Phaser.Scene {
   private worldId: WorldId = 'witch_forest';
@@ -63,6 +64,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   public create(): void {
+    balancing.resetAll();
     logger.info('GameScene', `Spielfeld geladen: Welt=${this.worldId}, Mission=${this.missionNumber}`);
     this.isGameOver = false;
     this.isGamePaused = false;
@@ -183,8 +185,10 @@ export class GameScene extends Phaser.Scene {
         this.deselectPlacedTower();
       },
       onUpgrade: (tower) => {
+        const cost = tower.getStats().cost;
         const success = tower.upgrade();
         if (success) {
+          balancing.recordTowerUpgrade(tower.towerType, cost);
           logger.tower(`Turm hochgestuft: ${tower.towerType} auf Stufe ${tower.currentLevel}`, {
             type: tower.towerType,
             level: tower.currentLevel,
@@ -368,6 +372,7 @@ export class GameScene extends Phaser.Scene {
       this.towers.splice(idx, 1);
     }
     const refund = tower.sell();
+    balancing.recordTowerSell(tower.towerType, refund);
     logger.tower(`Turm gelöscht/verkauft: ${tower.towerType} bei (${tower.gridCol}, ${tower.gridRow})`, {
       type: tower.towerType,
       refund
@@ -628,6 +633,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.towers.push(tower);
+    balancing.recordTowerBuild(type, TOWER_CONFIGS[type].baseCost);
     logger.tower(`Turm platziert: ${type} bei (${col}, ${row})`, {
       type,
       col,

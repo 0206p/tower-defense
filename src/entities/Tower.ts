@@ -12,6 +12,7 @@ import { Projectile, ProjectileType } from './Projectile';
 import { EconomySystem } from '../systems/EconomySystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { logger } from '../systems/GameLogger';
+import { balancing } from '../systems/BalancingTelemetry';
 
 export type TargetPriority = 'FIRST' | 'LAST' | 'STRONGEST' | 'WEAKEST' | 'CLOSEST';
 
@@ -161,6 +162,10 @@ export class Tower extends Phaser.GameObjects.Container {
     return this.currentStats;
   }
 
+  public getTowerType(): TowerType {
+    return this.towerType;
+  }
+
   public getDefinition(): TowerDefinition {
     return this.definition;
   }
@@ -230,6 +235,7 @@ export class Tower extends Phaser.GameObjects.Container {
     }
 
     this.investedGold += spec.cost;
+    balancing.recordTowerUpgrade(this.towerType, spec.cost);
     this.specialization = pathId;
     this.specializationDef = spec;
     logger.tower(`Turm spezialisiert: ${this.towerType} Pfad ${pathId} (${spec.name})`, {
@@ -368,6 +374,7 @@ export class Tower extends Phaser.GameObjects.Container {
       targets.forEach((t) => {
         const proj = new Projectile(this.scene, {
           type: this.towerType as ProjectileType,
+          sourceTowerType: this.towerType,
           startX: this.x,
           startY: this.y - 4,
           target: t,
@@ -386,6 +393,7 @@ export class Tower extends Phaser.GameObjects.Container {
     } else {
       const proj = new Projectile(this.scene, {
         type: this.towerType as ProjectileType,
+        sourceTowerType: this.towerType,
         startX: this.x,
         startY: this.y - 4,
         target: target,

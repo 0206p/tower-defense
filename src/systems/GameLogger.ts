@@ -1,4 +1,4 @@
-export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'COMBAT' | 'ECONOMY' | 'WAVE' | 'TOWER';
+export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'COMBAT' | 'ECONOMY' | 'WAVE' | 'TOWER' | 'BALANCING';
 
 export interface LogEntry {
   timestamp: number;
@@ -82,6 +82,10 @@ export class GameLogger {
 
   public economy(message: string, data?: Record<string, any>): void {
     this.log('ECONOMY', 'Economy', message, data);
+  }
+
+  public balancing(message: string, data?: Record<string, any>): void {
+    this.log('BALANCING', 'Balancing', message, data);
   }
 
   /**

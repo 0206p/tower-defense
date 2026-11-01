@@ -3,6 +3,8 @@ import { EnemyDefinition } from '../config/EnemyConfig';
 import { MapManager } from '../systems/MapManager';
 import { EconomySystem } from '../systems/EconomySystem';
 import { GAME_FONT } from '../config/GameConfig';
+import { TowerType } from '../config/TowerConfig';
+import { balancing } from '../systems/BalancingTelemetry';
 
 export class Enemy extends Phaser.GameObjects.Container {
   public config: EnemyDefinition;
@@ -28,6 +30,8 @@ export class Enemy extends Phaser.GameObjects.Container {
   private poisonDamageTick: number = 0;
   private nextPoisonTick: number = 0;
   private walkTime: number = 0;
+  private spawnTime: number = Date.now();
+  public lastDamagedByTower?: TowerType;
 
   private mapManager: MapManager;
   private economy: EconomySystem;
@@ -53,6 +57,9 @@ export class Enemy extends Phaser.GameObjects.Container {
     this.pathLength = this.path.getLength();
     this.onEnemyDeath = callbacks.onDeath;
     this.onEnemyReachedEnd = callbacks.onReachedEnd;
+    this.spawnTime = Date.now();
+
+    balancing.recordEnemySpawn(config.type);
 
     this.maxHp = Math.round(config.maxHp * hpMultiplier);
     this.currentHp = this.maxHp;
@@ -109,8 +116,13 @@ export class Enemy extends Phaser.GameObjects.Container {
     }
   }
 
-  public takeDamage(damage: number, isCrit: boolean = false, shieldPiercing: boolean = false): void {
+  public takeDamage(damage: number, isCrit: boolean = false, shieldPiercing: boolean = false, sourceTowerType?: TowerType): void {
     if (this.isDead) return;
+
+    if (sourceTowerType) {
+      this.lastDamagedByTower = sourceTowerType;
+      balancing.recordDamage(sourceTowerType, damage, isCrit, this.config.type);
+    }
 
     let damageToHp = damage;
     let hitShield = false;
@@ -224,6 +236,8 @@ export class Enemy extends Phaser.GameObjects.Container {
     if (this.isDead) return;
     this.isDead = true;
 
+    balancing.recordEnemyDeath(this.config.type, this.pathProgress, Date.now() - this.spawnTime, this.lastDamagedByTower);
+
     this.economy.addGold(this.config.rewardGold);
     this.economy.addScore(this.config.score);
 
@@ -259,6 +273,8 @@ export class Enemy extends Phaser.GameObjects.Container {
   public reachEnd(): void {
     if (this.isDead) return;
     this.isDead = true;
+
+    balancing.recordEnemyLeak(this.config.type);
 
     this.economy.loseLives(this.config.damageToPlayer);
     this.scene.cameras.main.flash(150, 200, 30, 30, true);

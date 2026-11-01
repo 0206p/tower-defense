@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
 import { Enemy } from './Enemy';
+import { TowerType } from '../config/TowerConfig';
 
 export type ProjectileType = 'arrow' | 'cannonball' | 'ice' | 'poison' | 'tesla' | 'sniper' | 'archer' | 'cannon';
 
 export interface ProjectileParams {
   type: ProjectileType;
+  sourceTowerType?: TowerType;
   startX: number;
   startY: number;
   target: Enemy;
@@ -25,6 +27,7 @@ export interface ProjectileParams {
 
 export class Projectile extends Phaser.GameObjects.Sprite {
   private pType: ProjectileType;
+  private sourceTowerType: TowerType;
   private target: Enemy;
   private targetLastX: number;
   private targetLastY: number;
@@ -78,6 +81,21 @@ export class Projectile extends Phaser.GameObjects.Sprite {
 
     super(scene, params.startX, params.startY, textureKey);
     this.pType = params.type;
+    if (params.sourceTowerType) {
+      this.sourceTowerType = params.sourceTowerType;
+    } else if (params.type === 'cannon' || params.type === 'cannonball') {
+      this.sourceTowerType = 'cannon';
+    } else if (params.type === 'ice') {
+      this.sourceTowerType = 'ice';
+    } else if (params.type === 'poison') {
+      this.sourceTowerType = 'poison';
+    } else if (params.type === 'tesla') {
+      this.sourceTowerType = 'tesla';
+    } else if (params.type === 'sniper') {
+      this.sourceTowerType = 'sniper';
+    } else {
+      this.sourceTowerType = 'archer';
+    }
     this.target = params.target;
     this.targetLastX = params.target.x;
     this.targetLastY = params.target.y;
@@ -172,9 +190,9 @@ export class Projectile extends Phaser.GameObjects.Sprite {
         if (hitTarget) {
           if (this.executeThreshold > 0 && hitTarget.currentHp <= hitTarget.maxHp * this.executeThreshold) {
             // Tödliche Exekution!
-            hitTarget.takeDamage(hitTarget.currentHp + 999, true, true);
+            hitTarget.takeDamage(hitTarget.currentHp + 999, true, true, this.sourceTowerType);
           } else {
-            hitTarget.takeDamage(finalDamage, isCrit, this.shieldPiercing);
+            hitTarget.takeDamage(finalDamage, isCrit, this.shieldPiercing, this.sourceTowerType);
           }
 
           if (this.stunDuration > 0) {
@@ -194,7 +212,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
             const dist = Math.hypot(e.x - this.x, e.y - this.y);
             if (dist <= this.splashRadius) {
               const ratio = Math.max(0.6, 1 - dist / this.splashRadius);
-              e.takeDamage(Math.round(finalDamage * ratio), isCrit, this.shieldPiercing);
+              e.takeDamage(Math.round(finalDamage * ratio), isCrit, this.shieldPiercing, this.sourceTowerType);
               if (this.stunDuration > 0) {
                 e.applyStun(this.stunDuration);
               }
@@ -213,7 +231,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           if (!e.isDead) {
             const dist = Math.hypot(e.x - this.x, e.y - this.y);
             if (dist <= this.splashRadius) {
-              e.takeDamage(finalDamage, isCrit, this.shieldPiercing);
+              e.takeDamage(finalDamage, isCrit, this.shieldPiercing, this.sourceTowerType);
               if (this.stunDuration > 0) {
                 e.applyStun(this.stunDuration);
               }
@@ -230,7 +248,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           if (!e.isDead) {
             const dist = Math.hypot(e.x - this.x, e.y - this.y);
             if (dist <= this.splashRadius) {
-              e.takeDamage(finalDamage);
+              e.takeDamage(finalDamage, false, false, this.sourceTowerType);
               if (this.dotDamage > 0) e.applyPoison(this.dotDamage, this.dotDuration);
             }
           }
@@ -251,7 +269,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     const hitList: Enemy[] = [];
     if (this.target && !this.target.isDead) {
       hitList.push(this.target);
-      this.target.takeDamage(this.damage);
+      this.target.takeDamage(this.damage, false, false, this.sourceTowerType);
     }
 
     while (hitList.length < this.chainTargets) {
@@ -281,7 +299,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
           onComplete: () => beam.destroy()
         });
         const chainDmg = Math.round(this.damage * Math.pow(0.85, hitList.length - 1));
-        nearest.takeDamage(chainDmg);
+        nearest.takeDamage(chainDmg, false, false, this.sourceTowerType);
       } else {
         break;
       }

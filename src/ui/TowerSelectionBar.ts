@@ -45,17 +45,17 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     barBg.lineBetween(0, 0, GAME_WIDTH, 0);
     this.add(barBg);
 
-    // Status-Badge links (112 x 46 px, sauber getrennt von den Karten)
+    // Status-Badge links (122 x 46 px, großzügiger Sicherheitsabstand zu den Karten)
     this.statusBadge = scene.add.graphics();
     this.statusBadge.fillStyle(0x191624, 0.95);
-    this.statusBadge.fillRoundedRect(12, 10, 114, 46, 5);
+    this.statusBadge.fillRoundedRect(12, 10, 122, 46, 6);
     this.statusBadge.lineStyle(2, 0x3d354f, 1);
-    this.statusBadge.strokeRoundedRect(12, 10, 114, 46, 5);
+    this.statusBadge.strokeRoundedRect(12, 10, 122, 46, 6);
     this.add(this.statusBadge);
 
-    this.statusTopText = scene.add.text(69, 21, 'BAUMENÜ', {
+    this.statusTopText = scene.add.text(73, 21, 'BAUMODUS', {
       fontFamily: GAME_FONT,
-      fontSize: '11px',
+      fontSize: '10px',
       fontStyle: 'bold',
       color: '#ffd13b',
       stroke: '#000000',
@@ -63,9 +63,9 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     }).setOrigin(0.5);
     this.add(this.statusTopText);
 
-    this.statusSubText = scene.add.text(69, 40, 'BEREIT', {
+    this.statusSubText = scene.add.text(73, 40, 'BEREIT', {
       fontFamily: GAME_FONT,
-      fontSize: '12px',
+      fontSize: '11px',
       fontStyle: 'bold',
       color: '#2ecc71',
       stroke: '#000000',
@@ -73,10 +73,10 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     }).setOrigin(0.5);
     this.add(this.statusSubText);
 
-    // 6 Turm-Karten mit optimierten Abständen (absolut überschneidungsfrei)
+    // 6 Turm-Karten mit optimierten Abständen (absolut überschneidungsfrei, 19px Sicherheitsabstand links)
     const towerTypes: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    const startX = 202;
-    const cardSpacing = 135;
+    const startX = 216;
+    const cardSpacing = 132;
 
     towerTypes.forEach((type, index) => {
       const card = this.createTowerCard(type, startX + index * cardSpacing, 33);
@@ -137,9 +137,12 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     if (!enabled) {
       this.statusBadge.clear();
       this.statusBadge.fillStyle(0x2a141a, 0.95);
-      this.statusBadge.fillRoundedRect(12, 10, 114, 46, 5);
+      this.statusBadge.fillRoundedRect(12, 10, 122, 46, 6);
       this.statusBadge.lineStyle(2, 0x8a2334, 1);
-      this.statusBadge.strokeRoundedRect(12, 10, 114, 46, 5);
+      this.statusBadge.strokeRoundedRect(12, 10, 122, 46, 6);
+
+      this.statusTopText.setText('WELLE AKTIV');
+      this.statusTopText.setColor('#ff9f43');
 
       this.statusSubText.setText('🔒 GESPERRT');
       this.statusSubText.setColor('#ff4757');
@@ -149,9 +152,12 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     } else {
       this.statusBadge.clear();
       this.statusBadge.fillStyle(0x191624, 0.95);
-      this.statusBadge.fillRoundedRect(12, 10, 114, 46, 5);
+      this.statusBadge.fillRoundedRect(12, 10, 122, 46, 6);
       this.statusBadge.lineStyle(2, 0x3d354f, 1);
-      this.statusBadge.strokeRoundedRect(12, 10, 114, 46, 5);
+      this.statusBadge.strokeRoundedRect(12, 10, 122, 46, 6);
+
+      this.statusTopText.setText('BAUMODUS');
+      this.statusTopText.setColor('#ffd13b');
 
       this.statusSubText.setText('BEREIT');
       this.statusSubText.setColor('#2ecc71');
@@ -171,12 +177,12 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     container.add(bg);
 
     // 1:1 Pixel-Art für perfekte Schärfe
-    const icon = this.scene.add.image(-48, 0, def.icon);
+    const icon = this.scene.add.image(-44, 0, def.icon);
     container.add(icon);
 
-    const nameText = this.scene.add.text(-24, -13, def.shortName, {
+    const nameText = this.scene.add.text(-22, -13, def.shortName, {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
+      fontSize: '12px',
       fontStyle: 'bold',
       color: '#ffffff',
       stroke: '#000000',
@@ -184,9 +190,9 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     });
     container.add(nameText);
 
-    const costText = this.scene.add.text(-24, 4, `${def.baseCost}G`, {
+    const costText = this.scene.add.text(-22, 4, `${def.baseCost}G`, {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
+      fontSize: '12px',
       fontStyle: 'bold',
       color: '#ffd13b',
       stroke: '#000000',
@@ -194,8 +200,8 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     });
     container.add(costText);
 
-    container.setSize(134, 46);
-    container.setInteractive(new Phaser.Geom.Rectangle(-67, -23, 134, 46), Phaser.Geom.Rectangle.Contains);
+    container.setSize(126, 46);
+    container.setInteractive(new Phaser.Geom.Rectangle(-63, -23, 126, 46), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -303,29 +309,29 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
       if (!this.buildEnabled) {
         card.container.setAlpha(0.5);
         card.bg.fillStyle(0x191821, 0.7);
-        card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
+        card.bg.fillRoundedRect(-63, -23, 126, 46, 6);
         card.bg.lineStyle(2, 0x3d2828, 1);
-        card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
+        card.bg.strokeRoundedRect(-63, -23, 126, 46, 6);
         card.nameText.setColor('#686075');
       } else {
         card.container.setAlpha(1.0);
         if (isSelected) {
           card.bg.fillStyle(0x384a28, 1);
-          card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.fillRoundedRect(-63, -23, 126, 46, 6);
           card.bg.lineStyle(2, 0x7eb34d, 1);
-          card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.strokeRoundedRect(-63, -23, 126, 46, 6);
           card.nameText.setColor('#ffffff');
         } else if (!canAfford) {
           card.bg.fillStyle(0x191821, 0.7);
-          card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.fillRoundedRect(-63, -23, 126, 46, 6);
           card.bg.lineStyle(2, 0x2e293a, 1);
-          card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.strokeRoundedRect(-63, -23, 126, 46, 6);
           card.nameText.setColor('#686075');
         } else {
           card.bg.fillStyle(0x282337, 1);
-          card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.fillRoundedRect(-63, -23, 126, 46, 6);
           card.bg.lineStyle(2, 0x483d5a, 1);
-          card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
+          card.bg.strokeRoundedRect(-63, -23, 126, 46, 6);
           card.nameText.setColor('#f5f0e6');
         }
       }
