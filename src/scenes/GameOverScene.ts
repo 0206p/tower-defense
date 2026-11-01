@@ -185,7 +185,7 @@ export class GameOverScene extends Phaser.Scene {
 
     container.setSize(width, height);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, width, height),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });

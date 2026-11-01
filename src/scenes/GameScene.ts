@@ -480,7 +480,7 @@ export class GameScene extends Phaser.Scene {
     this.deleteButtonContainer.add(xText);
 
     this.deleteButtonContainer.setSize(24, 24);
-    this.deleteButtonContainer.setInteractive(new Phaser.Geom.Circle(0, 0, 13), Phaser.Geom.Circle.Contains);
+    this.deleteButtonContainer.setInteractive(new Phaser.Geom.Circle(12, 12, 13), Phaser.Geom.Circle.Contains);
 
     this.deleteButtonContainer.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();

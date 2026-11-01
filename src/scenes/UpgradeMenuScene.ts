@@ -260,7 +260,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
 
       if (canAfford) {
         upBtn.setSize(170, 36);
-        upBtn.setInteractive(new Phaser.Geom.Rectangle(-85, -18, 170, 36), Phaser.Geom.Rectangle.Contains);
+        upBtn.setInteractive(new Phaser.Geom.Rectangle(0, 0, 170, 36), Phaser.Geom.Rectangle.Contains);
 
         upBtn.on('pointerdown', () => {
           if (SaveSystem.upgradeStat(this.selectedTowerType, attr.key)) {
@@ -303,7 +303,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
 
     resetBtn.setSize(btnW, 36);
     resetBtn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-halfW, -18, btnW, 36),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, btnW, 36),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -347,7 +347,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
 
     skinsBtn.setSize(btnW, 36);
     skinsBtn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-halfW, -18, btnW, 36),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, btnW, 36),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -389,7 +389,7 @@ export class UpgradeMenuScene extends Phaser.Scene {
 
     backBtn.setSize(btnW, 36);
     backBtn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-halfW, -18, btnW, 36),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, btnW, 36),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });

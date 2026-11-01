@@ -163,7 +163,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
     container.setSize(60, 28);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-32, -16, 64, 32),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 60, 28),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -221,7 +221,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
     container.setSize(36, 28);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-20, -16, 40, 32),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 36, 28),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -284,7 +284,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
     container.setSize(72, 28);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-38, -16, 76, 32),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 72, 28),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -328,7 +328,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
     container.setSize(88, 28);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-46, -16, 92, 32),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 88, 28),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -387,7 +387,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
     container.setSize(92, 28);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-46, -14, 92, 28),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 92, 28),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -439,7 +439,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
     container.setSize(190, 30);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-98, -17, 196, 34),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 190, 30),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -481,7 +481,7 @@ export class HUD extends Phaser.GameObjects.Container {
 
     if (enabled) {
       this.btnNextWave.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-98, -17, 196, 34),
+        hitArea: new Phaser.Geom.Rectangle(0, 0, 190, 30),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
       });

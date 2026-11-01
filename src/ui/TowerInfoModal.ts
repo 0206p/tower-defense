@@ -73,8 +73,7 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       color: '#e84a5f',
       stroke: '#000000',
       strokeThickness: 1.5
-    }).setOrigin(0.5);
-    closeBtn.setInteractive(new Phaser.Geom.Rectangle(-15, -15, 30, 30), Phaser.Geom.Rectangle.Contains);
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     closeBtn.on('pointerdown', (p: Phaser.Input.Pointer) => {
       p.event.stopPropagation();
       this.hide();

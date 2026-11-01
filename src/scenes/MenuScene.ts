@@ -106,13 +106,13 @@ export class MenuScene extends Phaser.Scene {
 
     updateCrystalDisplay();
 
-    // 6. Hauptmenü-Buttons (Groß, responsiv, modern gestaltet)
+    // 6. Hauptmenü-Buttons (Groß, responsiv, modern gestaltet, ohne störende Klammern)
     const maxEndlessWave = SaveSystem.getEndlessMaxWave();
     const endlessLabel = maxEndlessWave > 0
-      ? `🔥 ENDLOSMODUS (REKORD: WELLE ${maxEndlessWave})`
-      : '🔥 ENDLOSMODUS (ENDLESS SURVIVAL)';
+      ? `🔥 ENDLOSMODUS • REKORD WELLE ${maxEndlessWave}`
+      : '🔥 ENDLOSMODUS';
 
-    this.createMenuButton(GAME_WIDTH / 2, 285, '⚔️ KAMPAGNE STARTEN (4 WELTEN)', 400, 42, 0x27ae60, 0x2ecc71, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 285, '⚔️ KAMPAGNE STARTEN', 410, 42, 0x27ae60, 0x2ecc71, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Kampagne starten gewählt');
       this.scene.start('WorldSelectScene');
@@ -122,14 +122,14 @@ export class MenuScene extends Phaser.Scene {
     const isDungeonUnlocked = SaveSystem.isDungeonUnlocked();
     const dungeonRecord = SaveSystem.getDungeonMaxWave();
     const dungeonLabel = isDungeonUnlocked
-      ? (dungeonRecord > 0 ? `🏰 DUNGEON (REKORD: KAMMER ${dungeonRecord}/30)` : '🏰 DUNGEON-MODUS (30 KAMMERN)')
-      : '🔒 DUNGEON (KAMPAGNE MEISTERN)';
+      ? (dungeonRecord > 0 ? `🏰 DUNGEON • KAMMER ${dungeonRecord}/30` : '🏰 DUNGEON-MODUS')
+      : '🔒 DUNGEON • GESPERRT';
 
     this.createMenuButton(
       GAME_WIDTH / 2,
       335,
       dungeonLabel,
-      400,
+      410,
       42,
       isDungeonUnlocked ? 0x4a148c : 0x221a2e,
       isDungeonUnlocked ? 0x9c27b0 : 0x3d3250,
@@ -158,7 +158,7 @@ export class MenuScene extends Phaser.Scene {
       }
     );
 
-    this.createMenuButton(GAME_WIDTH / 2, 385, endlessLabel, 400, 42, 0xb33939, 0xff5252, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 385, endlessLabel, 410, 42, 0xb33939, 0xff5252, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Endlosmodus gestartet');
       this.scene.start('GameScene', {
@@ -168,13 +168,13 @@ export class MenuScene extends Phaser.Scene {
       });
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 - 105, 435, '💎 TURM-SCHMIEDE', 190, 42, 0x512b7a, 0x8e44ad, () => {
+    this.createMenuButton(GAME_WIDTH / 2 - 105, 435, '💎 TURM-SCHMIEDE', 200, 42, 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 + 105, 435, '🎨 TURM-SKINS', 190, 42, 0x1e3a8a, 0x3b82f6, () => {
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 435, '🎨 TURM-SKINS', 200, 42, 0x1e3a8a, 0x3b82f6, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Skins Arsenal gewählt');
       this.scene.start('SkinShopScene');
@@ -182,13 +182,13 @@ export class MenuScene extends Phaser.Scene {
 
     // Sound Toggle Button & Logs
     const soundLabel = SoundManager.getIsMuted() ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN';
-    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 488, soundLabel, 185, 34, 0x2d3436, 0x636e72, () => {
+    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 488, soundLabel, 200, 34, 0x2d3436, 0x636e72, () => {
       const muted = SoundManager.toggleMute();
       logger.info('Sound', `Musik umgeschaltet: ${muted ? 'AUS' : 'AN'}`);
       (soundBtn.getAt(1) as Phaser.GameObjects.Text).setText(muted ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 + 105, 488, '📜 LOGS EXPORT', 185, 34, 0x1e3799, 0x4a69bd, () => {
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 488, '📜 LOGS EXPORT', 200, 34, 0x1e3799, 0x4a69bd, () => {
       SoundManager.playClick();
       logger.downloadLogs(30);
     });
@@ -234,7 +234,7 @@ export class MenuScene extends Phaser.Scene {
 
     adminBtn.setSize(adminWidth, adminHeight);
     adminBtn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-adminWidth / 2, -adminHeight / 2, adminWidth, adminHeight),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, adminWidth, adminHeight),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });
@@ -300,7 +300,7 @@ export class MenuScene extends Phaser.Scene {
 
     const label = this.add.text(0, 0, text, {
       fontFamily: GAME_FONT,
-      fontSize: '15px',
+      fontSize: width < 210 ? '13px' : '15px',
       fontStyle: 'bold',
       color: '#ffffff',
       stroke: '#000000',
@@ -310,7 +310,7 @@ export class MenuScene extends Phaser.Scene {
 
     container.setSize(width, height);
     container.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, width, height),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });

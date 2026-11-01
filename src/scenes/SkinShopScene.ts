@@ -228,7 +228,7 @@ export class SkinShopScene extends Phaser.Scene {
 
       btn.setSize(btnW, btnH);
       btn.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-btnW / 2, -btnH / 2, btnW, btnH),
+        hitArea: new Phaser.Geom.Rectangle(0, 0, btnW, btnH),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
       });
@@ -293,7 +293,7 @@ export class SkinShopScene extends Phaser.Scene {
 
     btn.setSize(320, 44);
     btn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-160, -22, 320, 44),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 320, 44),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });

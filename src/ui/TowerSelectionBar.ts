@@ -201,7 +201,7 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     container.add(costText);
 
     container.setSize(126, 46);
-    container.setInteractive(new Phaser.Geom.Rectangle(-63, -23, 126, 46), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(0, 0, 126, 46), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();

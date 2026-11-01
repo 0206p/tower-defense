@@ -108,7 +108,7 @@ export class Tower extends Phaser.GameObjects.Container {
 
     this.setSize(48, 56);
     this.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-24, -28, 48, 56),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, 48, 56),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });

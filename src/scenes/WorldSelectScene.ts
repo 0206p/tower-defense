@@ -181,7 +181,7 @@ export class WorldSelectScene extends Phaser.Scene {
 
       playBtn.setSize(200, 40);
       playBtn.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(-100, -20, 200, 40),
+        hitArea: new Phaser.Geom.Rectangle(0, 0, 200, 40),
         hitAreaCallback: Phaser.Geom.Rectangle.Contains,
         useHandCursor: true
       });
@@ -252,7 +252,7 @@ export class WorldSelectScene extends Phaser.Scene {
 
     btn.setSize(btnWidth, 44);
     btn.setInteractive({
-      hitArea: new Phaser.Geom.Rectangle(-halfW, -22, btnWidth, 44),
+      hitArea: new Phaser.Geom.Rectangle(0, 0, btnWidth, 44),
       hitAreaCallback: Phaser.Geom.Rectangle.Contains,
       useHandCursor: true
     });

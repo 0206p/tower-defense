@@ -224,7 +224,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     }
 
     container.setSize(76, 76);
-    container.setInteractive(new Phaser.Geom.Rectangle(-38, -38, 76, 76), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(0, 0, 76, 76), Phaser.Geom.Rectangle.Contains);
 
     const towerObj: RTSTower = {
       container,
@@ -320,7 +320,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     container.add([shieldBarFill, hpBarFill]);
 
     container.setSize(48, 48);
-    container.setInteractive(new Phaser.Geom.Rectangle(-24, -24, 48, 48), Phaser.Geom.Rectangle.Contains);
+    container.setInteractive(new Phaser.Geom.Rectangle(0, 0, 48, 48), Phaser.Geom.Rectangle.Contains);
 
     const unitObj: RTSUnit = {
       container,
@@ -555,7 +555,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
       this.biomeButtons.set(b.key, { bg, text });
 
       container.setSize(108, 22);
-      container.setInteractive(new Phaser.Geom.Rectangle(-54, -11, 108, 22), Phaser.Geom.Rectangle.Contains);
+      container.setInteractive(new Phaser.Geom.Rectangle(0, 0, 108, 22), Phaser.Geom.Rectangle.Contains);
 
       container.on('pointerover', () => {
         if (this.currentBiome !== b.key) drawBtnBg(false, true);
@@ -619,7 +619,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     const backTxt = this.add.text(0, 0, '< MENÜ', { fontFamily: GAME_FONT, fontSize: '11px', fontStyle: 'bold', color: '#ffffff' }).setOrigin(0.5);
     backBtn.add(backTxt);
     backBtn.setSize(92, 22);
-    backBtn.setInteractive(new Phaser.Geom.Rectangle(-46, -11, 92, 22), Phaser.Geom.Rectangle.Contains);
+    backBtn.setInteractive(new Phaser.Geom.Rectangle(0, 0, 92, 22), Phaser.Geom.Rectangle.Contains);
     backBtn.on('pointerdown', () => {
       SoundManager.playClick();
       this.scene.start('MenuScene');
@@ -639,7 +639,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     }).setOrigin(0.5);
     toggleBtn.add(toggleTxt);
     toggleBtn.setSize(280, 22);
-    toggleBtn.setInteractive(new Phaser.Geom.Rectangle(-140, -11, 280, 22), Phaser.Geom.Rectangle.Contains);
+    toggleBtn.setInteractive(new Phaser.Geom.Rectangle(0, 0, 280, 22), Phaser.Geom.Rectangle.Contains);
     toggleBtn.on('pointerdown', () => {
       SoundManager.playClick();
       this.scene.start('GameScene', { worldId: 'witch_forest', missionNumber: 1 });
