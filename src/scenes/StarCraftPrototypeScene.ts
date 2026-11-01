@@ -105,7 +105,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
   }
 
   private setupTacticalPath(): void {
-    // Isometrischer Weg über die Plattform
+    // Isometrischer Weg über das Schlachtfeld
     const pathPoints = [
       { x: 80, y: 140 },
       { x: 380, y: 140 },
@@ -116,7 +116,7 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
     ];
 
     this.pathCurve = this.add.path(pathPoints[0].x, pathPoints[0].y);
-    const cr = 24;
+    const cr = 28;
 
     for (let i = 1; i < pathPoints.length; i++) {
       const prev = pathPoints[i - 1];
@@ -140,18 +140,22 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
       }
     }
 
-    // Pfad-Optik auf dem Metallboden
+    // Authentische CGI-Fahrbahn (Schlucht/Bordstein-Look)
     const pathGfx = this.add.graphics().setDepth(2);
-    // Tiefenschatten
-    pathGfx.lineStyle(38, 0x07090e, 0.7);
+    // 1. Tiefer Aushebungs-Schatten
+    pathGfx.lineStyle(56, 0x05010a, 0.85);
     this.pathCurve.draw(pathGfx);
 
-    // Hauptstraße mit Stahlplatten-Look
-    pathGfx.lineStyle(28, 0x1f2735, 0.95);
+    // 2. Erhöhte beidseitige Bordstein-Kanten (Bevel)
+    pathGfx.lineStyle(44, 0x241133, 0.95);
     this.pathCurve.draw(pathGfx);
 
-    // Cyan Führungslinie
-    pathGfx.lineStyle(2, 0x00d2ff, 0.5);
+    // 3. Fahrbahnbett (Dunkles abgenutztes Pflaster / Schleimbett)
+    pathGfx.lineStyle(34, 0x12061b, 1);
+    this.pathCurve.draw(pathGfx);
+
+    // 4. Feine taktische Wegmarkierung
+    pathGfx.lineStyle(2, 0x9333ea, 0.45);
     this.pathCurve.draw(pathGfx);
   }
 
@@ -424,22 +428,22 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
 
     // Top Resource Bar (StarCraft II Style: Minerals, Vespene, Supply, APM)
     const topBar = this.add.graphics().setDepth(50);
-    topBar.fillStyle(0x0a0e17, 0.92);
-    topBar.fillRect(0, 0, GAME_WIDTH, 38);
-    topBar.lineStyle(2, 0x334155, 1);
-    topBar.lineBetween(0, 38, GAME_WIDTH, 38);
+    topBar.fillStyle(0x0a0e17, 0.95);
+    topBar.fillRect(0, 0, GAME_WIDTH, 34);
+    topBar.lineStyle(1.5, 0x334155, 1);
+    topBar.lineBetween(0, 34, GAME_WIDTH, 34);
 
-    this.add.text(35, 11, '⛏️ MINERALIEN:', { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#38bdf8' }).setDepth(51);
-    this.mineralsText = this.add.text(145, 11, `${this.minerals}`, { fontFamily: GAME_FONT, fontSize: '14px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
+    this.add.text(24, 9, '⛏️ MINERALIEN:', { fontFamily: GAME_FONT, fontSize: '12px', fontStyle: 'bold', color: '#38bdf8' }).setDepth(51);
+    this.mineralsText = this.add.text(125, 9, `${this.minerals}`, { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
 
-    this.add.text(220, 11, '🧪 VESPENE-GAS:', { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#22c55e' }).setDepth(51);
-    this.vespeneText = this.add.text(350, 11, `${this.vespene}`, { fontFamily: GAME_FONT, fontSize: '14px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
+    this.add.text(185, 9, '🧪 VESPENE:', { fontFamily: GAME_FONT, fontSize: '12px', fontStyle: 'bold', color: '#22c55e' }).setDepth(51);
+    this.vespeneText = this.add.text(275, 9, `${this.vespene}`, { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
 
-    this.add.text(425, 11, '👥 VERSORGUNG:', { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#facc15' }).setDepth(51);
-    this.supplyText = this.add.text(545, 11, '32 / 200', { fontFamily: GAME_FONT, fontSize: '14px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
+    this.add.text(340, 9, '👥 VERSORGUNG:', { fontFamily: GAME_FONT, fontSize: '12px', fontStyle: 'bold', color: '#facc15' }).setDepth(51);
+    this.supplyText = this.add.text(455, 9, '32 / 200', { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
 
-    this.add.text(640, 11, '⚡ APM:', { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#ec4899' }).setDepth(51);
-    this.apmText = this.add.text(700, 11, `${this.currentApm}`, { fontFamily: GAME_FONT, fontSize: '14px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
+    this.add.text(535, 9, '⚡ APM:', { fontFamily: GAME_FONT, fontSize: '12px', fontStyle: 'bold', color: '#ec4899' }).setDepth(51);
+    this.apmText = this.add.text(595, 9, `${this.currentApm}`, { fontFamily: GAME_FONT, fontSize: '13px', fontStyle: 'bold', color: '#ffffff' }).setDepth(51);
   }
 
   private selectEntity(entity: RTSTower | RTSUnit): void {
@@ -497,14 +501,28 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
   }
 
   private setupBiomeSelector(): void {
+    // 1. Eigener Hintergrundbalken für Biome-Umschalter bei y=42 bis y=72
+    const subBar = this.add.graphics().setDepth(45);
+    subBar.fillStyle(0x0b0f19, 0.88);
+    subBar.fillRoundedRect(16, 42, 600, 28, 6);
+    subBar.lineStyle(1.5, 0x1e293b, 1);
+    subBar.strokeRoundedRect(16, 42, 600, 28, 6);
+
+    this.add.text(28, 49, 'KAMPFGEBIET-BIOM:', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#64748b'
+    }).setDepth(46);
+
     const biomes: { key: 'creep' | 'jungle' | 'metal'; label: string; x: number; activeColor: number }[] = [
-      { key: 'creep', label: '🟣 ZERG-CREEP', x: 85, activeColor: 0x8b5cf6 },
-      { key: 'jungle', label: '🌿 ALIEN-DSCHUNGEL', x: 220, activeColor: 0x10b981 },
-      { key: 'metal', label: '⚙️ TERRAN-BASIS', x: 350, activeColor: 0x0284c7 }
+      { key: 'creep', label: '🟣 ZERG-CREEP', x: 215, activeColor: 0x8b5cf6 },
+      { key: 'jungle', label: '🌿 ALIEN-DSCHUNGEL', x: 350, activeColor: 0x10b981 },
+      { key: 'metal', label: '⚙️ TERRAN-BASIS', x: 485, activeColor: 0x0284c7 }
     ];
 
     biomes.forEach((b) => {
-      const container = this.add.container(b.x, 19).setDepth(60);
+      const container = this.add.container(b.x, 56).setDepth(47);
       const bg = this.add.graphics();
       const isActive = this.currentBiome === b.key;
 
@@ -512,14 +530,14 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
         bg.clear();
         if (active) {
           bg.fillStyle(b.activeColor, 1);
-          bg.fillRoundedRect(-58, -12, 116, 24, 4);
+          bg.fillRoundedRect(-54, -11, 108, 22, 4);
           bg.lineStyle(2, 0xffffff, 0.9);
-          bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+          bg.strokeRoundedRect(-54, -11, 108, 22, 4);
         } else {
           bg.fillStyle(hovered ? 0x334155 : 0x1e293b, 1);
-          bg.fillRoundedRect(-58, -12, 116, 24, 4);
-          bg.lineStyle(1.5, hovered ? 0x64748b : 0x475569, 1);
-          bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+          bg.fillRoundedRect(-54, -11, 108, 22, 4);
+          bg.lineStyle(1.5, hovered ? 0x64748b : 0x334155, 1);
+          bg.strokeRoundedRect(-54, -11, 108, 22, 4);
         }
       };
 
@@ -536,8 +554,8 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
 
       this.biomeButtons.set(b.key, { bg, text });
 
-      container.setSize(116, 24);
-      container.setInteractive(new Phaser.Geom.Rectangle(-58, -12, 116, 24), Phaser.Geom.Rectangle.Contains);
+      container.setSize(108, 22);
+      container.setInteractive(new Phaser.Geom.Rectangle(-54, -11, 108, 22), Phaser.Geom.Rectangle.Contains);
 
       container.on('pointerover', () => {
         if (this.currentBiome !== b.key) drawBtnBg(false, true);
@@ -564,44 +582,54 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
             entry.bg.clear();
             if (isCur) {
               entry.bg.fillStyle(item.activeColor, 1);
-              entry.bg.fillRoundedRect(-58, -12, 116, 24, 4);
+              entry.bg.fillRoundedRect(-54, -11, 108, 22, 4);
               entry.bg.lineStyle(2, 0xffffff, 0.9);
-              entry.bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+              entry.bg.strokeRoundedRect(-54, -11, 108, 22, 4);
               entry.text.setColor('#ffffff');
             } else {
               entry.bg.fillStyle(0x1e293b, 1);
-              entry.bg.fillRoundedRect(-58, -12, 116, 24, 4);
-              entry.bg.lineStyle(1.5, 0x475569, 1);
-              entry.bg.strokeRoundedRect(-58, -12, 116, 24, 4);
+              entry.bg.fillRoundedRect(-54, -11, 108, 22, 4);
+              entry.bg.lineStyle(1.5, 0x334155, 1);
+              entry.bg.strokeRoundedRect(-54, -11, 108, 22, 4);
               entry.text.setColor('#94a3b8');
             }
           }
         });
       });
     });
+
+    // 2. Status-Pill rechts
+    this.add.text(1010, 56, '⭐ STARCRAFT II CGI PROTOTYP • 60 FPS ⭐', {
+      fontFamily: GAME_FONT,
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#38bdf8',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5).setDepth(45);
   }
 
   private setupComparisonControls(): void {
-    // 1. Zurück zum Menü
-    const backBtn = this.add.container(1210, 19).setDepth(60);
+    // 1. Zurück zum Menü (oben rechts in Zeile 1)
+    const backBtn = this.add.container(1215, 17).setDepth(60);
     const backBg = this.add.graphics();
     backBg.fillStyle(0x334155, 1);
-    backBg.fillRoundedRect(-50, -12, 100, 24, 4);
+    backBg.fillRoundedRect(-46, -11, 92, 22, 4);
     backBtn.add(backBg);
     const backTxt = this.add.text(0, 0, '< MENÜ', { fontFamily: GAME_FONT, fontSize: '11px', fontStyle: 'bold', color: '#ffffff' }).setOrigin(0.5);
     backBtn.add(backTxt);
-    backBtn.setSize(100, 24);
-    backBtn.setInteractive(new Phaser.Geom.Rectangle(-50, -12, 100, 24), Phaser.Geom.Rectangle.Contains);
+    backBtn.setSize(92, 22);
+    backBtn.setInteractive(new Phaser.Geom.Rectangle(-46, -11, 92, 22), Phaser.Geom.Rectangle.Contains);
     backBtn.on('pointerdown', () => {
       SoundManager.playClick();
       this.scene.start('MenuScene');
     });
 
-    // 2. Ansichts-Wechsler Button (Vergleich mit Classic View)
-    const toggleBtn = this.add.container(990, 19).setDepth(60);
+    // 2. Ansichts-Wechsler Button (oben rechts in Zeile 1)
+    const toggleBtn = this.add.container(990, 17).setDepth(60);
     const toggleBg = this.add.graphics();
     toggleBg.fillStyle(0x0284c7, 1);
-    toggleBg.fillRoundedRect(-140, -12, 280, 24, 4);
+    toggleBg.fillRoundedRect(-140, -11, 280, 22, 4);
     toggleBtn.add(toggleBg);
     const toggleTxt = this.add.text(0, 0, '🔄 ZURÜCK ZUR KLASSISCHEN ANSICHT', {
       fontFamily: GAME_FONT,
@@ -610,22 +638,12 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(0.5);
     toggleBtn.add(toggleTxt);
-    toggleBtn.setSize(280, 24);
-    toggleBtn.setInteractive(new Phaser.Geom.Rectangle(-140, -12, 280, 24), Phaser.Geom.Rectangle.Contains);
+    toggleBtn.setSize(280, 22);
+    toggleBtn.setInteractive(new Phaser.Geom.Rectangle(-140, -11, 280, 22), Phaser.Geom.Rectangle.Contains);
     toggleBtn.on('pointerdown', () => {
       SoundManager.playClick();
       this.scene.start('GameScene', { worldId: 'witch_forest', missionNumber: 1 });
     });
-
-    // 3. Info-Pill: RTS 2.5D Prototyp
-    this.add.text(GAME_WIDTH / 2, 54, '⭐ STARCRAFT II RTS PROTOTYP • 2.5D ISOMETRIE • 60 FPS ⭐', {
-      fontFamily: GAME_FONT,
-      fontSize: '12px',
-      fontStyle: 'bold',
-      color: '#38bdf8',
-      stroke: '#000000',
-      strokeThickness: 2
-    }).setOrigin(0.5).setDepth(45);
   }
 
   public update(time: number, delta: number): void {
@@ -649,7 +667,12 @@ export class StarCraftPrototypeScene extends Phaser.Scene {
       }
 
       const pos = this.pathCurve.getPoint(u.pathDistance);
+      const tangent = this.pathCurve.getTangent(u.pathDistance);
+      const moveAngle = Math.atan2(tangent.y, tangent.x);
+
       u.container.setPosition(pos.x, pos.y);
+      u.sprite.setRotation(moveAngle);
+      u.shadow.setRotation(moveAngle);
       u.container.setDepth(20 + Math.floor(pos.y / 10));
 
       // Schwebende Einheiten sanft wippen lassen
