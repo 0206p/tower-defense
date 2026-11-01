@@ -56,18 +56,20 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     this.statusTopText = scene.add.text(69, 21, 'BAUMENÜ', {
       fontFamily: GAME_FONT,
       fontSize: '11px',
+      fontStyle: 'bold',
       color: '#ffd13b',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     }).setOrigin(0.5);
     this.add(this.statusTopText);
 
-    this.statusSubText = scene.add.text(69, 41, 'BEREIT', {
+    this.statusSubText = scene.add.text(69, 40, 'BEREIT', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
+      fontStyle: 'bold',
       color: '#2ecc71',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     }).setOrigin(0.5);
     this.add(this.statusSubText);
 
@@ -93,26 +95,28 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
 
     this.hoverTitle = scene.add.text(12, 10, 'TURM DETAILS', {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
+      fontSize: '14px',
+      fontStyle: 'bold',
       color: '#ffd13b',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     });
     this.statsHoverPanel.add(this.hoverTitle);
 
     this.hoverStats = scene.add.text(12, 32, '', {
       fontFamily: GAME_FONT,
-      fontSize: '11px',
+      fontSize: '12px',
+      fontStyle: 'bold',
       lineSpacing: 4,
       color: '#5eead4',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     });
     this.statsHoverPanel.add(this.hoverStats);
 
     this.hoverDesc = scene.add.text(12, 75, '', {
       fontFamily: GAME_FONT,
-      fontSize: '11px',
+      fontSize: '12px',
       lineSpacing: 3,
       color: '#f5f0e6',
       wordWrap: { width: 280 }
@@ -173,18 +177,20 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     const nameText = this.scene.add.text(-24, -13, def.shortName, {
       fontFamily: GAME_FONT,
       fontSize: '13px',
+      fontStyle: 'bold',
       color: '#ffffff',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     });
     container.add(nameText);
 
     const costText = this.scene.add.text(-24, 4, `${def.baseCost}G`, {
       fontFamily: GAME_FONT,
       fontSize: '13px',
+      fontStyle: 'bold',
       color: '#ffd13b',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     });
     container.add(costText);
 

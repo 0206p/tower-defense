@@ -50,9 +50,10 @@ export class HUD extends Phaser.GameObjects.Container {
     this.livesText = scene.add.text(44, 11, `${initialLives}`, {
       fontFamily: GAME_FONT,
       fontSize: '16px',
+      fontStyle: 'bold',
       color: PALETTE.uiTextRed,
       stroke: '#000000',
-      strokeThickness: 3
+      strokeThickness: 2
     });
     this.add(this.livesText);
 
@@ -63,9 +64,10 @@ export class HUD extends Phaser.GameObjects.Container {
     this.goldText = scene.add.text(148, 11, `${initialGold}`, {
       fontFamily: GAME_FONT,
       fontSize: '16px',
+      fontStyle: 'bold',
       color: PALETTE.uiTextGold,
       stroke: '#000000',
-      strokeThickness: 3
+      strokeThickness: 2
     });
     this.add(this.goldText);
 
@@ -76,9 +78,10 @@ export class HUD extends Phaser.GameObjects.Container {
     this.waveText = scene.add.text(285, 11, 'Welle: 0 / 10', {
       fontFamily: GAME_FONT,
       fontSize: '15px',
+      fontStyle: 'bold',
       color: PALETTE.uiTextWhite,
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     });
     this.add(this.waveText);
 
@@ -86,9 +89,10 @@ export class HUD extends Phaser.GameObjects.Container {
     this.scoreText = scene.add.text(465, 11, 'Punkte: 0', {
       fontFamily: GAME_FONT,
       fontSize: '15px',
+      fontStyle: 'bold',
       color: PALETTE.uiTextBlue,
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     });
     this.add(this.scoreText);
 
@@ -238,6 +242,7 @@ export class HUD extends Phaser.GameObjects.Container {
     const text = this.scene.add.text(0, 0, '⛶ VOLLBILD', {
       fontFamily: GAME_FONT,
       fontSize: '11px',
+      fontStyle: 'bold',
       color: '#e4deec'
     }).setOrigin(0.5);
     container.add(text);
@@ -287,9 +292,10 @@ export class HUD extends Phaser.GameObjects.Container {
     this.nextWaveLabel = this.scene.add.text(0, 0, 'WELLE STARTEN', {
       fontFamily: GAME_FONT,
       fontSize: '13px',
+      fontStyle: 'bold',
       color: '#ffffff',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     }).setOrigin(0.5);
     container.add(this.nextWaveLabel);
 

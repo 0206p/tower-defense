@@ -98,16 +98,23 @@ export class MenuScene extends Phaser.Scene {
     // Exakt zentrierte "Verfügbare Kristalle"-Anzeige
     const crystals = SaveSystem.getCrystals();
     const crystalStr = `VERFÜGBARE KRISTALLE: ${crystals}`;
-    const crystalText = this.add.text(GAME_WIDTH / 2 + 16, 348, crystalStr, {
+    const crystalContainer = this.add.container(GAME_WIDTH / 2, 348);
+    
+    const crystalText = this.add.text(0, 0, crystalStr, {
       fontFamily: GAME_FONT,
-      fontSize: '18px',
-      color: '#be2edd',
+      fontSize: '17px',
+      fontStyle: 'bold',
+      color: '#c586fa',
       stroke: '#000000',
-      strokeThickness: 3
-    }).setOrigin(0.5);
+      strokeThickness: 2
+    }).setOrigin(0, 0.5);
 
-    const iconX = GAME_WIDTH / 2 - crystalText.width / 2 - 8;
-    this.add.image(iconX, 348, 'icon_crystal').setScale(1.3);
+    const totalWidth = 32 + 8 + crystalText.width;
+    const startX = -totalWidth / 2;
+    const crystalIcon = this.add.image(startX + 14, 0, 'icon_crystal').setScale(1.3).setOrigin(0.5);
+    crystalText.setX(startX + 34);
+    
+    crystalContainer.add([crystalIcon, crystalText]);
 
     // Haupt-Aktions-Buttons
     this.createButton(GAME_WIDTH / 2, 420, 'KAMPAGNE WÄHLEN', 380, 58, 0x27ae60, 0x2ecc71, () => {

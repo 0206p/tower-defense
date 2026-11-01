@@ -58,19 +58,21 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
 
     this.titleText = scene.add.text(14, 10, 'TURM DETAILS', {
       fontFamily: GAME_FONT,
-      fontSize: '13px',
+      fontSize: '14px',
+      fontStyle: 'bold',
       color: '#ffd13b',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     });
     this.add(this.titleText);
 
     const closeBtn = scene.add.text(305, 14, '✕', {
       fontFamily: GAME_FONT,
-      fontSize: '15px',
+      fontSize: '16px',
+      fontStyle: 'bold',
       color: '#e84a5f',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1.5
     }).setOrigin(0.5);
     closeBtn.setInteractive(new Phaser.Geom.Rectangle(-15, -15, 30, 30), Phaser.Geom.Rectangle.Contains);
     closeBtn.on('pointerdown', (p: Phaser.Input.Pointer) => {
@@ -82,21 +84,23 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     // Gut lesbare Stats
     this.statsText = scene.add.text(16, 46, '', {
       fontFamily: GAME_FONT,
-      fontSize: '12px',
-      lineSpacing: 4,
+      fontSize: '13px',
+      fontStyle: '500',
+      lineSpacing: 5,
       color: '#f5f0e6',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1
     });
     this.add(this.statsText);
 
     this.upgradeInfoText = scene.add.text(16, 150, '', {
       fontFamily: GAME_FONT,
-      fontSize: '11px',
+      fontSize: '12px',
+      fontStyle: '500',
       lineSpacing: 4,
       color: '#5cd670',
       stroke: '#000000',
-      strokeThickness: 2,
+      strokeThickness: 1,
       wordWrap: { width: 295 }
     });
     this.add(this.upgradeInfoText);
@@ -186,10 +190,11 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
 
     const text = this.scene.add.text(w / 2, h / 2, label, {
       fontFamily: GAME_FONT,
-      fontSize: '11px',
+      fontSize: '12px',
+      fontStyle: 'bold',
       color: '#ffffff',
       stroke: '#000000',
-      strokeThickness: 2
+      strokeThickness: 1
     }).setOrigin(0.5);
     container.add(text);
 

@@ -10,7 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
       * {
         box-sizing: border-box;
@@ -29,7 +29,9 @@
         padding: 0;
         overflow: hidden;
         background-color: #0c0a12;
-        font-family: 'Chakra Petch', 'Segoe UI', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
         color: #f4eedb;
       }
       #game-container {
@@ -42,12 +44,13 @@
         height: 100%;
         overflow: hidden;
         background-color: #0c0a12;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       canvas {
         display: block;
-        image-rendering: pixelated;
-        image-rendering: -moz-crisp-edges;
-        image-rendering: crisp-edges;
+        image-rendering: auto;
       }
     </style>
   </head>

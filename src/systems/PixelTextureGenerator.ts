@@ -13,7 +13,10 @@ export class PixelTextureGenerator {
       if (ctx) {
         ctx.imageSmoothingEnabled = false;
         drawFn(ctx);
-        tm.addCanvas(key, canvas);
+        const tex = tm.addCanvas(key, canvas);
+        if (tex) {
+          tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+        }
       }
     };
 
