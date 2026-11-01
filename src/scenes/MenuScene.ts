@@ -111,13 +111,13 @@ export class MenuScene extends Phaser.Scene {
       ? `🔥 ENDLOSMODUS (REKORD: WELLE ${maxEndlessWave})`
       : '🔥 ENDLOSMODUS (ENDLESS SURVIVAL)';
 
-    this.createMenuButton(GAME_WIDTH / 2, 292, '⚔️ KAMPAGNE STARTEN', 400, 48, 0x27ae60, 0x2ecc71, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 270, '⚔️ KAMPAGNE STARTEN', 400, 44, 0x27ae60, 0x2ecc71, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Kampagne starten gewählt');
       this.scene.start('WorldSelectScene');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 348, endlessLabel, 400, 48, 0xb33939, 0xff5252, () => {
+    this.createMenuButton(GAME_WIDTH / 2, 322, endlessLabel, 400, 44, 0xb33939, 0xff5252, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Endlosmodus gestartet');
       this.scene.start('GameScene', {
@@ -127,7 +127,47 @@ export class MenuScene extends Phaser.Scene {
       });
     });
 
-    this.createMenuButton(GAME_WIDTH / 2, 404, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 46, 0x512b7a, 0x8e44ad, () => {
+    // Neuer Spielmodus: Dungeon (am Ende der Kampagne freigeschaltet)
+    const isDungeonUnlocked = SaveSystem.isDungeonUnlocked();
+    const dungeonRecord = SaveSystem.getDungeonMaxWave();
+    const dungeonLabel = isDungeonUnlocked
+      ? (dungeonRecord > 0 ? `🏰 DUNGEON (REKORD: KAMMER ${dungeonRecord}/30)` : '🏰 DUNGEON-MODUS (30 KAMMERN)')
+      : '🔒 DUNGEON (KAMPAGNE MEISTERN)';
+
+    this.createMenuButton(
+      GAME_WIDTH / 2,
+      374,
+      dungeonLabel,
+      400,
+      44,
+      isDungeonUnlocked ? 0x4a148c : 0x221a2e,
+      isDungeonUnlocked ? 0x9c27b0 : 0x3d3250,
+      () => {
+        if (!SaveSystem.isDungeonUnlocked()) {
+          SoundManager.playDeny();
+          logger.info('MenuScene', 'Dungeon versucht, aber noch gesperrt');
+          hint.setText('🔒 Das Dungeon öffnet sich erst nach Beendigung aller 3 Welten (je 30 Missionen)!');
+          hint.setColor('#ff7675');
+          this.tweens.add({
+            targets: hint,
+            scaleX: { from: 1.1, to: 1.0 },
+            scaleY: { from: 1.1, to: 1.0 },
+            duration: 300
+          });
+          return;
+        }
+
+        SoundManager.playClick();
+        logger.info('MenuScene', 'Dungeon-Modus gestartet');
+        this.scene.start('GameScene', {
+          worldId: 'dungeon',
+          missionNumber: 1,
+          isDungeon: true
+        });
+      }
+    );
+
+    this.createMenuButton(GAME_WIDTH / 2, 426, '💎 TURM-SCHMIEDE (UPGRADES)', 400, 42, 0x512b7a, 0x8e44ad, () => {
       SoundManager.playClick();
       logger.info('MenuScene', 'Turm-Schmiede gewählt');
       this.scene.start('UpgradeMenuScene');
@@ -135,13 +175,13 @@ export class MenuScene extends Phaser.Scene {
 
     // Sound Toggle Button & Logs
     const soundLabel = SoundManager.getIsMuted() ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN';
-    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 460, soundLabel, 185, 38, 0x2d3436, 0x636e72, () => {
+    const soundBtn = this.createMenuButton(GAME_WIDTH / 2 - 105, 476, soundLabel, 185, 36, 0x2d3436, 0x636e72, () => {
       const muted = SoundManager.toggleMute();
       logger.info('Sound', `Musik umgeschaltet: ${muted ? 'AUS' : 'AN'}`);
       (soundBtn.getAt(1) as Phaser.GameObjects.Text).setText(muted ? '🔊 MUSIK: AUS' : '🔊 MUSIK: AN');
     });
 
-    this.createMenuButton(GAME_WIDTH / 2 + 105, 460, '📜 LOGS EXPORT', 185, 38, 0x1e3799, 0x4a69bd, () => {
+    this.createMenuButton(GAME_WIDTH / 2 + 105, 476, '📜 LOGS EXPORT', 185, 36, 0x1e3799, 0x4a69bd, () => {
       SoundManager.playClick();
       logger.downloadLogs(30);
     });
@@ -151,10 +191,10 @@ export class MenuScene extends Phaser.Scene {
       return active ? '⚡ ADMIN-MODUS: AN' : '⚡ ADMIN-MODUS: AUS';
     };
 
-    const adminBtn = this.add.container(GAME_WIDTH / 2, 514);
+    const adminBtn = this.add.container(GAME_WIDTH / 2, 524);
     const adminBg = this.add.graphics();
     const adminWidth = 260;
-    const adminHeight = 38;
+    const adminHeight = 36;
 
     const renderAdminBg = (active: boolean, hovered: boolean = false) => {
       adminBg.clear();
@@ -199,19 +239,15 @@ export class MenuScene extends Phaser.Scene {
     adminBtn.on('pointerdown', () => {
       const active = SaveSystem.toggleAdminMode();
       SoundManager.playUpgrade();
-      logger.info('AdminMode', `Admin-Modus ${active ? 'EINGESCHALTET (9999999999 Kristalle & alle Missionen frei)' : 'AUSGESCHALTET'}`);
-      renderAdminBg(active, true);
-      adminLabel.setText(getAdminBtnText(active));
-      adminLabel.setColor(active ? '#fef08a' : '#9e97b0');
-      updateCrystalDisplay();
-
-      if (active) {
-        this.cameras.main.flash(220, 255, 215, 0, false);
-      }
+      logger.info('AdminMode', `Admin-Modus ${active ? 'EINGESCHALTET (9999999999 Kristalle, alle Missionen & Dungeon frei)' : 'AUSGESCHALTET'}`);
+      this.cameras.main.flash(220, 255, 215, 0, false);
+      this.time.delayedCall(150, () => {
+        this.scene.restart();
+      });
     });
 
     // Subtiler Fußnoten-Text
-    const hint = this.add.text(GAME_WIDTH / 2, 572, 'Endlosmodus: Überlebe unendliche Wellen & verdiene alle 5 Wellen Bonus-Kristalle!', {
+    const hint = this.add.text(GAME_WIDTH / 2, 572, 'Dungeon-Modus: 30 gnadenlose Kammern für Meister der Kampagne!', {
       fontFamily: GAME_FONT,
       fontSize: '12px',
       color: '#f5f0e6',

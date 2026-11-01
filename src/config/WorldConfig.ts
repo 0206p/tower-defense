@@ -27,7 +27,7 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     textColor: '#c586fa',
     bgHex: '#1b1226',
     description: 'Dichte Nebelwälder voller giftiger Pilze, fliegender Hexen und scheuer Schattenwesen.',
-    totalMissions: 50,
+    totalMissions: 30,
     unlockedByDefault: true,
     enemyPool: ['goblin', 'bat', 'witch', 'slime', 'swamp_troll'],
     bossKey: 'boss_witch'
@@ -42,7 +42,7 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     textColor: '#ffb347',
     bgHex: '#1a1410',
     description: 'Tiefste Schächte der Goblin-Horde mit Fackeln, Sprengmeistern und Höhlenschlägern.',
-    totalMissions: 50,
+    totalMissions: 30,
     unlockedByDefault: false,
     enemyPool: ['cave_goblin', 'bomber', 'orc', 'armored_troll', 'golem'],
     bossKey: 'boss_goblin_king'
@@ -57,10 +57,25 @@ export const WORLDS_CONFIG: Record<WorldId, WorldDefinition> = {
     textColor: '#ff6b6b',
     bgHex: '#240a0a',
     description: 'Brennender Obsidian und fließende Magma. Die Heimat uralter Dämonen und Lavagolems.',
-    totalMissions: 50,
+    totalMissions: 30,
     unlockedByDefault: false,
     enemyPool: ['fire_imp', 'magma_orc', 'lava_golem', 'fire_drake', 'hellhound'],
     bossKey: 'boss_mountain_titan'
+  },
+  dungeon: {
+    id: 'dungeon',
+    name: 'Das Dungeon-Gewölbe',
+    subtitle: 'Katakomben der Verdammnis',
+    difficulty: 'MYTHISCH',
+    difficultyColor: '#a855f7',
+    themeColor: 0x3b1d60,
+    textColor: '#d8b4fe',
+    bgHex: '#0c0714',
+    description: 'Uralte unterirdische Hallen. Finsteres Mauerwerk, Runenfallen und 30 gnadenlose Kammern.',
+    totalMissions: 30,
+    unlockedByDefault: false,
+    enemyPool: ['cave_goblin', 'bomber', 'orc', 'witch', 'armored_troll', 'golem', 'magma_orc', 'lava_golem', 'boss'],
+    bossKey: 'boss_dungeon_overlord'
   }
 };
 

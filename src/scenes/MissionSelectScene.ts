@@ -6,7 +6,6 @@ import { SoundManager } from '../systems/SoundManager';
 
 export class MissionSelectScene extends Phaser.Scene {
   private worldId: WorldId = 'witch_forest';
-  private currentPage: number = 0; // 0: 1-25, 1: 26-50
 
   constructor() {
     super({ key: 'MissionSelectScene' });
@@ -25,7 +24,7 @@ export class MissionSelectScene extends Phaser.Scene {
     bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
     // Header mit gut lesbarer Schrift
-    this.add.text(GAME_WIDTH / 2, 40, `${worldDef.name.toUpperCase()} - MISSIONEN`, {
+    this.add.text(GAME_WIDTH / 2, 38, `${worldDef.name.toUpperCase()} - MISSIONEN`, {
       fontFamily: GAME_FONT,
       fontSize: '28px',
       color: worldDef.textColor,
@@ -34,7 +33,7 @@ export class MissionSelectScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const progress = SaveSystem.getData().worlds[this.worldId] || { completedMissions: 0, stars: {} };
-    this.add.text(GAME_WIDTH / 2, 75, `Abgeschlossen: ${progress.completedMissions} / 50 Missionen. Jede Mission dauert 10 Wellen.`, {
+    this.add.text(GAME_WIDTH / 2, 72, `Abgeschlossen: ${progress.completedMissions} / 30 Missionen. Jede Mission dauert 10 Wellen.`, {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#dcdde1',
@@ -42,21 +41,8 @@ export class MissionSelectScene extends Phaser.Scene {
       strokeThickness: 2
     }).setOrigin(0.5);
 
-    // Grid rendern
+    // Alle 30 Missionen auf einer übersichtlichen Seite rendern
     this.renderMissionGrid();
-
-    // Seiten-Tabs
-    const pageBtn1 = this.createPageTab(GAME_WIDTH / 2 - 90, 560, '1 - 25', this.currentPage === 0, () => {
-      SoundManager.playClick();
-      this.currentPage = 0;
-      this.scene.restart({ worldId: this.worldId });
-    });
-
-    const pageBtn2 = this.createPageTab(GAME_WIDTH / 2 + 90, 560, '26 - 50', this.currentPage === 1, () => {
-      SoundManager.playClick();
-      this.currentPage = 1;
-      this.scene.restart({ worldId: this.worldId });
-    });
 
     // Zurück-Button
     const backBtn = this.add.text(GAME_WIDTH / 2, 630, '< ZURÜCK ZUR WELTENAUSWAHL', {
@@ -77,18 +63,18 @@ export class MissionSelectScene extends Phaser.Scene {
 
   private renderMissionGrid(): void {
     const progress = SaveSystem.getData().worlds[this.worldId] || { completedMissions: 0, stars: {} };
-    const startMission = this.currentPage * 25 + 1;
 
-    const cols = 5;
-    const tileW = 170;
-    const tileH = 76;
-    const spacingX = 35;
-    const spacingY = 14;
-    const startX = (GAME_WIDTH - (cols * tileW + (cols - 1) * spacingX)) / 2;
-    const startY = 105;
+    const cols = 6;
+    const tileW = 168;
+    const tileH = 74;
+    const spacingX = 26;
+    const spacingY = 16;
+    const totalW = cols * tileW + (cols - 1) * spacingX;
+    const startX = (GAME_WIDTH - totalW) / 2;
+    const startY = 108;
 
-    for (let i = 0; i < 25; i++) {
-      const missionNum = startMission + i;
+    for (let i = 0; i < 30; i++) {
+      const missionNum = i + 1;
       const c = i % cols;
       const r = Math.floor(i / cols);
       const x = startX + c * (tileW + spacingX);
@@ -176,28 +162,5 @@ export class MissionSelectScene extends Phaser.Scene {
       }).setOrigin(0.5);
       container.add(lockText);
     }
-  }
-
-  private createPageTab(x: number, y: number, label: string, isActive: boolean, onClick: () => void): Phaser.GameObjects.Container {
-    const container = this.add.container(x, y);
-    const bg = this.add.graphics();
-    bg.fillStyle(isActive ? 0x27ae60 : 0x221f2d, 1);
-    bg.fillRoundedRect(-55, -18, 110, 36, 4);
-    bg.lineStyle(2, isActive ? 0x2ecc71 : 0x3d354a, 1);
-    bg.strokeRoundedRect(-55, -18, 110, 36, 4);
-    container.add(bg);
-
-    const txt = this.add.text(0, 0, label, {
-      fontFamily: GAME_FONT,
-      fontSize: '14px',
-      color: isActive ? '#ffffff' : '#8c829e'
-    }).setOrigin(0.5);
-    container.add(txt);
-
-    container.setSize(110, 36);
-    container.setInteractive(new Phaser.Geom.Rectangle(-55, -18, 110, 36), Phaser.Geom.Rectangle.Contains);
-    container.on('pointerdown', onClick);
-
-    return container;
   }
 }

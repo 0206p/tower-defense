@@ -19,8 +19,8 @@ export class MapManager {
   private grassTufts: Map<string, Phaser.GameObjects.Image> = new Map();
   private ambientParticles: Phaser.GameObjects.GameObject[] = [];
   private streamTiles: GridPoint[] = [];
-  private treeTiles: { col: number; row: number; type: 'oak' | 'pine' | 'dead' | 'stalagmite' }[] = [];
-  private rockTiles: { col: number; row: number; type: 'granite' | 'ore' | 'volcanic' }[] = [];
+  private treeTiles: { col: number; row: number; type: 'oak' | 'pine' | 'dead' | 'stalagmite' | 'dungeon_pillar' }[] = [];
+  private rockTiles: { col: number; row: number; type: 'granite' | 'ore' | 'volcanic' | 'dungeon_torch' }[] = [];
   private critters: Phaser.GameObjects.GameObject[] = [];
   private critterTimers: Phaser.Time.TimerEvent[] = [];
 
@@ -171,11 +171,37 @@ export class MapManager {
       ]
     ];
 
+    // 4. Das Dungeon-Gewölbe: Finsteres Labyrinth mit rituellen Kammern
+    const dungeonVariants: GridPoint[][] = [
+      // Variante 1: Katakomben des Schreckens (Doppelt gewundene Halle)
+      [
+        { col: 0, row: 3 }, { col: 11, row: 3 }, { col: 11, row: 13 },
+        { col: 5, row: 13 }, { col: 5, row: 8 }, { col: 19, row: 8 },
+        { col: 19, row: 14 }, { col: 26, row: 14 }, { col: 26, row: 5 },
+        { col: 31, row: 5 }
+      ],
+      // Variante 2: Die Kerkerschleife
+      [
+        { col: 0, row: 6 }, { col: 8, row: 6 }, { col: 8, row: 2 },
+        { col: 22, row: 2 }, { col: 22, row: 10 }, { col: 14, row: 10 },
+        { col: 14, row: 14 }, { col: 27, row: 14 }, { col: 27, row: 7 },
+        { col: 31, row: 7 }
+      ],
+      // Variante 3: Thronsaal des Dungeon-Lords
+      [
+        { col: 0, row: 4 }, { col: 12, row: 4 }, { col: 12, row: 12 },
+        { col: 18, row: 12 }, { col: 18, row: 4 }, { col: 25, row: 4 },
+        { col: 25, row: 11 }, { col: 31, row: 11 }
+      ]
+    ];
+
     let currentVariants = witchForestVariants;
     if (this.worldId === 'goblin_caves') {
       currentVariants = goblinCavesVariants;
     } else if (this.worldId === 'dead_mountain') {
       currentVariants = deadMountainVariants;
+    } else if (this.worldId === 'dungeon') {
+      currentVariants = dungeonVariants;
     }
 
     const variantIndex = (missionNumber - 1) % currentVariants.length;
@@ -270,13 +296,15 @@ export class MapManager {
     treeCandidates.forEach((cand, idx) => {
       if (treesPlaced < maxTrees && this.grid[cand.row] && this.grid[cand.row][cand.col] === 0) {
         this.grid[cand.row][cand.col] = 2;
-        let treeType: 'oak' | 'pine' | 'dead' | 'stalagmite' = 'oak';
+        let treeType: 'oak' | 'pine' | 'dead' | 'stalagmite' | 'dungeon_pillar' = 'oak';
         if (this.worldId === 'witch_forest') {
           treeType = (idx % 2 === 0) ? 'oak' : 'pine';
         } else if (this.worldId === 'goblin_caves') {
           treeType = 'stalagmite';
-        } else {
+        } else if (this.worldId === 'dead_mountain') {
           treeType = 'dead';
+        } else {
+          treeType = 'dungeon_pillar';
         }
         this.treeTiles.push({ col: cand.col, row: cand.row, type: treeType });
         treesPlaced++;
@@ -295,9 +323,10 @@ export class MapManager {
     rockCandidates.forEach((cand) => {
       if (rocksPlaced < maxRocks && this.grid[cand.row] && this.grid[cand.row][cand.col] === 0) {
         this.grid[cand.row][cand.col] = 2;
-        let rockType: 'granite' | 'ore' | 'volcanic' = 'granite';
+        let rockType: 'granite' | 'ore' | 'volcanic' | 'dungeon_torch' = 'granite';
         if (this.worldId === 'goblin_caves') rockType = 'ore';
         else if (this.worldId === 'dead_mountain') rockType = 'volcanic';
+        else if (this.worldId === 'dungeon') rockType = 'dungeon_torch';
         this.rockTiles.push({ col: cand.col, row: cand.row, type: rockType });
         rocksPlaced++;
       }
@@ -347,6 +376,9 @@ export class MapManager {
     } else if (this.worldId === 'dead_mountain') {
       groundKey = 'tile_ground_mountain';
       pathKey = 'tile_path_mountain';
+    } else if (this.worldId === 'dungeon') {
+      groundKey = 'tile_ground_dungeon';
+      pathKey = 'tile_path_dungeon';
     }
 
     // 1. Hintergrund-Kacheln mit optimierter Kachelschärfe
@@ -451,6 +483,7 @@ export class MapManager {
       if (tree.type === 'pine') texKey = 'decor_tree_pine';
       else if (tree.type === 'dead') texKey = 'decor_tree_dead';
       else if (tree.type === 'stalagmite') texKey = 'decor_stalagmite_huge';
+      else if (tree.type === 'dungeon_pillar') texKey = 'decor_dungeon_pillar';
 
       const treeImg = this.scene.add.image(x, y + TILE_SIZE / 2 - 2, texKey).setOrigin(0.5, 1.0).setDepth(3);
 
@@ -472,8 +505,19 @@ export class MapManager {
       let texKey = 'decor_rock_granite';
       if (rock.type === 'ore') texKey = 'decor_rock_ore';
       else if (rock.type === 'volcanic') texKey = 'decor_rock_volcanic';
+      else if (rock.type === 'dungeon_torch') texKey = 'decor_dungeon_torch';
 
-      this.scene.add.image(x, y, texKey).setOrigin(0.5).setDepth(2);
+      const rockImg = this.scene.add.image(x, y, texKey).setOrigin(0.5).setDepth(2);
+      if (rock.type === 'dungeon_torch') {
+        this.scene.tweens.add({
+          targets: rockImg,
+          alpha: { from: 0.85, to: 1.0 },
+          scaleY: { from: 0.96, to: 1.04 },
+          duration: 400 + Math.random() * 300,
+          yoyo: true,
+          repeat: -1
+        });
+      }
     });
 
     // 8. Startportal & Schloss
@@ -657,6 +701,37 @@ export class MapManager {
         });
         this.critterTimers.push(crawlTimer);
       }
+    } else if (this.worldId === 'dungeon') {
+      // 4. Dungeon-Gewölbe: Krabbelnde Höhlenspinnen
+      const spiderCount = 5;
+      for (let i = 0; i < spiderCount; i++) {
+        const sx = Phaser.Math.Between(80, GRID_COLS * TILE_SIZE - 80);
+        const sy = Phaser.Math.Between(90, 15 * TILE_SIZE);
+        const spider = this.scene.add.image(sx, sy, 'critter_spider').setOrigin(0.5).setDepth(2);
+        this.critters.push(spider);
+
+        const spiderTimer = this.scene.time.addEvent({
+          delay: Phaser.Math.Between(2500, 5000),
+          loop: true,
+          callback: () => {
+            if (!spider.active || !this.scene || !this.scene.sys.isActive()) return;
+            const dx = Phaser.Math.Between(-35, 35);
+            const dy = Phaser.Math.Between(-15, 15);
+            const targetX = Phaser.Math.Clamp(spider.x + dx, 50, GRID_COLS * TILE_SIZE - 50);
+            const targetY = Phaser.Math.Clamp(spider.y + dy, 60, 15 * TILE_SIZE);
+            spider.setFlipX(dx < 0);
+
+            this.scene.tweens.add({
+              targets: spider,
+              x: targetX,
+              y: targetY,
+              duration: 450,
+              ease: 'Power1'
+            });
+          }
+        });
+        this.critterTimers.push(spiderTimer);
+      }
     }
   }
 
@@ -670,9 +745,10 @@ export class MapManager {
   }
 
   private spawnAmbientAtmosphere(): void {
-    const particleCount = this.worldId === 'dead_mountain' ? 24 : 18;
+    const particleCount = this.worldId === 'dead_mountain' ? 24 : (this.worldId === 'dungeon' ? 22 : 18);
     const isMountain = this.worldId === 'dead_mountain';
     const isWitch = this.worldId === 'witch_forest';
+    const isDungeon = this.worldId === 'dungeon';
 
     for (let i = 0; i < particleCount; i++) {
       const px = Phaser.Math.Between(20, GRID_COLS * TILE_SIZE - 20);
@@ -686,6 +762,10 @@ export class MapManager {
         color = Math.random() > 0.4 ? 0xff4757 : 0xffa502;
         alpha = 0.75;
         size = 2.5;
+      } else if (isDungeon) {
+        color = Math.random() > 0.4 ? 0xa855f7 : 0x7c3aed;
+        alpha = 0.75;
+        size = 2.2;
       } else if (isWitch) {
         color = Math.random() > 0.5 ? 0x2ecc71 : 0xbe2edd;
       } else {
@@ -698,12 +778,12 @@ export class MapManager {
 
       this.scene.tweens.add({
         targets: p,
-        y: py - (isMountain ? Phaser.Math.Between(50, 120) : Phaser.Math.Between(20, 60)),
+        y: py - (isMountain || isDungeon ? Phaser.Math.Between(50, 120) : Phaser.Math.Between(20, 60)),
         x: px + Phaser.Math.Between(-25, 25),
         alpha: { from: alpha, to: 0.1 },
         duration: Phaser.Math.Between(2000, 4500),
         repeat: -1,
-        yoyo: !isMountain,
+        yoyo: !isMountain && !isDungeon,
         delay: Phaser.Math.Between(0, 2500)
       });
     }

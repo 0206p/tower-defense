@@ -9,6 +9,7 @@ export interface VictoryData {
   gold: number;
   lives: number;
   stars: number;
+  isDungeon?: boolean;
 }
 
 export class VictoryScene extends Phaser.Scene {
@@ -17,28 +18,39 @@ export class VictoryScene extends Phaser.Scene {
   }
 
   public create(data: VictoryData): void {
+    const isDungeon = !!data.isDungeon;
+
     const bg = this.add.graphics();
-    bg.fillStyle(0x0e1c12, 1);
+    bg.fillStyle(isDungeon ? 0x0a0514 : 0x0e1c12, 1);
     bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
     const panel = this.add.graphics();
-    panel.fillStyle(0x152b1b, 0.95);
+    panel.fillStyle(isDungeon ? 0x170d2b : 0x152b1b, 0.95);
     panel.fillRoundedRect(GAME_WIDTH / 2 - 340, 70, 680, 560, 10);
-    panel.lineStyle(3, 0xd4af37, 1);
+    panel.lineStyle(3, isDungeon ? 0xa855f7 : 0xd4af37, 1);
     panel.strokeRoundedRect(GAME_WIDTH / 2 - 340, 70, 680, 560, 10);
 
-    this.add.text(GAME_WIDTH / 2, 130, 'MISSION ERFOLGREICH!', {
+    const titleText = isDungeon ? 'DUNGEON-LORD BEZWUNGEN!' : 'MISSION ERFOLGREICH!';
+    this.add.text(GAME_WIDTH / 2, 125, titleText, {
       fontFamily: GAME_FONT,
-      fontSize: '34px',
-      color: '#ffd13b',
+      fontSize: '32px',
+      color: isDungeon ? '#d8b4fe' : '#ffd13b',
       stroke: '#000000',
       strokeThickness: 5
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 170, `Mission ${data.missionNumber} - Alle 10 Wellen bezwungen!`, {
+    const subTitle = isDungeon
+      ? 'Alle 30 finsteren Kammern des Dungeons wurden bezwungen!'
+      : (data.missionNumber === 30 && data.worldId === 'dead_mountain'
+          ? '🎉 KAMPAGNE BEENDET! DER DUNGEON-MODUS IST JETZT FREIGESCHALTET!'
+          : `Mission ${data.missionNumber} von 30 - Alle 10 Wellen bezwungen!`);
+
+    this.add.text(GAME_WIDTH / 2, 168, subTitle, {
       fontFamily: GAME_FONT,
-      fontSize: '15px',
-      color: '#a3e8b0'
+      fontSize: '14px',
+      color: isDungeon ? '#c084fc' : '#a3e8b0',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
 
     // Sterne (1 bis 3)
@@ -49,13 +61,13 @@ export class VictoryScene extends Phaser.Scene {
     this.add.text(GAME_WIDTH / 2, 215, starStr.trim(), {
       fontFamily: GAME_FONT,
       fontSize: '34px',
-      color: '#ffd13b'
+      color: isDungeon ? '#d8b4fe' : '#ffd13b'
     }).setOrigin(0.5);
 
     // Kristall-Belohnung
-    const crystalsEarned = (data.stars || 1) * 25 + 50;
-    this.add.image(GAME_WIDTH / 2 - 120, 265, 'icon_crystal').setScale(1.2);
-    this.add.text(GAME_WIDTH / 2 - 100, 265, `+${crystalsEarned} Kristalle für die Turm-Schmiede!`, {
+    const crystalsEarned = isDungeon ? 1000 : ((data.stars || 1) * 25 + 50);
+    this.add.image(GAME_WIDTH / 2 - 130, 265, 'icon_crystal').setScale(1.2);
+    this.add.text(GAME_WIDTH / 2 - 110, 265, `+${crystalsEarned} Kristalle für die Turm-Schmiede!`, {
       fontFamily: GAME_FONT,
       fontSize: '14px',
       color: '#be2edd'
@@ -63,9 +75,9 @@ export class VictoryScene extends Phaser.Scene {
 
     // Statistik-Box
     const statBox = this.add.graphics();
-    statBox.fillStyle(0x0a160d, 0.85);
+    statBox.fillStyle(isDungeon ? 0x0e071a : 0x0a160d, 0.85);
     statBox.fillRoundedRect(GAME_WIDTH / 2 - 220, 300, 440, 150, 6);
-    statBox.lineStyle(2, 0x2e5e39, 1);
+    statBox.lineStyle(2, isDungeon ? 0x4c1d95 : 0x2e5e39, 1);
     statBox.strokeRoundedRect(GAME_WIDTH / 2 - 220, 300, 440, 150, 6);
 
     this.add.text(GAME_WIDTH / 2 - 180, 325, `Verbliebene Leben:`, {
@@ -101,29 +113,51 @@ export class VictoryScene extends Phaser.Scene {
       color: '#4fc3f7'
     }).setOrigin(1, 0);
 
-    // Buttons: Nächste Mission & Zurück
-    if (data.missionNumber < 50) {
-      this.createButton(GAME_WIDTH / 2, 490, `NÄCHSTE MISSION (${data.missionNumber + 1})`, 320, 46, 0x215428, 0x3d8c47, () => {
+    // Buttons
+    if (isDungeon) {
+      this.createButton(GAME_WIDTH / 2, 490, '🏰 ERNEUT WAGEN', 320, 46, 0x4a148c, 0x8e24aa, () => {
         this.scene.start('GameScene', {
-          worldId: data.worldId,
-          missionNumber: data.missionNumber + 1
+          worldId: 'dungeon',
+          missionNumber: 1,
+          isDungeon: true
         });
       });
+
+      this.createButton(GAME_WIDTH / 2, 545, '< HAUPTMENÜ', 320, 42, 0x2c3e50, 0x483d5a, () => {
+        this.scene.start('MenuScene');
+      });
+    } else {
+      if (data.missionNumber < 30) {
+        this.createButton(GAME_WIDTH / 2, 490, `NÄCHSTE MISSION (${data.missionNumber + 1})`, 320, 46, 0x215428, 0x3d8c47, () => {
+          this.scene.start('GameScene', {
+            worldId: data.worldId,
+            missionNumber: data.missionNumber + 1
+          });
+        });
+      } else if (data.worldId === 'dead_mountain') {
+        this.createButton(GAME_WIDTH / 2, 490, '🏰 ZUM DUNGEON-MODUS', 320, 46, 0x4a148c, 0x8e24aa, () => {
+          this.scene.start('GameScene', {
+            worldId: 'dungeon',
+            missionNumber: 1,
+            isDungeon: true
+          });
+        });
+      }
+
+      this.createButton(GAME_WIDTH / 2, 545, 'MISSIONSAUSWAHL', 320, 42, 0x2c3e50, 0x483d5a, () => {
+        this.scene.start('MissionSelectScene', { worldId: data.worldId });
+      });
+
+      const menuBtn = this.add.text(GAME_WIDTH / 2, 605, '< ZURÜCK ZUR WELTENAUSWAHL', {
+        fontFamily: GAME_FONT,
+        fontSize: '13px',
+        color: '#8a78a5'
+      }).setOrigin(0.5).setInteractive();
+
+      menuBtn.on('pointerdown', () => this.scene.start('WorldSelectScene'));
+      menuBtn.on('pointerover', () => menuBtn.setColor('#ffffff'));
+      menuBtn.on('pointerout', () => menuBtn.setColor('#8a78a5'));
     }
-
-    this.createButton(GAME_WIDTH / 2, 545, 'MISSIONSAUSWAHL', 320, 42, 0x2c3e50, 0x483d5a, () => {
-      this.scene.start('MissionSelectScene', { worldId: data.worldId });
-    });
-
-    const menuBtn = this.add.text(GAME_WIDTH / 2, 605, '< ZURÜCK ZUR WELTENAUSWAHL', {
-      fontFamily: GAME_FONT,
-      fontSize: '13px',
-      color: '#8a78a5'
-    }).setOrigin(0.5).setInteractive();
-
-    menuBtn.on('pointerdown', () => this.scene.start('WorldSelectScene'));
-    menuBtn.on('pointerover', () => menuBtn.setColor('#ffffff'));
-    menuBtn.on('pointerout', () => menuBtn.setColor('#8a78a5'));
   }
 
   private createButton(

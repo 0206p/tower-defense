@@ -464,6 +464,75 @@ export class PixelTextureGenerator {
       ctx.fill();
     });
 
+    create('tile_ground_dungeon', 40, 40, (ctx) => {
+      // Dunkle gotische Kerkerplatten mit antiken Fugen
+      ctx.fillStyle = '#120b1f';
+      ctx.fillRect(0, 0, 40, 40);
+
+      ctx.fillStyle = '#1b122e';
+      ctx.fillRect(1, 1, 18, 18);
+      ctx.fillRect(21, 1, 18, 18);
+      ctx.fillRect(1, 21, 18, 18);
+      ctx.fillRect(21, 21, 18, 18);
+
+      ctx.strokeStyle = '#090410';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, 0.5, 39, 39);
+      ctx.beginPath();
+      ctx.moveTo(20, 0); ctx.lineTo(20, 40);
+      ctx.moveTo(0, 20); ctx.lineTo(40, 20);
+      ctx.stroke();
+
+      // Zarte arkane Runenfurche
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(6, 14); ctx.lineTo(14, 6); ctx.lineTo(14, 14);
+      ctx.stroke();
+    });
+
+    create('tile_path_dungeon', 40, 40, (ctx) => {
+      // Dunkler Kerkergang mit Runenkristall
+      ctx.fillStyle = '#0a0514';
+      ctx.fillRect(0, 0, 40, 40);
+
+      // Feste Kanten
+      ctx.fillStyle = '#311054';
+      ctx.fillRect(0, 0, 3, 40);
+      ctx.fillRect(37, 0, 3, 40);
+
+      const slabs = [2, 12, 22, 32];
+      slabs.forEach((sy, i) => {
+        ctx.fillStyle = i % 2 === 0 ? '#1f1335' : '#271743';
+        ctx.fillRect(4, sy, 32, 8);
+      });
+
+      // Leuchtende magische Weg-Rune
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath();
+      ctx.arc(20, 20, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    create('tile_decor_dungeon', 40, 40, (ctx) => {
+      // Dungeon-Säule
+      ctx.fillStyle = '#1c1030';
+      ctx.fillRect(10, 6, 20, 28);
+      ctx.strokeStyle = '#4c1d95';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(10, 6, 20, 28);
+
+      const grad = ctx.createRadialGradient(20, 14, 1, 20, 14, 8);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.35, '#c084fc');
+      grad.addColorStop(0.8, '#7e22ce');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(20, 14, 8, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
     // ==========================================
     // 4. WEHENDES GRAS (MODERNE VEKTOR-HALME)
     // ==========================================
@@ -898,6 +967,74 @@ export class PixelTextureGenerator {
       ctx.arc(13, 8, 1.5, 0, Math.PI * 2);
       ctx.arc(16, 7, 1.2, 0, Math.PI * 2);
       ctx.fill();
+    });
+
+    // Krabbelnde Dungeon-Spinne
+    create('critter_spider', 22, 22, (ctx) => {
+      // Körper
+      ctx.fillStyle = '#1c102a';
+      ctx.beginPath();
+      ctx.ellipse(11, 11, 4.5, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rote Augen
+      ctx.fillStyle = '#ff3838';
+      ctx.fillRect(13, 9, 1.5, 1.5);
+      ctx.fillRect(13, 11, 1.5, 1.5);
+
+      // 8 Beine
+      ctx.strokeStyle = '#3d2556';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(11, 8); ctx.lineTo(5, 5);
+      ctx.moveTo(11, 10); ctx.lineTo(4, 10);
+      ctx.moveTo(11, 12); ctx.lineTo(4, 13);
+      ctx.moveTo(11, 14); ctx.lineTo(5, 18);
+      ctx.moveTo(11, 8); ctx.lineTo(17, 5);
+      ctx.moveTo(11, 10); ctx.lineTo(18, 10);
+      ctx.moveTo(11, 12); ctx.lineTo(18, 13);
+      ctx.moveTo(11, 14); ctx.lineTo(17, 18);
+      ctx.stroke();
+    });
+
+    // Dungeon Fackelhalter / Wandbecken mit violetter Flamme
+    create('decor_dungeon_torch', 28, 36, (ctx) => {
+      // Schmiedeeiserner Halter
+      ctx.fillStyle = '#1e1b24';
+      ctx.fillRect(11, 16, 6, 16);
+      ctx.fillStyle = '#2d2738';
+      ctx.beginPath();
+      ctx.ellipse(14, 16, 8, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Violette arkane Flamme
+      const flameGrad = ctx.createRadialGradient(14, 10, 1, 14, 10, 9);
+      flameGrad.addColorStop(0, '#ffffff');
+      flameGrad.addColorStop(0.3, '#d8b4fe');
+      flameGrad.addColorStop(0.7, '#9333ea');
+      flameGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = flameGrad;
+      ctx.beginPath();
+      ctx.ellipse(14, 10, 6, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Gotische Dungeon-Säule
+    create('decor_dungeon_pillar', 32, 44, (ctx) => {
+      // Sockel
+      ctx.fillStyle = '#160e22';
+      ctx.fillRect(4, 34, 24, 8);
+      ctx.fillStyle = '#241738';
+      ctx.fillRect(6, 10, 20, 24);
+      ctx.fillStyle = '#32204d';
+      ctx.fillRect(4, 4, 24, 6);
+
+      // Leuchtender Runen-Riss
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(16, 12); ctx.lineTo(13, 20); ctx.lineTo(17, 26);
+      ctx.stroke();
     });
 
     // ==========================================

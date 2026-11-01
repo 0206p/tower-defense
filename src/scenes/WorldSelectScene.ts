@@ -23,7 +23,7 @@ export class WorldSelectScene extends Phaser.Scene {
       strokeThickness: 5
     }).setOrigin(0.5);
 
-    this.add.text(GAME_WIDTH / 2, 85, 'Schließe 50 Missionen einer Welt ab, um die nächste Welt freizuschalten.', {
+    this.add.text(GAME_WIDTH / 2, 85, 'Schließe jeweils 30 Missionen einer Welt ab, um die nächste Welt freizuschalten.', {
       fontFamily: GAME_FONT,
       fontSize: '15px',
       color: '#dcdde1',
@@ -126,8 +126,8 @@ export class WorldSelectScene extends Phaser.Scene {
 
     // Fortschritt
     const progressLabel = SaveSystem.isAdminMode()
-      ? `FORTSCHRITT:\nALLE 50 FREI (ADMIN)`
-      : `FORTSCHRITT:\n${completed} / 50 MISSIONEN`;
+      ? `FORTSCHRITT:\nALLE 30 FREI (ADMIN)`
+      : `FORTSCHRITT:\n${completed} / 30 MISSIONEN`;
 
     const progressText = this.add.text(w / 2, 345, progressLabel, {
       fontFamily: GAME_FONT,
@@ -180,7 +180,7 @@ export class WorldSelectScene extends Phaser.Scene {
       card.add(playBtn);
     } else {
       const reqWorld = worldId === 'goblin_caves' ? 'der Hexenwelt' : 'den Goblinhöhlen';
-      const lockText = this.add.text(w / 2, 420, `🔒 GESPERRT\nErfordert 50 Missionen\nin ${reqWorld}`, {
+      const lockText = this.add.text(w / 2, 420, `🔒 GESPERRT\nErfordert 30 Missionen\nin ${reqWorld}`, {
         fontFamily: GAME_FONT,
         fontSize: '13px',
         lineSpacing: 5,

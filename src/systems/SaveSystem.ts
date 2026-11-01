@@ -1,9 +1,9 @@
-export type WorldId = 'witch_forest' | 'goblin_caves' | 'dead_mountain';
+export type WorldId = 'witch_forest' | 'goblin_caves' | 'dead_mountain' | 'dungeon';
 
 export interface WorldProgress {
   unlocked: boolean;
-  completedMissions: number; // 0 bis 50
-  stars: Record<number, number>; // missionNum (1..50) -> 1..3 stars
+  completedMissions: number; // 0 bis 30
+  stars: Record<number, number>; // missionNum (1..30) -> 1..3 stars
 }
 
 export interface TowerMetaUpgrade {
@@ -20,6 +20,9 @@ export interface SaveData {
   selectedMission: number;
   endlessHighScore: number;
   endlessMaxWave: number;
+  dungeonHighScore?: number;
+  dungeonMaxWave?: number;
+  dungeonUnlocked?: boolean;
   worlds: Record<WorldId, WorldProgress>;
   towerUpgrades: Record<string, TowerMetaUpgrade>;
 }
@@ -31,6 +34,9 @@ const DEFAULT_SAVE: SaveData = {
   selectedMission: 1,
   endlessHighScore: 0,
   endlessMaxWave: 0,
+  dungeonHighScore: 0,
+  dungeonMaxWave: 0,
+  dungeonUnlocked: false,
   worlds: {
     witch_forest: {
       unlocked: true,
@@ -43,6 +49,11 @@ const DEFAULT_SAVE: SaveData = {
       stars: {}
     },
     dead_mountain: {
+      unlocked: false,
+      completedMissions: 0,
+      stars: {}
+    },
+    dungeon: {
       unlocked: false,
       completedMissions: 0,
       stars: {}
@@ -107,7 +118,7 @@ export class SaveSystem {
         };
 
         // Absicherung: worlds und completedMissions immer als Zahl
-        (['witch_forest', 'goblin_caves', 'dead_mountain'] as WorldId[]).forEach((wId) => {
+        (['witch_forest', 'goblin_caves', 'dead_mountain', 'dungeon'] as WorldId[]).forEach((wId) => {
           if (!data.worlds[wId]) {
             data.worlds[wId] = { unlocked: wId === 'witch_forest', completedMissions: 0, stars: {} };
           }
@@ -192,12 +203,22 @@ export class SaveSystem {
     if (this.adminMode) return true;
     if (worldId === 'witch_forest') return true;
     if (worldId === 'goblin_caves') {
-      return (this.data.worlds.witch_forest.completedMissions || 0) >= 50;
+      return (this.data.worlds.witch_forest.completedMissions || 0) >= 30;
     }
     if (worldId === 'dead_mountain') {
-      return (this.data.worlds.goblin_caves.completedMissions || 0) >= 50;
+      return (this.data.worlds.goblin_caves.completedMissions || 0) >= 30;
+    }
+    if (worldId === 'dungeon') {
+      return this.isDungeonUnlocked();
     }
     return false;
+  }
+
+  public static isDungeonUnlocked(): boolean {
+    if (this.adminMode) return true;
+    if (this.data.dungeonUnlocked) return true;
+    const dm = this.data.worlds.dead_mountain;
+    return !!dm && Number(dm.completedMissions || 0) >= 30;
   }
 
   public static isMissionUnlocked(worldId: WorldId, missionNum: number): boolean {
@@ -232,14 +253,54 @@ export class SaveSystem {
 
     this.data.totalScore += scoreEarned;
 
-    // Nach 50 Missionen nächste Welt freischalten
-    if (worldId === 'witch_forest' && world.completedMissions >= 50) {
+    // Nach 30 Missionen jeweils die nächste Welt oder Dungeon freischalten
+    if (worldId === 'witch_forest' && world.completedMissions >= 30) {
       this.data.worlds.goblin_caves.unlocked = true;
-    } else if (worldId === 'goblin_caves' && world.completedMissions >= 50) {
+    } else if (worldId === 'goblin_caves' && world.completedMissions >= 30) {
       this.data.worlds.dead_mountain.unlocked = true;
+    } else if (worldId === 'dead_mountain' && world.completedMissions >= 30) {
+      this.data.dungeonUnlocked = true;
     }
 
     this.save();
+  }
+
+  public static getDungeonHighScore(): number {
+    return this.data.dungeonHighScore || 0;
+  }
+
+  public static getDungeonMaxWave(): number {
+    return this.data.dungeonMaxWave || 0;
+  }
+
+  public static completeDungeon(score: number): void {
+    this.data.crystals += 1000;
+    this.data.totalScore += score;
+    this.data.dungeonMaxWave = 30;
+    if (score > (this.data.dungeonHighScore || 0)) {
+      this.data.dungeonHighScore = score;
+    }
+    this.save();
+  }
+
+  public static saveDungeonResult(wave: number, score: number): { isNewWaveRecord: boolean; isNewScoreRecord: boolean } {
+    let isNewWaveRecord = false;
+    let isNewScoreRecord = false;
+
+    if (wave > (this.data.dungeonMaxWave || 0)) {
+      this.data.dungeonMaxWave = wave;
+      isNewWaveRecord = true;
+    }
+
+    if (score > (this.data.dungeonHighScore || 0)) {
+      this.data.dungeonHighScore = score;
+      isNewScoreRecord = true;
+    }
+
+    this.data.totalScore += score;
+    this.data.crystals += Math.max(15, wave * 20);
+    this.save();
+    return { isNewWaveRecord, isNewScoreRecord };
   }
 
   public static getTowerUpgrade(towerType: string): TowerMetaUpgrade {

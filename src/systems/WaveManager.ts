@@ -17,6 +17,7 @@ export class WaveManager {
   private currentWaveIndex: number = 0;
   private totalWaves: number = 10;
   private isEndless: boolean = false;
+  private isDungeon: boolean = false;
   private isSpawning: boolean = false;
   private enemiesRemainingToSpawn: number = 0;
   private activeEnemies: Enemy[] = [];
@@ -38,7 +39,8 @@ export class WaveManager {
       onAllWavesCompleted: () => void;
       onWaveAnnouncement: (text: string) => void;
     },
-    isEndless: boolean = false
+    isEndless: boolean = false,
+    isDungeon: boolean = false
   ) {
     this.scene = scene;
     this.mapManager = mapManager;
@@ -50,13 +52,21 @@ export class WaveManager {
     this.onAllWavesCompleted = callbacks.onAllWavesCompleted;
     this.onWaveAnnouncement = callbacks.onWaveAnnouncement;
     this.isEndless = isEndless;
+    this.isDungeon = isDungeon;
+
     if (this.isEndless) {
       this.totalWaves = 999999;
+    } else if (this.isDungeon) {
+      this.totalWaves = 30;
     }
   }
 
   public getIsEndless(): boolean {
     return this.isEndless;
+  }
+
+  public getIsDungeon(): boolean {
+    return this.isDungeon;
   }
 
   public getCurrentWaveNumber(): number {
@@ -85,11 +95,25 @@ export class WaveManager {
     this.onWaveChange(waveNum, this.isEndless ? 0 : this.totalWaves);
 
     const worldDef = WORLDS_CONFIG[this.worldId] || WORLDS_CONFIG.witch_forest;
-    const isBossWave = this.isEndless ? waveNum % 10 === 0 : waveNum === 10;
-    const isMiniBossWave = this.isEndless && !isBossWave && waveNum % 5 === 0;
+    const isBossWave = this.isEndless
+      ? waveNum % 10 === 0
+      : (this.isDungeon ? (waveNum === 30 || waveNum % 10 === 0) : waveNum === 10);
+    const isMiniBossWave = this.isEndless
+      ? (!isBossWave && waveNum % 5 === 0)
+      : (this.isDungeon ? (!isBossWave && waveNum % 5 === 0) : false);
 
     let announcement = `Welle ${waveNum} / 10 - Feindlicher Vorstoß!`;
-    if (this.isEndless) {
+    if (this.isDungeon) {
+      if (waveNum === 30) {
+        announcement = `⚠️ FINALE KAMMER 30: DER KERKERMEISTER ERWACHT!`;
+      } else if (isBossWave) {
+        announcement = `⚔️ DUNGEON-BOSS KAMMER ${waveNum}: Ein finsterer Titan bricht hervor!`;
+      } else if (isMiniBossWave) {
+        announcement = `⚠️ KAMMER ${waveNum} / 30: Elite-Vorhut nähert sich!`;
+      } else {
+        announcement = `🏰 DUNGEON - KAMMER ${waveNum} / 30`;
+      }
+    } else if (this.isEndless) {
       if (isBossWave) {
         announcement = `⚔️ ENDLOS-BOSS WELLE ${waveNum}: Titanen erwachen!`;
       } else if (isMiniBossWave) {
@@ -106,7 +130,19 @@ export class WaveManager {
     let currentPool: EnemyType[] = [];
     let spawnCount = 6;
 
-    if (this.isEndless) {
+    if (this.isDungeon) {
+      // Dungeon-Skalierung über 30 anspruchsvolle Kammern
+      hpMult = 1.35 + (waveNum - 1) * 0.065 + Math.pow((waveNum - 1) / 29, 1.3) * 1.6;
+      spawnCount = Math.min(30, 8 + Math.floor(waveNum * 0.75));
+
+      const allDungeonTypes: EnemyType[] = [
+        'cave_goblin', 'bat', 'witch', 'slime', 'bomber',
+        'orc', 'armored_troll', 'golem', 'fire_imp', 'magma_orc',
+        'hellhound', 'lava_golem'
+      ];
+      const poolLen = Math.min(allDungeonTypes.length, 3 + Math.floor(waveNum / 3));
+      currentPool = allDungeonTypes.slice(0, poolLen);
+    } else if (this.isEndless) {
       // Endlosmodus-Skalierung: graduell, fordernd, aber mathematisch fair
       hpMult = 1.0 + (waveNum - 1) * 0.08 + Math.pow(Math.max(0, waveNum - 5) * 0.02, 1.25);
       spawnCount = Math.min(28, 6 + Math.floor(waveNum * 0.7));
@@ -120,15 +156,15 @@ export class WaveManager {
       const poolSize = Math.min(allTypes.length, 3 + Math.floor(waveNum / 2));
       currentPool = allTypes.slice(0, poolSize);
     } else {
-      // Kampagnen-Skalierung
+      // Kampagnen-Skalierung (3 Welten x 30 Missionen = 90 Missionen insgesamt)
       const worldMult = this.worldId === 'dead_mountain' ? 1.25 : this.worldId === 'goblin_caves' ? 1.12 : 1.0;
       const globalMission = this.worldId === 'dead_mountain'
-        ? 100 + this.missionNumber
+        ? 60 + this.missionNumber
         : this.worldId === 'goblin_caves'
-        ? 50 + this.missionNumber
+        ? 30 + this.missionNumber
         : this.missionNumber;
 
-      const progressRatio = Math.max(0, (globalMission - 1) / 149);
+      const progressRatio = Math.max(0, (globalMission - 1) / 89);
       const missionMult = 1.0 + Math.pow(progressRatio, 1.2) * 1.5;
       const waveMult = 1.0 + (waveNum - 1) * 0.045;
       hpMult = worldMult * missionMult * waveMult;
@@ -239,6 +275,10 @@ export class WaveManager {
       const bonusCrystals = 10 + Math.floor(completedWaveNum / 5) * 5;
       SaveSystem.addCrystals(bonusCrystals);
       this.onWaveAnnouncement(`💎 MEILENSTEIN WELLE ${completedWaveNum}! +${bonusCrystals} KRISTALLE!`);
+    } else if (this.isDungeon && completedWaveNum % 5 === 0) {
+      const bonusCrystals = 25 + Math.floor(completedWaveNum / 5) * 10;
+      SaveSystem.addCrystals(bonusCrystals);
+      this.onWaveAnnouncement(`💎 KAMMER ${completedWaveNum} GEMEISTERT! +${bonusCrystals} KRISTALLE!`);
     }
 
     this.currentWaveIndex++;

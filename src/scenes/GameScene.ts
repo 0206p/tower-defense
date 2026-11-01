@@ -20,6 +20,7 @@ export class GameScene extends Phaser.Scene {
   private worldId: WorldId = 'witch_forest';
   private missionNumber: number = 1;
   private isEndless: boolean = false;
+  private isDungeon: boolean = false;
 
   private mapManager!: MapManager;
   private economy!: EconomySystem;
@@ -56,11 +57,12 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
-  public init(data: { worldId?: WorldId; missionNumber?: number; isEndless?: boolean }): void {
+  public init(data: { worldId?: WorldId; missionNumber?: number; isEndless?: boolean; isDungeon?: boolean }): void {
     if (data.worldId) this.worldId = data.worldId;
     if (data.missionNumber) this.missionNumber = data.missionNumber;
     this.isEndless = !!data.isEndless;
-    logger.info('GameScene', `Mission initialisiert: Welt=${this.worldId}, Mission=${this.missionNumber}, Endlos=${this.isEndless}`);
+    this.isDungeon = !!data.isDungeon;
+    logger.info('GameScene', `Mission initialisiert: Welt=${this.worldId}, Mission=${this.missionNumber}, Endlos=${this.isEndless}, Dungeon=${this.isDungeon}`);
   }
 
   public create(): void {
@@ -136,7 +138,7 @@ export class GameScene extends Phaser.Scene {
       onWaveAnnouncement: (text) => {
         this.hud.showAnnouncement(text);
       }
-    }, this.isEndless);
+    }, this.isEndless, this.isDungeon);
 
     // 4. HUD mit 1x, 2x, 3x, Vollbild und Pause
     this.hud = new HUD(this, this.economy.getLives(), this.economy.getGold(), {
@@ -152,8 +154,14 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    const worldDef = WORLDS_CONFIG[this.worldId];
-    this.hud.showAnnouncement(`${worldDef.name.toUpperCase()} - MISSION ${this.missionNumber}`);
+    const worldDef = WORLDS_CONFIG[this.worldId] || WORLDS_CONFIG.witch_forest;
+    if (this.isDungeon) {
+      this.hud.showAnnouncement('DAS DUNGEON-GEWÖLBE - 30 KAMMERN DER VERDAMMNIS');
+    } else if (this.isEndless) {
+      this.hud.showAnnouncement('ENDLOS-MODUS - ÜBERLEBE SO LANGE DU KANNST!');
+    } else {
+      this.hud.showAnnouncement(`${worldDef.name.toUpperCase()} - MISSION ${this.missionNumber}`);
+    }
 
     // 5. Tower Bar mit Drag & Drop und Wellen-Sperre
     this.towerBar = new TowerSelectionBar(this, this.economy, {
@@ -713,6 +721,11 @@ export class GameScene extends Phaser.Scene {
           isNewWaveRecord = res.isNewWaveRecord;
           isNewScoreRecord = res.isNewScoreRecord;
           logger.info('EndlessMode', `Endlos-Runde beendet bei Welle ${currentWave}`, res);
+        } else if (this.isDungeon) {
+          const res = SaveSystem.saveDungeonResult(currentWave, score);
+          isNewWaveRecord = res.isNewWaveRecord;
+          isNewScoreRecord = res.isNewScoreRecord;
+          logger.info('DungeonMode', `Dungeon beendet in Kammer ${currentWave}`, res);
         }
 
         this.scene.start('GameOverScene', {
@@ -722,6 +735,7 @@ export class GameScene extends Phaser.Scene {
           score,
           gold: this.economy.getGold(),
           isEndless: this.isEndless,
+          isDungeon: this.isDungeon,
           isNewWaveRecord,
           isNewScoreRecord
         });
@@ -742,7 +756,11 @@ export class GameScene extends Phaser.Scene {
     const gold = this.economy.getGold();
 
     // Fortschritt speichern
-    SaveSystem.completeMission(this.worldId, this.missionNumber, stars, score);
+    if (this.isDungeon) {
+      SaveSystem.completeDungeon(score);
+    } else {
+      SaveSystem.completeMission(this.worldId, this.missionNumber, stars, score);
+    }
 
     this.cameras.main.fade(600, 20, 50, 30, false, (cam: any, progress: number) => {
       if (progress === 1) {
@@ -752,7 +770,8 @@ export class GameScene extends Phaser.Scene {
           score: score,
           gold: gold,
           lives: lives,
-          stars: stars
+          stars: stars,
+          isDungeon: this.isDungeon
         });
       }
     });

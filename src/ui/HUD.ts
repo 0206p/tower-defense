@@ -442,7 +442,9 @@ export class HUD extends Phaser.GameObjects.Container {
   }
 
   public updateWave(current: number, total: number): void {
-    if (total === 0 || total > 100) {
+    if (total === 30) {
+      this.waveText.setText(`Kammer: ${current} / 30`);
+    } else if (total === 0 || total > 100) {
       this.waveText.setText(`Welle: ${current} / ∞ (Endlos)`);
     } else {
       this.waveText.setText(`Welle: ${current} / ${total}`);
