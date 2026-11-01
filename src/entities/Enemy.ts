@@ -47,13 +47,14 @@ export class Enemy extends Phaser.GameObjects.Container {
       onDeath: (enemy: Enemy) => void;
       onReachedEnd: (enemy: Enemy) => void;
     },
-    hpMultiplier: number = 1.0
+    hpMultiplier: number = 1.0,
+    customPath?: Phaser.Curves.Path
   ) {
     super(scene, 0, 0);
     this.config = config;
     this.mapManager = mapManager;
     this.economy = economy;
-    this.path = mapManager.curvePath;
+    this.path = customPath || mapManager.curvePath;
     this.pathLength = this.path.getLength();
     this.onEnemyDeath = callbacks.onDeath;
     this.onEnemyReachedEnd = callbacks.onReachedEnd;

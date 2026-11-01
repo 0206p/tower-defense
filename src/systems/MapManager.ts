@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH, GRID_COLS, GRID_ROWS, TILE_SIZE } from '../config/GameConfig';
+import { GAME_HEIGHT, GAME_WIDTH, GRID_COLS, GRID_ROWS, TILE_SIZE, GAME_FONT } from '../config/GameConfig';
 import { WorldId } from './SaveSystem';
+import { SoundManager } from './SoundManager';
 import { logger } from './GameLogger';
 
 export interface GridPoint {
@@ -14,6 +15,12 @@ export class MapManager {
   public pathPoints: GridPoint[];
   public runeTiles: GridPoint[] = [];
   public curvePath!: Phaser.Curves.Path;
+  public curvePath2: Phaser.Curves.Path | null = null;
+  public isEndless: boolean = false;
+  public pathPoints2: GridPoint[] = [];
+  public isSecondPortalUnlocked: boolean = false;
+  private secondPortalContainer?: Phaser.GameObjects.Container;
+  private secondPortalLabel?: Phaser.GameObjects.Text;
   private worldId: WorldId;
   private missionNumber: number;
   private grassTufts: Map<string, Phaser.GameObjects.Image> = new Map();
@@ -28,10 +35,11 @@ export class MapManager {
   private mapBgImage?: Phaser.GameObjects.Image;
   private buildGridContainer?: Phaser.GameObjects.Container;
 
-  constructor(scene: Phaser.Scene, worldId: WorldId = 'witch_forest', missionNumber: number = 1) {
+  constructor(scene: Phaser.Scene, worldId: WorldId = 'witch_forest', missionNumber: number = 1, isEndless: boolean = false) {
     this.scene = scene;
     this.worldId = worldId;
     this.missionNumber = missionNumber;
+    this.isEndless = isEndless;
     this.grid = [];
     for (let r = 0; r < GRID_ROWS; r++) {
       this.grid[r] = new Array(GRID_COLS).fill(0);
@@ -211,18 +219,35 @@ export class MapManager {
     const variantIndex = (missionNumber - 1) % currentVariants.length;
     this.pathPoints = currentVariants[variantIndex];
 
-    logger.info('MapManager', `Karte geladen: Welt=${this.worldId}, Mission=${missionNumber}, Pfad-Variante=${variantIndex + 1}`);
+    if (this.isEndless) {
+      // Zweiter Pfad im Endlosmodus durch den Süden (öffnet ab Welle 20)
+      this.pathPoints2 = [
+        { col: 0, row: 15 },
+        { col: 12, row: 15 },
+        { col: 12, row: 9 },
+        { col: 21, row: 9 },
+        { col: 21, row: 15 },
+        { col: 28, row: 15 },
+        { col: 28, row: 10 },
+        { col: 31, row: 10 }
+      ];
+    }
 
-    this.markPathOnGrid();
+    logger.info('MapManager', `Karte geladen: Welt=${this.worldId}, Mission=${missionNumber}, Pfad-Variante=${variantIndex + 1}, Endlos=${this.isEndless}`);
+
+    this.markPathListOnGrid(this.pathPoints);
+    if (this.isEndless && this.pathPoints2.length > 0) {
+      this.markPathListOnGrid(this.pathPoints2);
+    }
     this.spawnRuneTiles(variantIndex);
     this.generateNaturalLandscape(variantIndex);
     this.buildCurvePath();
   }
 
-  private markPathOnGrid(): void {
-    for (let i = 0; i < this.pathPoints.length - 1; i++) {
-      const p1 = this.pathPoints[i];
-      const p2 = this.pathPoints[i + 1];
+  private markPathListOnGrid(pts: GridPoint[]): void {
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
 
       const startCol = Math.min(p1.col, p2.col);
       const endCol = Math.max(p1.col, p2.col);
@@ -238,8 +263,8 @@ export class MapManager {
       }
     }
 
-    const start = this.pathPoints[0];
-    const end = this.pathPoints[this.pathPoints.length - 1];
+    const start = pts[0];
+    const end = pts[pts.length - 1];
     this.grid[start.row][start.col] = 4;
     this.grid[end.row][end.col] = 4;
   }
@@ -356,10 +381,15 @@ export class MapManager {
   }
 
   private buildCurvePath(): void {
-    const points = this.pathPoints.map((pt) => this.gridToPixel(pt.col, pt.row));
-    if (points.length === 0) return;
+    this.curvePath = this.createCurvePathFromPoints(this.pathPoints);
+    if (this.isEndless && this.pathPoints2 && this.pathPoints2.length > 0) {
+      this.curvePath2 = this.createCurvePathFromPoints(this.pathPoints2);
+    }
+  }
 
-    this.curvePath = this.scene.add.path(points[0].x, points[0].y);
+  private createCurvePathFromPoints(pointsList: GridPoint[]): Phaser.Curves.Path {
+    const points = pointsList.map((pt) => this.gridToPixel(pt.col, pt.row));
+    const path = this.scene.add.path(points[0].x, points[0].y);
     const cornerRadius = 14;
 
     for (let i = 1; i < points.length; i++) {
@@ -368,7 +398,7 @@ export class MapManager {
       const next = i < points.length - 1 ? points[i + 1] : null;
 
       if (!next) {
-        this.curvePath.lineTo(cur.x, cur.y);
+        path.lineTo(cur.x, cur.y);
       } else {
         const dx1 = Math.sign(cur.x - prev.x);
         const dy1 = Math.sign(cur.y - prev.y);
@@ -381,13 +411,14 @@ export class MapManager {
           const endX = cur.x + dx2 * cornerRadius;
           const endY = cur.y + dy2 * cornerRadius;
 
-          this.curvePath.lineTo(startX, startY);
-          this.curvePath.quadraticBezierTo(endX, endY, cur.x, cur.y);
+          path.lineTo(startX, startY);
+          path.quadraticBezierTo(endX, endY, cur.x, cur.y);
         } else {
-          this.curvePath.lineTo(cur.x, cur.y);
+          path.lineTo(cur.x, cur.y);
         }
       }
     }
+    return path;
   }
 
   private createModernBattlefieldTexture(key: string): void {
@@ -990,6 +1021,113 @@ export class MapManager {
 
     // 10. LEBENDIGE VIECHER (ANIMIERTES WILDLIFE)
     this.spawnWildlifeCritters();
+
+    // 11. ENDLOSMODUS: ZWEITES DIMENSIONSTOR IM SÜDEN
+    if (this.isEndless && this.pathPoints2.length > 0) {
+      this.renderSecondPortal();
+    }
+  }
+
+  private renderSecondPortal(): void {
+    if (this.secondPortalContainer) {
+      this.secondPortalContainer.destroy();
+    }
+    const start2 = this.pathPoints2[0];
+    const { x, y } = this.gridToPixel(start2.col, start2.row);
+
+    this.secondPortalContainer = this.scene.add.container(x, y).setDepth(8);
+
+    // 1. Portal-Basis
+    const portalGlow = this.scene.add.graphics();
+    portalGlow.fillStyle(0x5b21b6, 0.5);
+    portalGlow.fillCircle(0, 0, 22);
+    portalGlow.lineStyle(2, 0xa855f7, 0.9);
+    portalGlow.strokeCircle(0, 0, 22);
+    this.secondPortalContainer.add(portalGlow);
+
+    if (!this.isSecondPortalUnlocked) {
+      // 2. Ketten / Siegel
+      const sealGraphics = this.scene.add.graphics();
+      sealGraphics.lineStyle(2, 0xf59e0b, 0.95);
+      sealGraphics.strokeRect(-16, -16, 32, 32);
+      sealGraphics.lineBetween(-16, -16, 16, 16);
+      sealGraphics.lineBetween(-16, 16, 16, -16);
+      this.secondPortalContainer.add(sealGraphics);
+
+      // 3. Status-Label über dem Portal
+      this.secondPortalLabel = this.scene.add.text(0, -30, '🔒 TOR II (ÖFFNET WELLE 20)', {
+        fontFamily: GAME_FONT,
+        fontSize: '11px',
+        fontStyle: 'bold',
+        color: '#fef08a',
+        stroke: '#000000',
+        strokeThickness: 2.5
+      }).setOrigin(0.5);
+      this.secondPortalContainer.add(this.secondPortalLabel);
+    } else {
+      this.renderActivePortalVortex();
+    }
+
+    // Sanfte Schwebe-Animation
+    this.scene.tweens.add({
+      targets: this.secondPortalContainer,
+      scaleX: { from: 0.97, to: 1.03 },
+      scaleY: { from: 0.97, to: 1.03 },
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+  }
+
+  private renderActivePortalVortex(): void {
+    if (!this.secondPortalContainer) return;
+
+    const vortex = this.scene.add.graphics();
+    vortex.fillStyle(0x7e22ce, 0.85);
+    vortex.fillCircle(0, 0, 20);
+    vortex.lineStyle(2, 0x38bdf8, 1);
+    vortex.strokeCircle(0, 0, 20);
+    this.secondPortalContainer.addAt(vortex, 0);
+
+    this.scene.tweens.add({
+      targets: vortex,
+      angle: 360,
+      duration: 2200,
+      repeat: -1,
+      ease: 'Linear'
+    });
+
+    if (this.secondPortalLabel) {
+      this.secondPortalLabel.setText('🌀 TOR II (AKTIV)');
+      this.secondPortalLabel.setColor('#38bdf8');
+    }
+  }
+
+  public unlockSecondPortal(): void {
+    if (this.isSecondPortalUnlocked || !this.secondPortalContainer) return;
+    this.isSecondPortalUnlocked = true;
+
+    this.scene.cameras.main.flash(350, 168, 85, 247, false);
+    this.scene.cameras.main.shake(400, 0.008);
+    SoundManager.playUpgrade();
+
+    // Siegel entfernen
+    const children = this.secondPortalContainer.list;
+    if (children[1]) {
+      this.scene.tweens.add({
+        targets: children[1],
+        alpha: 0,
+        scaleX: 2.2,
+        scaleY: 2.2,
+        duration: 400,
+        onComplete: () => {
+          (children[1] as any)?.destroy();
+        }
+      });
+    }
+
+    this.renderActivePortalVortex();
   }
 
   private spawnWildlifeCritters(): void {
@@ -1197,6 +1335,10 @@ export class MapManager {
     this.critters = [];
     this.critterTimers.forEach((t) => t.destroy());
     this.critterTimers = [];
+    if (this.secondPortalContainer) {
+      this.secondPortalContainer.destroy();
+      this.secondPortalContainer = undefined;
+    }
     this.ambientParticles.forEach((p) => p.destroy());
     this.ambientParticles = [];
     this.fortressObjects.forEach((f) => f.destroy());

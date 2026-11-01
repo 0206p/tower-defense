@@ -114,8 +114,13 @@ export class WaveManager {
         announcement = `🏰 DUNGEON - KAMMER ${waveNum} / 30`;
       }
     } else if (this.isEndless) {
-      if (isBossWave) {
-        announcement = `⚔️ ENDLOS-BOSS WELLE ${waveNum}: Titanen erwachen!`;
+      if (waveNum === 20) {
+        this.mapManager.unlockSecondPortal();
+        announcement = `🚨 ALARM WELLE 20: DIMENSIONSTOR II ENTSIEGELT! DOPPELTER ANGRIFF!`;
+      } else if (isBossWave) {
+        announcement = waveNum >= 20
+          ? `⚔️ ENDLOS-DOPPELBOSS WELLE ${waveNum}: Titanen stürmen aus beiden Toren!`
+          : `⚔️ ENDLOS-BOSS WELLE ${waveNum}: Titanen erwachen!`;
       } else if (isMiniBossWave) {
         announcement = `⚠️ ENDLOS WELLE ${waveNum}: Elite-Horde greift an!`;
       } else {
@@ -144,9 +149,12 @@ export class WaveManager {
       const poolLen = Math.min(allDungeonTypes.length, 4 + Math.floor(waveNum / 2.5));
       currentPool = allDungeonTypes.slice(0, poolLen);
     } else if (this.isEndless) {
-      // Endlosmodus-Skalierung: graduell, fordernd, aber mathematisch fair
-      hpMult = 1.0 + (waveNum - 1) * 0.08 + Math.pow(Math.max(0, waveNum - 5) * 0.02, 1.25);
-      spawnCount = Math.min(28, 6 + Math.floor(waveNum * 0.7));
+      // Endlosmodus-Skalierung: Steile exponentielle Kurve (+12% HP pro Welle)
+      // Welle 1: 1.0x -> Welle 10: 3.5x -> Welle 20: 15.0x -> Welle 30: 58.0x
+      hpMult = Math.pow(1.12, waveNum - 1) * (1.0 + (waveNum - 1) * 0.04);
+
+      // Massiv steigende Feindmengen & dichte Rudel
+      spawnCount = 10 + Math.floor(waveNum * 1.5) + Math.floor(Math.pow(Math.max(0, waveNum - 12), 1.3) * 0.5);
 
       // Im Endlosmodus kommen schrittweise alle Monstertypen vor
       const allTypes: EnemyType[] = [
@@ -179,21 +187,33 @@ export class WaveManager {
       spawnCount = 6 + Math.floor(waveNum * 1.1);
     }
 
-    const extraEnemies = isBossWave ? 1 : isMiniBossWave ? 1 : 0;
+    const dualGateActive = this.isEndless && this.mapManager.isSecondPortalUnlocked && !!this.mapManager.curvePath2;
+    const extraEnemies = isBossWave ? (dualGateActive ? 2 : 1) : isMiniBossWave ? (dualGateActive ? 2 : 1) : 0;
     this.isSpawning = true;
     this.enemiesRemainingToSpawn = spawnCount + extraEnemies;
 
-    // Tempo-Steigerung mit späteren Wellen (+2% bis +22% Tempo)
-    const waveSpeedScale = 1.0 + Math.min(0.24, (waveNum - 1) * 0.026);
+    // Tempo-Steigerung mit späteren Wellen
+    const waveSpeedScale = this.isEndless
+      ? 1.0 + Math.min(0.40, (waveNum - 1) * 0.015)
+      : 1.0 + Math.min(0.24, (waveNum - 1) * 0.026);
+
+    const spawnDelay = this.isEndless
+      ? Math.max(140, 750 - waveNum * 22)
+      : Math.max(380, 950 - waveNum * 35);
+
     let cumulativeDelay = 350;
 
     for (let i = 0; i < spawnCount; i++) {
-      cumulativeDelay += Math.max(380, 950 - waveNum * 35);
+      cumulativeDelay += spawnDelay;
       const enemyType = currentPool[i % currentPool.length];
+
+      // Ab Welle 20 im Endlosmodus greifen Feinde abwechselnd aus Tor 1 und Tor 2 an!
+      const usePath2 = dualGateActive && (i % 2 === 1);
+      const chosenPath = usePath2 && this.mapManager.curvePath2 ? this.mapManager.curvePath2 : this.mapManager.curvePath;
 
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy(enemyType, hpMult, waveSpeedScale);
+          this.spawnEnemy(enemyType, hpMult, waveSpeedScale, chosenPath);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) {
             this.isSpawning = false;
@@ -209,7 +229,7 @@ export class WaveManager {
       cumulativeDelay += 1200;
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy('boss', hpMult * 2.2, 1.0);
+          this.spawnEnemy('boss', hpMult * 2.2, 1.0, this.mapManager.curvePath);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) {
             this.isSpawning = false;
@@ -219,11 +239,26 @@ export class WaveManager {
           }
         }
       });
+
+      if (dualGateActive && this.mapManager.curvePath2) {
+        this.scene.time.delayedCall(cumulativeDelay + 300, () => {
+          if (this.scene && this.scene.sys.isActive()) {
+            this.spawnEnemy('boss', hpMult * 2.2, 1.0, this.mapManager.curvePath2!);
+            this.enemiesRemainingToSpawn--;
+            if (this.enemiesRemainingToSpawn <= 0) {
+              this.isSpawning = false;
+              if (this.activeEnemies.length === 0) {
+                this.handleWaveEnd();
+              }
+            }
+          }
+        });
+      }
     } else if (isMiniBossWave) {
       cumulativeDelay += 800;
       this.scene.time.delayedCall(cumulativeDelay, () => {
         if (this.scene && this.scene.sys.isActive()) {
-          this.spawnEnemy('armored_troll', hpMult * 1.6, 1.05);
+          this.spawnEnemy('armored_troll', hpMult * 1.6, 1.05, this.mapManager.curvePath);
           this.enemiesRemainingToSpawn--;
           if (this.enemiesRemainingToSpawn <= 0) {
             this.isSpawning = false;
@@ -233,18 +268,43 @@ export class WaveManager {
           }
         }
       });
+
+      if (dualGateActive && this.mapManager.curvePath2) {
+        this.scene.time.delayedCall(cumulativeDelay + 250, () => {
+          if (this.scene && this.scene.sys.isActive()) {
+            this.spawnEnemy('armored_troll', hpMult * 1.6, 1.05, this.mapManager.curvePath2!);
+            this.enemiesRemainingToSpawn--;
+            if (this.enemiesRemainingToSpawn <= 0) {
+              this.isSpawning = false;
+              if (this.activeEnemies.length === 0) {
+                this.handleWaveEnd();
+              }
+            }
+          }
+        });
+      }
     }
 
     return true;
   }
 
-  private spawnEnemy(type: EnemyType, hpMultiplier: number, speedMultiplier: number = 1.0): void {
+  private spawnEnemy(
+    type: EnemyType,
+    hpMultiplier: number,
+    speedMultiplier: number = 1.0,
+    customPath?: Phaser.Curves.Path
+  ): void {
     const config = ENEMY_CONFIGS[type] || ENEMY_CONFIGS.goblin;
 
-    // Balancierte Schilde: Nur Einheiten mit angeborenen Panzern (Golems, gepanzerte Trolle, Bosse)
-    // erhalten skalierende Schilde. Schwärme/Läufer behalten 0 Schild, damit Türme direkten Schaden anrichten!
+    // Balancierte Schilde
     let extraShield = config.shield || 0;
-    if (extraShield > 0) {
+    if (this.isEndless) {
+      if (this.currentWaveIndex >= 10 && extraShield > 0) {
+        extraShield += (this.currentWaveIndex - 10) * 6;
+      } else if (this.currentWaveIndex >= 22 && extraShield === 0) {
+        extraShield = Math.min(60, 20 + (this.currentWaveIndex - 22) * 4);
+      }
+    } else if (extraShield > 0) {
       if (this.isDungeon) {
         extraShield += Math.round(this.currentWaveIndex * 3);
       } else if (this.worldId === 'dead_mountain') {
@@ -269,7 +329,8 @@ export class WaveManager {
         onDeath: (e) => this.handleEnemyRemoved(e),
         onReachedEnd: (e) => this.handleEnemyRemoved(e)
       },
-      hpMultiplier
+      hpMultiplier,
+      customPath
     );
 
     this.activeEnemies.push(enemy);

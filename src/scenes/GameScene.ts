@@ -127,7 +127,7 @@ export class GameScene extends Phaser.Scene {
     }, startingLives, startingGold);
 
     // 2. Map
-    this.mapManager = new MapManager(this, this.worldId, this.missionNumber);
+    this.mapManager = new MapManager(this, this.worldId, this.missionNumber, this.isEndless);
     this.mapManager.renderMap();
     this.spawnWorldAtmosphere();
 
