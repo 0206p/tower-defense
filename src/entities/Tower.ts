@@ -16,7 +16,7 @@ export class Tower extends Phaser.GameObjects.Container {
   private currentStats: TowerLevelData;
   private sprite: Phaser.GameObjects.Sprite;
   private rangeCircle: Phaser.GameObjects.Graphics;
-  private lastAttackTime: number = 0;
+  private attackCooldownTimer: number = 0;
   private isSelected: boolean = false;
 
   private economy: EconomySystem;
@@ -213,14 +213,16 @@ export class Tower extends Phaser.GameObjects.Container {
   }
 
   public update(time: number, delta: number): void {
-    if (time - this.lastAttackTime < this.getEffectiveCooldown()) {
-      return;
+    if (this.attackCooldownTimer > 0) {
+      this.attackCooldownTimer -= delta;
     }
 
-    const target = this.findTarget();
-    if (target) {
-      this.shoot(target);
-      this.lastAttackTime = time;
+    if (this.attackCooldownTimer <= 0) {
+      const target = this.findTarget();
+      if (target) {
+        this.shoot(target);
+        this.attackCooldownTimer = this.getEffectiveCooldown();
+      }
     }
   }
 

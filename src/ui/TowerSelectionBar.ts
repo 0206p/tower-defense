@@ -34,17 +34,19 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     barBg.lineBetween(0, 0, GAME_WIDTH, 0);
     this.add(barBg);
 
-    const title = scene.add.text(16, 22, 'TÜRME:', {
+    const title = scene.add.text(20, 33, 'TÜRME:', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '11px',
-      color: '#ffd13b'
+      fontSize: '12px',
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0, 0.5);
     this.add(title);
 
-    // 6 Turm-Karten
+    // 6 Turm-Karten (Großzügiger Abstand, kein Überlappen)
     const towerTypes: TowerType[] = ['archer', 'cannon', 'ice', 'poison', 'tesla', 'sniper'];
-    const startX = 130;
-    const cardSpacing = 138;
+    const startX = 175;
+    const cardSpacing = 144;
 
     towerTypes.forEach((type, index) => {
       const card = this.createTowerCard(type, startX + index * cardSpacing, 33);
@@ -53,35 +55,39 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     });
 
     // Hover-Stats-Panel rechts unten
-    this.statsHoverPanel = scene.add.container(GAME_WIDTH - 310, -110);
+    this.statsHoverPanel = scene.add.container(GAME_WIDTH - 315, -115);
     const hBg = scene.add.graphics();
-    hBg.fillStyle(0x130f1c, 0.96);
-    hBg.fillRoundedRect(0, 0, 300, 105, 6);
+    hBg.fillStyle(0x130f1c, 0.98);
+    hBg.fillRoundedRect(0, 0, 305, 110, 6);
     hBg.lineStyle(2, 0xd4af37, 1);
-    hBg.strokeRoundedRect(0, 0, 300, 105, 6);
+    hBg.strokeRoundedRect(0, 0, 305, 110, 6);
     this.statsHoverPanel.add(hBg);
 
     this.hoverTitle = scene.add.text(12, 10, 'TURM DETAILS', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '10px',
-      color: '#ffd13b'
+      fontSize: '11px',
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 2
     });
     this.statsHoverPanel.add(this.hoverTitle);
 
     this.hoverStats = scene.add.text(12, 32, '', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '8px',
-      lineSpacing: 5,
-      color: '#5eead4'
+      fontSize: '9px',
+      lineSpacing: 6,
+      color: '#5eead4',
+      stroke: '#000000',
+      strokeThickness: 2
     });
     this.statsHoverPanel.add(this.hoverStats);
 
     this.hoverDesc = scene.add.text(12, 75, '', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '7px',
+      fontSize: '8px',
       lineSpacing: 4,
       color: '#f5f0e6',
-      wordWrap: { width: 275 }
+      wordWrap: { width: 280 }
     });
     this.statsHoverPanel.add(this.hoverDesc);
 
@@ -101,25 +107,30 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
     const bg = this.scene.add.graphics();
     container.add(bg);
 
-    const icon = this.scene.add.image(-48, 0, def.icon).setScale(0.85);
+    // 1:1 Pixel-Art für perfekte Schärfe
+    const icon = this.scene.add.image(-48, 0, def.icon);
     container.add(icon);
 
-    const nameText = this.scene.add.text(-28, -12, def.shortName, {
+    const nameText = this.scene.add.text(-24, -13, def.shortName, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
-      color: '#ffffff'
+      fontSize: '11px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
     });
     container.add(nameText);
 
-    const costText = this.scene.add.text(-28, 4, `${def.baseCost}G`, {
+    const costText = this.scene.add.text(-24, 4, `${def.baseCost}G`, {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
-      color: '#ffd13b'
+      fontSize: '11px',
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 2
     });
     container.add(costText);
 
-    container.setSize(132, 46);
-    container.setInteractive({ useHandCursor: true });
+    container.setSize(134, 46);
+    container.setInteractive(new Phaser.Geom.Rectangle(-67, -23, 134, 46), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -206,21 +217,21 @@ export class TowerSelectionBar extends Phaser.GameObjects.Container {
 
       if (isSelected) {
         card.bg.fillStyle(0x384a28, 1);
-        card.bg.fillRoundedRect(-66, -23, 132, 46, 6);
+        card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
         card.bg.lineStyle(2, 0x7eb34d, 1);
-        card.bg.strokeRoundedRect(-66, -23, 132, 46, 6);
+        card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
         card.nameText.setColor('#ffffff');
       } else if (!canAfford) {
         card.bg.fillStyle(0x191821, 0.7);
-        card.bg.fillRoundedRect(-66, -23, 132, 46, 6);
+        card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
         card.bg.lineStyle(2, 0x2e293a, 1);
-        card.bg.strokeRoundedRect(-66, -23, 132, 46, 6);
+        card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
         card.nameText.setColor('#686075');
       } else {
         card.bg.fillStyle(0x282337, 1);
-        card.bg.fillRoundedRect(-66, -23, 132, 46, 6);
+        card.bg.fillRoundedRect(-67, -23, 134, 46, 6);
         card.bg.lineStyle(2, 0x483d5a, 1);
-        card.bg.strokeRoundedRect(-66, -23, 132, 46, 6);
+        card.bg.strokeRoundedRect(-67, -23, 134, 46, 6);
         card.nameText.setColor('#f5f0e6');
       }
     });

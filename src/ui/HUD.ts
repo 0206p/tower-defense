@@ -149,7 +149,7 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(70, 28);
-    container.setInteractive({ useHandCursor: true });
+    container.setInteractive(new Phaser.Geom.Rectangle(-35, -14, 70, 28), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -196,7 +196,7 @@ export class HUD extends Phaser.GameObjects.Container {
     container.add(text);
 
     container.setSize(40, 28);
-    container.setInteractive({ useHandCursor: true });
+    container.setInteractive(new Phaser.Geom.Rectangle(-20, -14, 40, 28), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
@@ -235,12 +235,14 @@ export class HUD extends Phaser.GameObjects.Container {
     this.nextWaveLabel = this.scene.add.text(0, 0, 'WELLE STARTEN', {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '10px',
-      color: '#ffffff'
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
     container.add(this.nextWaveLabel);
 
     container.setSize(190, 30);
-    container.setInteractive({ useHandCursor: true });
+    container.setInteractive(new Phaser.Geom.Rectangle(-95, -15, 190, 30), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();

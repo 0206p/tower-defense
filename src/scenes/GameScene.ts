@@ -134,9 +134,14 @@ export class GameScene extends Phaser.Scene {
         this.deselectPlacedTower();
       },
       onUpgrade: (tower) => {
-        SoundManager.playUpgrade();
-        tower.upgrade();
-        this.towerBar.updateAffordability();
+        const success = tower.upgrade();
+        if (success) {
+          SoundManager.playUpgrade();
+          this.towerBar.updateAffordability();
+          this.infoModal.refresh();
+        } else {
+          this.hud.showAnnouncement('Nicht genügend Gold für Upgrade!');
+        }
       },
       onSell: (tower) => {
         SoundManager.playCoin();
@@ -297,8 +302,22 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // Wenn das TowerInfoModal geöffnet ist und der Klick im Modal liegt: Modal-Klick nicht stören
+    if (this.infoModal.visible && pointer.x >= 925 && pointer.y >= 45 && pointer.y <= 380) {
+      return;
+    }
+
     const gridPos = this.mapManager.pixelToGrid(pointer.x, pointer.y);
 
+    // Prüfen, ob direkt auf einen platzierten Turm geklickt wurde
+    const clickedTower = this.towers.find((t) => t.gridCol === gridPos.col && t.gridRow === gridPos.row);
+    if (clickedTower) {
+      SoundManager.playClick();
+      this.selectPlacedTower(clickedTower);
+      return;
+    }
+
+    // Wenn ein Bauturm ausgewählt ist: Turm bauen
     if (this.selectedTowerType) {
       const def = TOWER_CONFIGS[this.selectedTowerType];
       if (this.mapManager.canBuildAt(gridPos.col, gridPos.row)) {
@@ -316,6 +335,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // Klick ins leere Feld schließt Auswahl
     if (this.selectedPlacedTower) {
       this.deselectPlacedTower();
     }
@@ -427,17 +447,20 @@ export class GameScene extends Phaser.Scene {
   public update(time: number, delta: number): void {
     if (this.isGameOver || this.isGamePaused) return;
 
-    this.waveManager.update(time, delta);
+    // Delta skaliert mit aktuellem Speed (1x, 2x, 3x)
+    const scaledDelta = delta * (this.time.timeScale || 1.0);
+
+    this.waveManager.update(time, scaledDelta);
 
     for (let i = 0; i < this.towers.length; i++) {
-      this.towers[i].update(time, delta);
+      this.towers[i].update(time, scaledDelta);
     }
 
     const children = this.children.getChildren();
     for (let i = children.length - 1; i >= 0; i--) {
       const child = children[i];
       if (child instanceof Projectile) {
-        child.update(time, delta);
+        child.update(time, scaledDelta);
       }
     }
   }

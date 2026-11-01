@@ -40,6 +40,8 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     bg.fillRoundedRect(0, 0, 325, 305, 8);
     bg.lineStyle(2, PALETTE.uiBorderHighlight, 1);
     bg.strokeRoundedRect(0, 0, 325, 305, 8);
+    bg.setInteractive(new Phaser.Geom.Rectangle(0, 0, 325, 305), Phaser.Geom.Rectangle.Contains);
+    bg.on('pointerdown', (p: Phaser.Input.Pointer) => p.event.stopPropagation());
     this.add(bg);
 
     const header = scene.add.graphics();
@@ -50,16 +52,20 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     this.titleText = scene.add.text(14, 12, 'TURM DETAILS', {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '11px',
-      color: '#ffd13b'
+      color: '#ffd13b',
+      stroke: '#000000',
+      strokeThickness: 2
     });
     this.add(this.titleText);
 
     const closeBtn = scene.add.text(305, 12, 'X', {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '14px',
-      color: '#e84a5f'
+      color: '#e84a5f',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
-    closeBtn.setInteractive({ useHandCursor: true });
+    closeBtn.setInteractive(new Phaser.Geom.Rectangle(-15, -15, 30, 30), Phaser.Geom.Rectangle.Contains);
     closeBtn.on('pointerdown', (p: Phaser.Input.Pointer) => {
       p.event.stopPropagation();
       this.hide();
@@ -71,15 +77,19 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '10px',
       lineSpacing: 8,
-      color: '#f5f0e6'
+      color: '#f5f0e6',
+      stroke: '#000000',
+      strokeThickness: 2
     });
     this.add(this.statsText);
 
     this.upgradeInfoText = scene.add.text(16, 160, '', {
       fontFamily: '"Press Start 2P", monospace',
-      fontSize: '9px',
+      fontSize: '10px',
       lineSpacing: 6,
       color: '#5cd670',
+      stroke: '#000000',
+      strokeThickness: 2,
       wordWrap: { width: 295 }
     });
     this.add(this.upgradeInfoText);
@@ -131,15 +141,18 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
     const text = this.scene.add.text(w / 2, h / 2, label, {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '10px',
-      color: '#ffffff'
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 2
     }).setOrigin(0.5);
     container.add(text);
 
     container.setSize(w, h);
-    container.setInteractive({ useHandCursor: true });
+    container.setInteractive(new Phaser.Geom.Rectangle(0, 0, w, h), Phaser.Geom.Rectangle.Contains);
 
     container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       pointer.event.stopPropagation();
+      if (!container.input?.enabled) return;
       onClick();
     });
 
@@ -195,14 +208,20 @@ export class TowerInfoModal extends Phaser.GameObjects.Container {
       const bg = this.upgradeBtn.getAt(0) as Phaser.GameObjects.Graphics;
       bg.clear();
       if (canAfford) {
-        this.upgradeBtn.setInteractive({ useHandCursor: true });
+        if (this.upgradeBtn.input) {
+          this.upgradeBtn.input.enabled = true;
+          this.upgradeBtn.input.cursor = 'pointer';
+        }
         bg.fillStyle(0x2d6323, 1);
         bg.fillRoundedRect(0, 0, 293, 34, 4);
         bg.lineStyle(2, 0x518233, 1);
         bg.strokeRoundedRect(0, 0, 293, 34, 4);
         this.upgradeBtnText.setColor('#ffffff');
       } else {
-        this.upgradeBtn.disableInteractive();
+        if (this.upgradeBtn.input) {
+          this.upgradeBtn.input.enabled = false;
+          this.upgradeBtn.input.cursor = 'default';
+        }
         bg.fillStyle(0x221f2d, 1);
         bg.fillRoundedRect(0, 0, 293, 34, 4);
         bg.lineStyle(2, 0x3d354a, 1);

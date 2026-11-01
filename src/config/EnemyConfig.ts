@@ -32,7 +32,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   goblin: {
     type: 'goblin',
     name: 'Wald-Goblin',
-    maxHp: 38,
+    maxHp: 32,
     speed: 72,
     rewardGold: 14,
     score: 50,
@@ -43,8 +43,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   bat: {
     type: 'bat',
     name: 'Nachtschwinge',
-    maxHp: 26,
-    speed: 110,
+    maxHp: 20,
+    speed: 105,
     rewardGold: 16,
     score: 65,
     spriteKey: 'enemy_bat',
@@ -54,8 +54,8 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   witch: {
     type: 'witch',
     name: 'Sumpf-Hexe',
-    maxHp: 68,
-    speed: 78,
+    maxHp: 60,
+    speed: 76,
     rewardGold: 26,
     score: 120,
     spriteKey: 'enemy_witch',
@@ -65,7 +65,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   slime: {
     type: 'slime',
     name: 'Gift-Schleim',
-    maxHp: 115,
+    maxHp: 100,
     speed: 46,
     rewardGold: 32,
     score: 150,
@@ -76,7 +76,7 @@ export const ENEMY_CONFIGS: Record<EnemyType, EnemyDefinition> = {
   swamp_troll: {
     type: 'swamp_troll',
     name: 'Sumpftroll',
-    maxHp: 220,
+    maxHp: 200,
     speed: 38,
     rewardGold: 55,
     score: 260,

@@ -38,28 +38,28 @@ export class Projectile extends Phaser.GameObjects.Sprite {
 
   constructor(scene: Phaser.Scene, params: ProjectileParams) {
     let textureKey = 'proj_arrow';
-    let baseSpeed = 520;
+    let baseSpeed = 900;
 
     switch (params.type) {
       case 'cannonball':
         textureKey = 'proj_cannonball';
-        baseSpeed = 420;
+        baseSpeed = 650;
         break;
       case 'ice':
         textureKey = 'proj_ice';
-        baseSpeed = 460;
+        baseSpeed = 650;
         break;
       case 'poison':
         textureKey = 'proj_poison';
-        baseSpeed = 440;
+        baseSpeed = 650;
         break;
       case 'tesla':
         textureKey = 'proj_tesla';
-        baseSpeed = 750;
+        baseSpeed = 1000;
         break;
       case 'sniper':
         textureKey = 'proj_sniper';
-        baseSpeed = 1100;
+        baseSpeed = 1500;
         break;
     }
 
@@ -115,7 +115,7 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     const moveDist = this.speed * (delta / 1000);
 
     // Großzügige Trefferzone (kein Durchfliegen bei schnellen Berechnungen)
-    if (distance <= moveDist || distance < 24) {
+    if (distance <= moveDist || distance < 28) {
       this.hit();
     } else {
       this.x += Math.cos(this.rotation) * moveDist;
@@ -130,15 +130,21 @@ export class Projectile extends Phaser.GameObjects.Sprite {
     switch (this.pType) {
       case 'arrow':
       case 'sniper': {
-        // Falls primäres Ziel noch lebt, trifft es; andernfalls beliebigen Feind in 40px
+        // Falls primäres Ziel noch lebt, trifft es; andernfalls beliebigen Feind im Umkreis
         let hitTarget: Enemy | null = (this.target && !this.target.isDead) ? this.target : null;
         if (!hitTarget) {
+          let bestCandidate: Enemy | null = null;
+          let bestDist = 55;
           for (const e of this.allEnemies) {
-            if (!e.isDead && Math.hypot(e.x - this.x, e.y - this.y) <= 45) {
-              hitTarget = e;
-              break;
+            if (!e.isDead) {
+              const d = Math.hypot(e.x - this.x, e.y - this.y);
+              if (d < bestDist) {
+                bestDist = d;
+                bestCandidate = e;
+              }
             }
           }
+          hitTarget = bestCandidate;
         }
         if (hitTarget) {
           hitTarget.takeDamage(finalDamage, isCrit);
